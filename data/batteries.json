@@ -1,0 +1,28 @@
+{
+  "batteries": [
+    {
+      "id": 4,
+      "tezgah_id": 163,
+      "eksen": "X",
+      "pil_modeli": "Panasonic BR-AGCF2W 6V Lityum Fanuc Cnc Pili",
+      "tarih": "27-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ"
+    },
+    {
+      "id": 5,
+      "tezgah_id": 44,
+      "eksen": "X",
+      "pil_modeli": "Fanuc A98L-0031-0025 Fanuc servo sürücü pili",
+      "tarih": "24-04-2025",
+      "bakim_yapan": "AHMET MERT ÖZER"
+    },
+    {
+      "id": 6,
+      "tezgah_id": 155,
+      "eksen": "X",
+      "pil_modeli": "Orion 3.7V 2600mAh 18650 Şarj Edilebilir Li-ion Pil",
+      "tarih": "24-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ"
+    }
+  ]
+}

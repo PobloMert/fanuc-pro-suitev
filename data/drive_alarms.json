@@ -1,0 +1,104 @@
+{
+  "drive_alarms": [
+    {
+      "code": "01",
+      "type": "Power Supply Module",
+      "title": "Aşırı Akım Ana Devre (IPM)",
+      "description": "Güç kaynağı ünitesinin ana güç devresinde aşırı akım (IPM alarmı) tespit edildi.",
+      "causes": [
+        "Güç kaynağı modülü çıkışında kısa devre",
+        "İnverter modülü iç köprü arızası",
+        "Besleme voltajında ani dalgalanma"
+      ],
+      "solutions": [
+        "Sürücü çıkış baralarını söküp toprak kısa devresi ölçün.",
+        "Güç kaynağı kartını ve IGBT modüllerini kontrol edin."
+      ]
+    },
+    {
+      "code": "02",
+      "type": "Power Supply Module",
+      "title": "Kontrol Voltajı Düşüşü (LV)",
+      "description": "Güç kaynağı modülünün kontrol devresi besleme voltajı (+24V) kritik sınırın altına düştü.",
+      "causes": [
+        "Harici 24V güç kaynağı yük altında çöküyor.",
+        "Optik fan veya haberleşme kablosu kısa devre çekiyor."
+      ],
+      "solutions": [
+        "Besleme girişindeki +24V seviyesini ölçün.",
+        "Sürücü üstündeki fan soketlerini söküp hatayı kontrol edin."
+      ]
+    },
+    {
+      "code": "10",
+      "type": "Spindle Amplifier Module",
+      "title": "Giriş Güç Devresi Düşük Voltaj",
+      "description": "Spindle sürücüsünün DC Link bara voltajı çok düştü veya eksik faz var.",
+      "causes": [
+        "Ana kontaktör (MCC) çekmedi veya geçiş direnci yüksek.",
+        "Güç kaynağı ünitesinde şebeke faz kaybı var."
+      ],
+      "solutions": [
+        "DC Link barasındaki voltajı ölçün (Yaklaşık 300V DC).",
+        "Ana panodaki sigorta ve kontaktör kontaklarını temizleyin."
+      ]
+    },
+    {
+      "code": "30",
+      "type": "Servo Amplifier Module",
+      "title": "Aşırı Akım Alarmları (IPM Alarm)",
+      "description": "Servo motor sürücü inverter çıkışında aşırı akım algılandı.",
+      "causes": [
+        "Motor güç kabloları gövdeye kısa devre yapıyor.",
+        "Sürücü içi IGBT modülünde kısa devre.",
+        "Servo motor sargıları yanmış veya kısa devre."
+      ],
+      "solutions": [
+        "Motor güç soketini söküp U-V-W fazları arasındaki direnç dengesini Meger cihazı ile ölçün.",
+        "Sürücüyü motordan ayırıp çalıştırın; alarm devam ediyorsa sürücü arızalıdır."
+      ]
+    },
+    {
+      "code": "51",
+      "type": "Servo Amplifier Module",
+      "title": "DC Link Aşırı Voltaj (HV)",
+      "description": "DC bara voltajı aşırı yükseldi. Genellikle yavaşlama (rejeneratif) esnasında oluşur.",
+      "causes": [
+        "Rejenerasyon direnci açık devre veya bağlantısı kopuk.",
+        "Yavaşlama rampası çok agresif ayarlanmış."
+      ],
+      "solutions": [
+        "Pano üstündeki deşarj (rejeneratif) direncinin omajını ölçün.",
+        "Servo yavaşlama parametrelerini (Deceleration time) uzatın."
+      ]
+    },
+    {
+      "code": "A",
+      "type": "Spindle Amplifier Module",
+      "title": "Program Hatası (ROM Hata)",
+      "description": "Spindle kontrol kartı işlemcisi ROM üzerindeki yazılımı yükleyemedi.",
+      "causes": [
+        "Spindle sürücü kontrol kartı arızalı.",
+        "Yazılım ROM entegresi yerinden oynamış."
+      ],
+      "solutions": [
+        "Sürücü kontrol kartını söküp temizleyin, ROM entegresini bastırın.",
+        "Kontrol kartı değişimi gerekebilir."
+      ]
+    },
+    {
+      "code": "F",
+      "type": "Servo Amplifier Module",
+      "title": "Haberleşme Hatası (FSSB)",
+      "description": "CNC ile servo sürücüler arasındaki fiber optik (FSSB) haberleşme hattında kopukluk.",
+      "causes": [
+        "Fiber optik kabloda kırılma veya tozlanma.",
+        "Sürücü eksen kartı enerjisi kesik."
+      ],
+      "solutions": [
+        "Optik kablonun uçlarını alkollü kulak çöpü ile temizleyin.",
+        "Optik konnektörün verici LED ışığının (kırmızı ışık) yandığını doğrulayın."
+      ]
+    }
+  ]
+}

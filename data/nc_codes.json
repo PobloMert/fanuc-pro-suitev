@@ -1,0 +1,669 @@
+{
+  "nc_codes": [
+    {
+      "code": "G00",
+      "type": "G-Milling",
+      "name": "Rapid Positioning",
+      "description": "Freze ve İşleme Merkezleri için G00 komutu. Rapid Positioning",
+      "syntax": "G00 X100.0 Y50.0 Z10.0 \nG00 X50.0 Z2.0"
+    },
+    {
+      "code": "G00",
+      "type": "G-Lathe",
+      "name": "Rapid Positioning",
+      "description": "Torna tezgahları için G00 komutu. Rapid Positioning",
+      "syntax": "G00 X50.0 Z2.0"
+    },
+    {
+      "code": "G01",
+      "type": "G-Milling",
+      "name": "Linear Interpolation",
+      "description": "Freze ve İşleme Merkezleri için G01 komutu. Linear Interpolation",
+      "syntax": "G01 X100.0 Y50.0 Z-5.0 F250.0 \nG01 X45.0 Z-20.0 F0.2"
+    },
+    {
+      "code": "G01",
+      "type": "G-Lathe",
+      "name": "Linear Interpolation",
+      "description": "Torna tezgahları için G01 komutu. Linear Interpolation",
+      "syntax": "G01 X45.0 Z-20.0 F0.2"
+    },
+    {
+      "code": "G02",
+      "type": "G-Milling",
+      "name": "Circular Interpolation CW",
+      "description": "Freze ve İşleme Merkezleri için G02 komutu. Circular Interpolation CW",
+      "syntax": "G02 X50.0 Y50.0 R25.0 F150.0 \nG02 X30.0 Z-10.0 R5.0 F0.1"
+    },
+    {
+      "code": "G02",
+      "type": "G-Lathe",
+      "name": "Circular Interpolation CW",
+      "description": "Torna tezgahları için G02 komutu. Circular Interpolation CW",
+      "syntax": "G02 X30.0 Z-10.0 R5.0 F0.1"
+    },
+    {
+      "code": "G03",
+      "type": "G-Milling",
+      "name": "Circular Interpolation CCW",
+      "description": "Freze ve İşleme Merkezleri için G03 komutu. Circular Interpolation CCW",
+      "syntax": "Same syntax as G02, but counter-clockwise."
+    },
+    {
+      "code": "G03",
+      "type": "G-Lathe",
+      "name": "Circular Interpolation CCW",
+      "description": "Torna tezgahları için G03 komutu. Circular Interpolation CCW",
+      "syntax": "Same syntax as G02, but counter-clockwise."
+    },
+    {
+      "code": "G04",
+      "type": "G-Milling",
+      "name": "Dwell (Pause in motion)",
+      "description": "Freze ve İşleme Merkezleri için G04 komutu. Dwell (Pause in motion)",
+      "syntax": "G04 P1000 (Pause for 1000ms)\nG04 X1.5 (Pause for 1.5 seconds)"
+    },
+    {
+      "code": "G04",
+      "type": "G-Lathe",
+      "name": "Dwell (Pause in motion)",
+      "description": "Torna tezgahları için G04 komutu. Dwell (Pause in motion)",
+      "syntax": "G04 P1000 (Pause for 1000ms)\nG04 X1.5 (Pause for 1.5 seconds)"
+    },
+    {
+      "code": "G09",
+      "type": "G-Milling",
+      "name": "Exact Stop (Non-modal)",
+      "description": "Freze ve İşleme Merkezleri için G09 komutu. Exact Stop (Non-modal)",
+      "syntax": "G09 G01 X100.0 (Checks for in-position at end of block)"
+    },
+    {
+      "code": "G09",
+      "type": "G-Lathe",
+      "name": "Exact Stop (Non-modal)",
+      "description": "Torna tezgahları için G09 komutu. Exact Stop (Non-modal)",
+      "syntax": "G09 G01 X100.0 (Checks for in-position at end of block)"
+    },
+    {
+      "code": "G10",
+      "type": "G-Milling",
+      "name": "Programmable Data Input",
+      "description": "Freze ve İşleme Merkezleri için G10 komutu. Programmable Data Input",
+      "syntax": "G10 L2 P1 X-120.0 Y-85.0 Z0 (Write G54 work offset)\nG10 L10 P5 R0.2 (Set tool length offset 5)"
+    },
+    {
+      "code": "G10",
+      "type": "G-Lathe",
+      "name": "Programmable Data Input",
+      "description": "Torna tezgahları için G10 komutu. Programmable Data Input",
+      "syntax": "G10 L2 P1 X-120.0 Y-85.0 Z0 (Write G54 work offset)\nG10 L10 P5 R0.2 (Set tool length offset 5)"
+    },
+    {
+      "code": "G11",
+      "type": "G-Milling",
+      "name": "Programmable Data Input Cancel",
+      "description": "Freze ve İşleme Merkezleri için G11 komutu. Programmable Data Input Cancel",
+      "syntax": "G11"
+    },
+    {
+      "code": "G11",
+      "type": "G-Lathe",
+      "name": "Programmable Data Input Cancel",
+      "description": "Torna tezgahları için G11 komutu. Programmable Data Input Cancel",
+      "syntax": "G11"
+    },
+    {
+      "code": "G17",
+      "type": "G-Milling",
+      "name": "XY Plane Selection",
+      "description": "Freze ve İşleme Merkezleri için G17 komutu. XY Plane Selection",
+      "syntax": "G17 G02 X_ Y_ R_ F_ (Default on Mills)"
+    },
+    {
+      "code": "G17",
+      "type": "G-Lathe",
+      "name": "XY Plane Selection",
+      "description": "Torna tezgahları için G17 komutu. XY Plane Selection",
+      "syntax": "G17 G02 X_ Y_ R_ F_ (Default on Mills)"
+    },
+    {
+      "code": "G18",
+      "type": "G-Milling",
+      "name": "ZX Plane Selection",
+      "description": "Freze ve İşleme Merkezleri için G18 komutu. ZX Plane Selection",
+      "syntax": "G18 G02 X_ Z_ R_ F_ (Default on Lathes)"
+    },
+    {
+      "code": "G18",
+      "type": "G-Lathe",
+      "name": "ZX Plane Selection",
+      "description": "Torna tezgahları için G18 komutu. ZX Plane Selection",
+      "syntax": "G18 G02 X_ Z_ R_ F_ (Default on Lathes)"
+    },
+    {
+      "code": "G19",
+      "type": "G-Milling",
+      "name": "YZ Plane Selection",
+      "description": "Freze ve İşleme Merkezleri için G19 komutu. YZ Plane Selection",
+      "syntax": "G19 G02 Y_ Z_ R_ F_"
+    },
+    {
+      "code": "G19",
+      "type": "G-Lathe",
+      "name": "YZ Plane Selection",
+      "description": "Torna tezgahları için G19 komutu. YZ Plane Selection",
+      "syntax": "G19 G02 Y_ Z_ R_ F_"
+    },
+    {
+      "code": "G20",
+      "type": "G-Milling",
+      "name": "Inch Unit Input",
+      "description": "Freze ve İşleme Merkezleri için G20 komutu. Inch Unit Input",
+      "syntax": "G20 (Mill/Lathe System A)\nG70 (Lathe System B/C)"
+    },
+    {
+      "code": "G20",
+      "type": "G-Lathe",
+      "name": "Inch Unit Input",
+      "description": "Torna tezgahları için G20 komutu. Inch Unit Input",
+      "syntax": "G20 (Mill/Lathe System A)\nG70 (Lathe System B/C)"
+    },
+    {
+      "code": "G21",
+      "type": "G-Milling",
+      "name": "Metric Unit Input",
+      "description": "Freze ve İşleme Merkezleri için G21 komutu. Metric Unit Input",
+      "syntax": "G21 (Mill/Lathe System A)\nG71 (Lathe System B/C)"
+    },
+    {
+      "code": "G21",
+      "type": "G-Lathe",
+      "name": "Metric Unit Input",
+      "description": "Torna tezgahları için G21 komutu. Metric Unit Input",
+      "syntax": "G21 (Mill/Lathe System A)\nG71 (Lathe System B/C)"
+    },
+    {
+      "code": "G28",
+      "type": "G-Milling",
+      "name": "Return to Reference Position (Home)",
+      "description": "Freze ve İşleme Merkezleri için G28 komutu. Return to Reference Position (Home)",
+      "syntax": "G28 G91 Z0 \nG28 U0 W0 (Lathe incremental home)"
+    },
+    {
+      "code": "G28",
+      "type": "G-Lathe",
+      "name": "Return to Reference Position (Home)",
+      "description": "Torna tezgahları için G28 komutu. Return to Reference Position (Home)",
+      "syntax": "G28 G91 Z0 (Mill)\nG28 U0 W0 (Lathe incremental home)"
+    },
+    {
+      "code": "G30",
+      "type": "G-Milling",
+      "name": "Return to 2nd, 3rd, or 4th Ref Position",
+      "description": "Freze ve İşleme Merkezleri için G30 komutu. Return to 2nd, 3rd, or 4th Ref Position",
+      "syntax": "G30 P2 U0 W0 (Go to 2nd home point)"
+    },
+    {
+      "code": "G30",
+      "type": "G-Lathe",
+      "name": "Return to 2nd, 3rd, or 4th Ref Position",
+      "description": "Torna tezgahları için G30 komutu. Return to 2nd, 3rd, or 4th Ref Position",
+      "syntax": "G30 P2 U0 W0 (Go to 2nd home point)"
+    },
+    {
+      "code": "G32",
+      "type": "G-Lathe",
+      "name": "Single-Point Threading (Straight/Taper)",
+      "description": "Torna tezgahları için G32 komutu. Single-Point Threading (Straight/Taper)",
+      "syntax": "G32 X_ Z_ F_ Q_ (System A. F is Pitch; Q is start angle)"
+    },
+    {
+      "code": "G40",
+      "type": "G-Milling",
+      "name": "Tool Radius / Nose Comp Cancel",
+      "description": "Freze ve İşleme Merkezleri için G40 komutu. Tool Radius / Nose Comp Cancel",
+      "syntax": "G40 G01 X0 Y0"
+    },
+    {
+      "code": "G40",
+      "type": "G-Lathe",
+      "name": "Tool Radius / Nose Comp Cancel",
+      "description": "Torna tezgahları için G40 komutu. Tool Radius / Nose Comp Cancel",
+      "syntax": "G40 G01 X0 Y0"
+    },
+    {
+      "code": "G41",
+      "type": "G-Milling",
+      "name": "Tool Radius Comp - Left",
+      "description": "Freze ve İşleme Merkezleri için G41 komutu. Tool Radius Comp - Left",
+      "syntax": "G41 D1 G01 X_ Y_ \nG41 X_ Z_ T0101"
+    },
+    {
+      "code": "G41",
+      "type": "G-Lathe",
+      "name": "Tool Radius Comp - Left",
+      "description": "Torna tezgahları için G41 komutu. Tool Radius Comp - Left",
+      "syntax": "G41 X_ Z_ T0101"
+    },
+    {
+      "code": "G42",
+      "type": "G-Milling",
+      "name": "Tool Radius Comp - Right",
+      "description": "Freze ve İşleme Merkezleri için G42 komutu. Tool Radius Comp - Right",
+      "syntax": "G42 D1 G01 X_ Y_ \nG42 X_ Z_ T0101"
+    },
+    {
+      "code": "G42",
+      "type": "G-Lathe",
+      "name": "Tool Radius Comp - Right",
+      "description": "Torna tezgahları için G42 komutu. Tool Radius Comp - Right",
+      "syntax": "G42 X_ Z_ T0101"
+    },
+    {
+      "code": "G43",
+      "type": "G-Milling",
+      "name": "Tool Length Compensation Positive",
+      "description": "Freze ve İşleme Merkezleri için G43 komutu. Tool Length Compensation Positive",
+      "syntax": "G43 Z10.0 H01 M08"
+    },
+    {
+      "code": "G44",
+      "type": "G-Milling",
+      "name": "Tool Length Compensation Negative",
+      "description": "Freze ve İşleme Merkezleri için G44 komutu. Tool Length Compensation Negative",
+      "syntax": "G44 Z10.0 H01"
+    },
+    {
+      "code": "G49",
+      "type": "G-Milling",
+      "name": "Tool Length Compensation Cancel",
+      "description": "Freze ve İşleme Merkezleri için G49 komutu. Tool Length Compensation Cancel",
+      "syntax": "G49 Z100.0"
+    },
+    {
+      "code": "G50",
+      "type": "G-Milling",
+      "name": "Scaling Cancel (Mill) / Nose Radius Scaling Cancel (Lathe B/C)",
+      "description": "Freze ve İşleme Merkezleri için G50 komutu. Scaling Cancel (Mill) / Nose Radius Scaling Cancel (Lathe B/C)",
+      "syntax": "G50"
+    },
+    {
+      "code": "G51",
+      "type": "G-Milling",
+      "name": "Scaling Enable (Mill) / Nose Radius Scaling Enable (Lathe B/C)",
+      "description": "Freze ve İşleme Merkezleri için G51 komutu. Scaling Enable (Mill) / Nose Radius Scaling Enable (Lathe B/C)",
+      "syntax": "G51 X0 Y0 P2.0 (Scale coordinates by 2x)"
+    },
+    {
+      "code": "G50",
+      "type": "G-Lathe",
+      "name": "Spindle Max Speed Clamp / Work Coordinate Preset",
+      "description": "Torna tezgahları için G50 komutu. Spindle Max Speed Clamp / Work Coordinate Preset",
+      "syntax": "G50 S2500 (Clamp max RPM to 2500 on System A)\nG50 X100.0 Z50.0 (Work coordinate preset on System A)\nG92 S2500 / G92 X100.0 Z50.0 (System B/C)"
+    },
+    {
+      "code": "G54",
+      "type": "G-Milling",
+      "name": "Work Coordinate System 1 (Standard)",
+      "description": "Freze ve İşleme Merkezleri için G54 komutu. Work Coordinate System 1 (Standard)",
+      "syntax": "G54 G00 X0 Y0"
+    },
+    {
+      "code": "G54",
+      "type": "G-Lathe",
+      "name": "Work Coordinate System 1 (Standard)",
+      "description": "Torna tezgahları için G54 komutu. Work Coordinate System 1 (Standard)",
+      "syntax": "G54 G00 X0 Y0"
+    },
+    {
+      "code": "G55-G59",
+      "type": "G-Milling",
+      "name": "Work Coordinate Systems 2 to 6",
+      "description": "Freze ve İşleme Merkezleri için G55-G59 komutu. Work Coordinate Systems 2 to 6",
+      "syntax": "G55 G00 X0 Y0"
+    },
+    {
+      "code": "G55-G59",
+      "type": "G-Lathe",
+      "name": "Work Coordinate Systems 2 to 6",
+      "description": "Torna tezgahları için G55-G59 komutu. Work Coordinate Systems 2 to 6",
+      "syntax": "G55 G00 X0 Y0"
+    },
+    {
+      "code": "G65",
+      "type": "G-Milling",
+      "name": "Custom Macro Single Call",
+      "description": "Freze ve İşleme Merkezleri için G65 komutu. Custom Macro Single Call",
+      "syntax": "G65 P9010 A10.0 B20.0 (Calls O9010; passes values to #1, #2)"
+    },
+    {
+      "code": "G65",
+      "type": "G-Lathe",
+      "name": "Custom Macro Single Call",
+      "description": "Torna tezgahları için G65 komutu. Custom Macro Single Call",
+      "syntax": "G65 P9010 A10.0 B20.0 (Calls O9010; passes values to #1, #2)"
+    },
+    {
+      "code": "G66",
+      "type": "G-Milling",
+      "name": "Custom Macro Modal Call",
+      "description": "Freze ve İşleme Merkezleri için G66 komutu. Custom Macro Modal Call",
+      "syntax": "G66 P9010 A10.0 (Calls O9010 at every motion block)"
+    },
+    {
+      "code": "G66",
+      "type": "G-Lathe",
+      "name": "Custom Macro Modal Call",
+      "description": "Torna tezgahları için G66 komutu. Custom Macro Modal Call",
+      "syntax": "G66 P9010 A10.0 (Calls O9010 at every motion block)"
+    },
+    {
+      "code": "G67",
+      "type": "G-Milling",
+      "name": "Custom Macro Modal Call Cancel",
+      "description": "Freze ve İşleme Merkezleri için G67 komutu. Custom Macro Modal Call Cancel",
+      "syntax": "G67"
+    },
+    {
+      "code": "G67",
+      "type": "G-Lathe",
+      "name": "Custom Macro Modal Call Cancel",
+      "description": "Torna tezgahları için G67 komutu. Custom Macro Modal Call Cancel",
+      "syntax": "G67"
+    },
+    {
+      "code": "G70",
+      "type": "G-Lathe",
+      "name": "Finishing Cycle (Lathe)",
+      "description": "Torna tezgahları için G70 komutu. Finishing Cycle (Lathe)",
+      "syntax": "G70 P10 Q20 (System A. Exec profile defined from N10 to N20)"
+    },
+    {
+      "code": "G71",
+      "type": "G-Lathe",
+      "name": "Rough Turning Cycle (Lathe)",
+      "description": "Torna tezgahları için G71 komutu. Rough Turning Cycle (Lathe)",
+      "syntax": "G71 U2.0 R1.0 (U=depth, R=retract)\nG71 P10 Q20 U0.4 W0.2 F0.25 (P/Q=profile, U/W=finish allowances)"
+    },
+    {
+      "code": "G72",
+      "type": "G-Lathe",
+      "name": "Rough Facing Cycle (Lathe)",
+      "description": "Torna tezgahları için G72 komutu. Rough Facing Cycle (Lathe)",
+      "syntax": "Same syntax structure as G71, but executes facing passes."
+    },
+    {
+      "code": "G73",
+      "type": "G-Lathe",
+      "name": "Pattern Repeating Cycle (Lathe)",
+      "description": "Torna tezgahları için G73 komutu. Pattern Repeating Cycle (Lathe)",
+      "syntax": "G73 U3.0 W1.5 R5 (U/W=profile relief, R=number of divisions)\nG73 P10 Q20 U0.4 W0.1 F0.2 (P/Q=profile, U/W=allowance)"
+    },
+    {
+      "code": "G74",
+      "type": "G-Lathe",
+      "name": "Face Grooving / Peck Drilling (Lathe)",
+      "description": "Torna tezgahları için G74 komutu. Face Grooving / Peck Drilling (Lathe)",
+      "syntax": "G74 R0.1 (R=retract)\nG74 X_ Z-50.0 P1000 Q2000 F0.1 (Z=depth, Q=peck step, F=feed)"
+    },
+    {
+      "code": "G75",
+      "type": "G-Lathe",
+      "name": "OD/ID Grooving Cycle (Lathe)",
+      "description": "Torna tezgahları için G75 komutu. OD/ID Grooving Cycle (Lathe)",
+      "syntax": "G75 R0.1 (R=retract)\nG75 X20.0 Z-30.0 P2000 Q1000 F0.08"
+    },
+    {
+      "code": "G76",
+      "type": "G-Lathe",
+      "name": "Multiple Threading Cycle (Lathe)",
+      "description": "Torna tezgahları için G76 komutu. Multiple Threading Cycle (Lathe)",
+      "syntax": "G76 P010060 Q100 R0.05 (P=spring passes, lead-out, angle)\nG76 X28.0 Z-40.0 P1000 Q250 F1.5 (X/Z=thread end, P=depth, F=pitch)"
+    },
+    {
+      "code": "G90",
+      "type": "G-Lathe",
+      "name": "Outer/Inner Diameter Turning Cycle (Single)",
+      "description": "Torna tezgahları için G90 komutu. Outer/Inner Diameter Turning Cycle (Single)",
+      "syntax": "G90 X45.0 Z-20.0 F0.2 (System A)\nG90 X40.0 (Subsequent passes)\nG77 X45.0 Z-20.0 F0.2 (System B)\nG20 X45.0 Z-20.0 F0.2 (System C)"
+    },
+    {
+      "code": "G92",
+      "type": "G-Lathe",
+      "name": "Thread Cutting Cycle (Single Pass)",
+      "description": "Torna tezgahları için G92 komutu. Thread Cutting Cycle (Single Pass)",
+      "syntax": "G92 X29.2 Z-30.0 F1.5 (System A threading)\nG78 X29.2 Z-30.0 F1.5 (System B)\nG21 X29.2 Z-30.0 F1.5 (System C)"
+    },
+    {
+      "code": "G94",
+      "type": "G-Lathe",
+      "name": "Endface Turning Cycle (Single Pass)",
+      "description": "Torna tezgahları için G94 komutu. Endface Turning Cycle (Single Pass)",
+      "syntax": "G94 X20.0 Z-5.0 F0.15 (System A)\nG79 X20.0 Z-5.0 F0.15 (System B)\nG24 X20.0 Z-5.0 F0.15 (System C)"
+    },
+    {
+      "code": "G80",
+      "type": "G-Milling",
+      "name": "Canned Cycle Cancel",
+      "description": "Freze ve İşleme Merkezleri için G80 komutu. Canned Cycle Cancel",
+      "syntax": "G80"
+    },
+    {
+      "code": "G80",
+      "type": "G-Lathe",
+      "name": "Canned Cycle Cancel",
+      "description": "Torna tezgahları için G80 komutu. Canned Cycle Cancel",
+      "syntax": "G80"
+    },
+    {
+      "code": "G81",
+      "type": "G-Milling",
+      "name": "Drilling Cycle (Mill)",
+      "description": "Freze ve İşleme Merkezleri için G81 komutu. Drilling Cycle (Mill)",
+      "syntax": "G81 X10.0 Y20.0 Z-25.0 R2.0 F100"
+    },
+    {
+      "code": "G83",
+      "type": "G-Milling",
+      "name": "Peck Drilling Cycle (Mill)",
+      "description": "Freze ve İşleme Merkezleri için G83 komutu. Peck Drilling Cycle (Mill)",
+      "syntax": "G83 X10.0 Y20.0 Z-50.0 R2.0 Q5.0 F100 (Q=peck depth)"
+    },
+    {
+      "code": "G84",
+      "type": "G-Milling",
+      "name": "Tapping Cycle (Mill)",
+      "description": "Freze ve İşleme Merkezleri için G84 komutu. Tapping Cycle (Mill)",
+      "syntax": "G84 X10.0 Y20.0 Z-20.0 R4.0 F250 (F=RPM × pitch)"
+    },
+    {
+      "code": "G90",
+      "type": "G-Milling",
+      "name": "Absolute Coordinate System",
+      "description": "Freze ve İşleme Merkezleri için G90 komutu. Absolute Coordinate System",
+      "syntax": "G90 G01 X50.0 Y50.0 (Mill/Lathe System B/C)"
+    },
+    {
+      "code": "G91",
+      "type": "G-Milling",
+      "name": "Incremental Coordinate System",
+      "description": "Freze ve İşleme Merkezleri için G91 komutu. Incremental Coordinate System",
+      "syntax": "G91 G01 X10.0 Y-5.0 (Mill/Lathe System B/C)"
+    },
+    {
+      "code": "G92",
+      "type": "G-Milling",
+      "name": "Work Coordinate System Preset (Mill)",
+      "description": "Freze ve İşleme Merkezleri için G92 komutu. Work Coordinate System Preset (Mill)",
+      "syntax": "G92 X0 Y0 Z0 (Mill coordinate preset)"
+    },
+    {
+      "code": "G96",
+      "type": "G-Lathe",
+      "name": "Constant Surface Speed (CSS) Enable",
+      "description": "Torna tezgahları için G96 komutu. Constant Surface Speed (CSS) Enable",
+      "syntax": "G96 S180 M03 (S is in m/min or SFM)"
+    },
+    {
+      "code": "G97",
+      "type": "G-Lathe",
+      "name": "Constant Surface Speed Cancel / Direct RPM",
+      "description": "Torna tezgahları için G97 komutu. Constant Surface Speed Cancel / Direct RPM",
+      "syntax": "G97 S1200 M03 (Direct spindle speed at 1200 RPM)"
+    },
+    {
+      "code": "G94",
+      "type": "G-Milling",
+      "name": "Feed per Minute",
+      "description": "Freze ve İşleme Merkezleri için G94 komutu. Feed per Minute",
+      "syntax": "G94 F150.0 (Mill/Lathe B/C: 150 mm/min or inch/min)\nG98 F150.0 (Lathe System A: 150 mm/min)"
+    },
+    {
+      "code": "G98",
+      "type": "G-Lathe",
+      "name": "Feed per Minute",
+      "description": "Torna tezgahları için G98 komutu. Feed per Minute",
+      "syntax": "G94 F150.0 (Mill/Lathe B/C: 150 mm/min or inch/min)\nG98 F150.0 (Lathe System A: 150 mm/min)"
+    },
+    {
+      "code": "G95",
+      "type": "G-Milling",
+      "name": "Feed per Revolution",
+      "description": "Freze ve İşleme Merkezleri için G95 komutu. Feed per Revolution",
+      "syntax": "G95 F0.2 (Mill/Lathe B/C: 0.2 mm/rev or inch/rev)\nG99 F0.2 (Lathe System A: 0.2 mm/rev)"
+    },
+    {
+      "code": "G99",
+      "type": "G-Lathe",
+      "name": "Feed per Revolution",
+      "description": "Torna tezgahları için G99 komutu. Feed per Revolution",
+      "syntax": "G95 F0.2 (Mill/Lathe B/C: 0.2 mm/rev or inch/rev)\nG99 F0.2 (Lathe System A: 0.2 mm/rev)"
+    },
+    {
+      "code": "G98",
+      "type": "G-Milling",
+      "name": "Return to Initial Point in Canned Cycle",
+      "description": "Freze ve İşleme Merkezleri için G98 komutu. Return to Initial Point in Canned Cycle",
+      "syntax": "G98 G81 X_ Y_ Z_ R_ F_ (Return to initial plane between holes)"
+    },
+    {
+      "code": "G99",
+      "type": "G-Milling",
+      "name": "Return to R-Point in Canned Cycle",
+      "description": "Freze ve İşleme Merkezleri için G99 komutu. Return to R-Point in Canned Cycle",
+      "syntax": "G99 G81 X_ Y_ Z_ R_ F_ (Return to retract R-plane between holes)"
+    },
+    {
+      "code": "M00",
+      "type": "M-Code",
+      "name": "Unconditional Program Stop",
+      "description": "Halts spindle, coolant, and axis motion. Pressing Cycle Start resumes the program from the next block.",
+      "syntax": "M00"
+    },
+    {
+      "code": "M01",
+      "type": "M-Code",
+      "name": "Optional Program Stop",
+      "description": "Program stops only if the \"Optional Stop\" switch on the operator panel is ON. Otherwise, ignored.",
+      "syntax": "M01"
+    },
+    {
+      "code": "M02",
+      "type": "M-Code",
+      "name": "End of Program",
+      "description": "Stops program execution. Typically does not rewind the program pointer back to the top block.",
+      "syntax": "M02"
+    },
+    {
+      "code": "M03",
+      "type": "M-Code",
+      "name": "Spindle Clockwise (CW)",
+      "description": "Starts the spindle rotating in the forward direction.",
+      "syntax": "M03"
+    },
+    {
+      "code": "M04",
+      "type": "M-Code",
+      "name": "Spindle Counter-Clockwise (CCW)",
+      "description": "Starts the spindle rotating in the reverse direction.",
+      "syntax": "M04"
+    },
+    {
+      "code": "M05",
+      "type": "M-Code",
+      "name": "Spindle Stop",
+      "description": "Decelerates and stops spindle rotation.",
+      "syntax": "M05"
+    },
+    {
+      "code": "M06",
+      "type": "M-Code",
+      "name": "Tool Change",
+      "description": "Commands an automatic tool change (ATC) or turret index to the selected tool number.",
+      "syntax": "M06"
+    },
+    {
+      "code": "M07",
+      "type": "M-Code",
+      "name": "Mist Coolant ON",
+      "description": "Turns on secondary mist coolant system.",
+      "syntax": "M07"
+    },
+    {
+      "code": "M08",
+      "type": "M-Code",
+      "name": "Flood Coolant ON",
+      "description": "Turns on the main flood coolant pump.",
+      "syntax": "M08"
+    },
+    {
+      "code": "M09",
+      "type": "M-Code",
+      "name": "Coolant OFF",
+      "description": "Turns off all coolant pumps (flood, mist, thru-spindle).",
+      "syntax": "M09"
+    },
+    {
+      "code": "M10",
+      "type": "M-Code",
+      "name": "Chuck/Vise Clamp",
+      "description": "Commands the spindle chuck jaws or vise to clamp the workpiece (typically Lathe/Mill accessory).",
+      "syntax": "M10"
+    },
+    {
+      "code": "M11",
+      "type": "M-Code",
+      "name": "Chuck/Vise Unclamp",
+      "description": "Commands the spindle chuck jaws or vise to release/unclamp.",
+      "syntax": "M11"
+    },
+    {
+      "code": "M19",
+      "type": "M-Code",
+      "name": "Spindle Orientation",
+      "description": "Locks the spindle in a precise angular position (needed for tool changes or index operations).",
+      "syntax": "M19"
+    },
+    {
+      "code": "M30",
+      "type": "M-Code",
+      "name": "End of Program and Reset",
+      "description": "Stops spindle, coolant, and axes; resets and rewinds the program pointer back to the first block.",
+      "syntax": "M30"
+    },
+    {
+      "code": "M98",
+      "type": "M-Code",
+      "name": "Subprogram Call",
+      "description": "Calls an external subprogram. Syntax: `M98 P<program_number> L<repetitions>`",
+      "syntax": "M98"
+    },
+    {
+      "code": "M99",
+      "type": "M-Code",
+      "name": "Subprogram End / Loop",
+      "description": "Ends a subprogram and returns to the calling main program. If run in the main program, loops back to the start.",
+      "syntax": "M99"
+    }
+  ]
+}

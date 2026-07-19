@@ -1,0 +1,198 @@
+{
+  "books": [
+    {
+      "id": "B-64604EN",
+      "title": "FANUC Series 0i-MODEL F Kullanıcı (Operatör) Kılavuzu",
+      "series": "0i-F",
+      "category": "Operatör",
+      "language": "TR/EN",
+      "pages": 940,
+      "description": "FANUC Series 0i-F CNC sistemi için programlama ve tezgah kullanım talimatları. G/M kodları, telafi miktarları ve koordinat sistemleri açıklamalarını içerir.",
+      "chapters": [
+        "1. Güvenlik Önlemleri ve Genel Uyarılar",
+        "2. Tezgah Kontrol Paneli ve Ekran Arayüzü",
+        "3. Koordinat Sistemleri ve İş Parçası Sıfır Noktası Tanımlama",
+        "4. G Kodu Programlama Referansı",
+        "5. M Kodu Listesi ve İşlevleri",
+        "6. Canned Cycles (Sabit Çevrimler - Delik Delme, Kılavuz Çekme vb.)",
+        "7. Takım Çap ve Aşınma Telafisi (Tool Offset)",
+        "8. Program Çalıştırma ve Güvenli Çalışma Yöntemleri"
+      ]
+    },
+    {
+      "id": "B-64605EN",
+      "title": "FANUC Series 0i-MODEL F Bakım Kılavuzu",
+      "series": "0i-F",
+      "category": "Bakım",
+      "language": "TR/EN",
+      "pages": 720,
+      "description": "Donanım montajı, kablolama, PCB kart değişimi, arıza bulma ve periyodik servis talimatlarını içeren bakım el kitabı.",
+      "chapters": [
+        "1. Bakım Güvenliği ve Alınacak Tedbirler",
+        "2. Periyodik Kontrol ve Bakım Listesi (Fan, Filtre vb.)",
+        "3. Sistem Donanım Konfigürasyonu (Slot Yapısı ve Kartlar)",
+        "4. Kablolama ve Bağlantı Şemaları",
+        "5. Parametre Yedekleme ve SRAM Geri Yükleme Prosedürleri",
+        "6. Alarm Listesi ve Teşhis (Diagnosis Code) Yöntemleri",
+        "7. Servo Motor ve Enkoder Değişim Adımları",
+        "8. FSSB (Haberleşme Ağı) Kurulum ve Hata Çözümü"
+      ]
+    },
+    {
+      "id": "B-64610EN",
+      "title": "FANUC Series 0i-MODEL F Parametre Kılavuzu",
+      "series": "0i-F",
+      "category": "Parametre",
+      "language": "EN",
+      "pages": 680,
+      "description": "CNC ünitesi üzerindeki tüm parametre numaralarının, veri tiplerinin, limitlerinin ve anlamlarının listelendiği teknik referans kılavuzu.",
+      "chapters": [
+        "1. Parametre Ekranına Giriş ve Düzenleme Yöntemleri (PWE)",
+        "2. Eksen ve Mil Ayarı Parametreleri (1000 - 2000 Serisi)",
+        "3. Besleme Hızı ve İlerleme Parametreleri (1400 - 1600 Serisi)",
+        "4. Servo Kontrol ve Hız Döngü Kazanç Parametreleri (1800 - 2000 Serisi)",
+        "5. Koordinat Sistemleri ve G54-G59 Ayarları (1200 Serisi)",
+        "6. Mil (Spindle) Kontrol Parametreleri (4000 - 4300 Serisi)",
+        "7. Ekran ve I/O Giriş/Çıkış Parametreleri (3000 Serisi)",
+        "8. PMC Lojik ve Çevresel Kontrol Ayarları (3400 Serisi)"
+      ]
+    },
+    {
+      "id": "B-64484EN",
+      "title": "FANUC Series 30i/31i/32i-MODEL B Operatör Kılavuzu",
+      "series": "30i-B / 31i-B / 32i-B",
+      "category": "Operatör",
+      "language": "EN",
+      "pages": 1150,
+      "description": "Yüksek performanslı 30i/31i/32i-B serisi CNC sistemleri için ileri düzey programlama ve tezgah işletim el kitabı.",
+      "chapters": [
+        "1. Çoklu Eksen Kontrolü ve Güvenlik Standartları",
+        "2. Çoklu Yol (Multi-Path) Programlama ve Senkronizasyon",
+        "3. 5-Eksen Simültane İşleme Fonksiyonları ve G-Kodları",
+        "4. AICC II ve AIAPC Yüksek Hızlı Hassas İşleme Modları",
+        "5. Takım Yönetimi ve Gelişmiş Telafi Sistemleri",
+        "6. Canned Cycles ve Kullanıcı Makroları (Macro B)",
+        "7. Ekran İzleme, Grafikler ve 3D Simülasyon",
+        "8. Hata Mesajları ve Operatör Müdahale Yöntemleri"
+      ]
+    },
+    {
+      "id": "B-64513EN",
+      "title": "FANUC PMC Lojik Programlama El Kitabı (Ladder III)",
+      "series": "Tüm Seriler",
+      "category": "PMC / PLC",
+      "language": "EN",
+      "pages": 580,
+      "description": "FANUC dahili PLC (PMC) mimarisi ve FANUC LADDER-III yazılımı ile PLC programlama kılavuzu. Sinyaller, adres haritaları ve SUB fonksiyon blokları.",
+      "chapters": [
+        "1. PMC Kontrol Sistemi Mimarisi (PMC-SB7 vb.)",
+        "2. G/F (CNC-PMC Arayüzü) ve X/Y (Giriş/Çıkış) Adres Detayları",
+        "3. Temel Kontak, Bobin ve Dal Dallanma Ladder Lojikleri",
+        "4. Zamanlayıcı (TMR), Sayaç (CTR) ve Keep Relay (K) Komutları",
+        "5. Fonksiyon Blokları (SUB 1: RD, SUB 2: WRT, SUB 24: MOVE vb.)",
+        "6. Alarm Mesajı Yazma ve Operatör Panel Mesaj Kontrolü (DISPB)",
+        "7. I/O Link-i Ağı ve Haberleşme Modülleri Konfigürasyonu",
+        "8. Ladder Hata Arama (Troubleshooting) ve Çevrimiçi (Online) İzleme"
+      ]
+    },
+    {
+      "id": "B-65270EN",
+      "title": "FANUC AC SERVO MOTOR alpha i / beta i Servo Parametre Kılavuzu",
+      "series": "αi / βi Serisi",
+      "category": "Servo",
+      "language": "EN",
+      "pages": 440,
+      "description": "Alfa ve Beta serisi servo motorların parametre ayarları, tuning (kazanç ayarı), hata giderme ve sürücü amplifikatör teknik kılavuzu.",
+      "chapters": [
+        "1. Servo Sistem Yapısı ve FSSB Bağlantıları",
+        "2. Servo Motor Model Kod Listesi (Parameter 2020 ID Tablosu)",
+        "3. Hız ve Pozisyon Döngü Kazanç Ayarları (Servo Tuning)",
+        "4. Akım Döngüsü (Current Loop) ve Hız Filtreleme Parametreleri",
+        "5. Absolute Encoder (APZ/APC) Kurulum ve Homing Yöntemleri",
+        "6. Servo Alarmları (SV0401, SV0417, SV0411 vb.) ve Çözüm Adımları",
+        "7. Diagnosis Ekranı Üzerinden Servo Hata Teşhisi",
+        "8. Rezonans Önleme ve İleri Besleme (Feed Forward) Filtre Ayarları"
+      ]
+    },
+    {
+      "id": "B-65280EN",
+      "title": "FANUC AC SPINDLE MOTOR alpha i / beta i Spindle Parametre Kılavuzu",
+      "series": "αi / βi Spindle",
+      "category": "Spindle",
+      "language": "EN",
+      "pages": 310,
+      "description": "FANUC iş mili (spindle) motorları ve sensörlerinin parametre kurulumu, vites geçişi (gear ratio) ayarları ve spindle alarmları el kitabı.",
+      "chapters": [
+        "1. Spindle Sürücü ve Motor Tipleri Haberleşme Mimarisi",
+        "2. Spindle Sensör ve Enkoder Bağlantı/Parametre Ayarları",
+        "3. Maksimum Hız Limitleri ve Vites Oranı (Gear Ratio) Ayarı",
+        "4. Spindle Hız Kazancı ve Tork Limit Parametreleri",
+        "5. Rijit Kılavuz Çekme (Rigid Tapping) Parametrik Ayarları",
+        "6. Spindle Hataları ve Alarmları (SP0740, SP0741 vb.)",
+        "7. Diagnosis 400 Serisi ile Hata Analizi",
+        "8. Spindle Oryantasyon (Konum Kilitleme) Parametreleri ve Ayarı"
+      ]
+    },
+    {
+      "id": "WEB-01",
+      "title": "FANUC Series 0i-Mate MODEL TC Kullanıcı Kılavuzu",
+      "series": "0i-Mate TC",
+      "category": "Operatör",
+      "language": "TR",
+      "pages": 450,
+      "description": "FANUC 0i-Mate TC torna kontrol ünitesi için G-kodları, programlama ve kullanım operatör kılavuzu.",
+      "webUrl": "https://mekatronikcnc.com.tr/wp-content/uploads/2020/06/0i-mate-tc-operator-kitabi-dokuman.pdf",
+      "chapters": [
+        "1. G-Kodu Sistemi ve Sözdizimi",
+        "2. Ayna ve Punta Operasyonları",
+        "3. Çevrimler ve Diş Çekme",
+        "4. Manuel Çalışma ve Sıfırlama"
+      ]
+    },
+    {
+      "id": "WEB-02",
+      "title": "FANUC CNC Programlama Kodları ve Rehberi",
+      "series": "Tüm Seriler",
+      "category": "Operatör",
+      "language": "TR",
+      "pages": 85,
+      "description": "CNC programlama standartları, G ve M kodları hızlı referans tabloları.",
+      "webUrl": "https://www.bilkey.com.tr/online-kurs-kurtkoy/cnc/fanuc-cnc-programlama-kodlari.pdf",
+      "chapters": [
+        "1. G Kod Listesi ve Açıklamaları",
+        "2. M Kod Listesi ve Açıklamaları",
+        "3. Örnek Parça Programları"
+      ]
+    },
+    {
+      "id": "WEB-03",
+      "title": "FANUC Series 0i-MODEL F Ürün Broşürü",
+      "series": "0i-F",
+      "category": "Katalog",
+      "language": "EN",
+      "pages": 16,
+      "description": "FANUC Series 0i-F CNC kontrol ünitelerinin donanımsal ve yazılımsal özelliklerini içeren ürün kataloğu.",
+      "webUrl": "https://www.fanuc.co.jp/en/product/catalog/pdf/cnc/FS0i-F(E)-05c.pdf",
+      "chapters": [
+        "1. Kontrol Ünitesi Donanımı",
+        "2. Ekran ve Klavye Seçenekleri",
+        "3. Yazılımsal Özellikler ve Destekler"
+      ]
+    },
+    {
+      "id": "WEB-04",
+      "title": "CNC Programlama Eğitim Kılavuzu (MEB)",
+      "series": "Genel",
+      "category": "Operatör",
+      "language": "TR",
+      "pages": 120,
+      "description": "Mesleki ve teknik eğitim okulları için hazırlanmış temel CNC programlama eğitim kılavuzu.",
+      "webUrl": "https://adanaeml.meb.k12.tr/meb_iys_dosyalar/01/01/111715/dosyalar/2018_10/07195312_CNC_PROGRAMLAMA.pdf",
+      "chapters": [
+        "1. CNC Tezgahları ve Güvenlik",
+        "2. CNC Torna Programlama",
+        "3. CNC Freze Programlama"
+      ]
+    }
+  ]
+}

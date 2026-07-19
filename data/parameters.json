@@ -1,0 +1,370 @@
+{
+  "parameters": [
+    {
+      "no": 0,
+      "category": "axis",
+      "name": "SEQ - Auto Sequence Number",
+      "description": "Toggles automatic generation of sequence numbers (N-codes) when writing a program on the CNC.",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 12,
+      "category": "axis",
+      "name": "MIR - Mirror Image",
+      "description": "Bit-parameter to activate mirror imaging for each axis (0 = Normal, 1 = Mirror image enabled).",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1001,
+      "category": "axis",
+      "name": "INM - Metric/Inch Base",
+      "description": "Selects the fundamental measurement system for parameters and positioning (0 = Metric, 1 = Inch).",
+      "dataType": "bit",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1002,
+      "category": "axis",
+      "name": "JAX - Axis Type Designation",
+      "description": "Configures whether each logical axis is designated as a linear motion axis or rotary axis.",
+      "dataType": "bit",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1006,
+      "category": "axis",
+      "name": "AXIS CONFIGURATION",
+      "description": "Eksenin lineer mi yoksa dairesel (rotary) mi olduğunu belirleyen bit parametresi. (Bit 0: ROT=0 Linear, 1=Rotary)",
+      "dataType": "bit",
+      "range": "Bit",
+      "default": "0",
+      "note": "Bit 0 ayarlanır."
+    },
+    {
+      "no": 1010,
+      "category": "axis",
+      "name": "CNC_AXIS - Number of Controlled Axes",
+      "description": "Defines the total number of controlled axes connected to the CNC system (typically 2 to 5+).",
+      "dataType": "byte",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1020,
+      "category": "axis",
+      "name": "AXIS NAME",
+      "description": "Kontrol ünitesinde eksen ismini tanımlayan ASCII kodu (X=88, Y=89, Z=90, A=65, B=66, C=67)",
+      "dataType": "byte",
+      "range": "0–127",
+      "default": "88",
+      "note": "ASCII karakter kod değeridir."
+    },
+    {
+      "no": 1022,
+      "category": "axis",
+      "name": "AXIS ATTRIBUTE",
+      "description": "Eksenin temel yapısal özelliği (0: Linear eksen, 1: Dairesel (rotary) eksen)",
+      "dataType": "byte",
+      "range": "0–1",
+      "default": "0"
+    },
+    {
+      "no": 1023,
+      "category": "axis",
+      "name": "SERVO AXIS NUMBER",
+      "description": "FSSB üzerindeki servo amplifikatör kanal ataması. Servo kartı kanallarını eksen sırasına bağlar.",
+      "dataType": "byte",
+      "range": "1–32",
+      "default": "1",
+      "note": "Her eksene tekil bir numara verilmelidir."
+    },
+    {
+      "no": 1201,
+      "category": "axis",
+      "name": "ZRN - Ref Position Setting",
+      "description": "Dictates zero return behavior (e.g., whether manual home return is permitted without moving away first).",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1320,
+      "category": "axis",
+      "name": "+SOFT LIMIT 1",
+      "description": "Her eksen için 1. pozitif yazılımsal strok limit koruma koordinatı.",
+      "dataType": "long",
+      "range": "±999999999",
+      "default": "999999999",
+      "note": "En küçük giriş birimi cinsindendir (IS-B için 0.001 mm)."
+    },
+    {
+      "no": 1321,
+      "category": "axis",
+      "name": "-SOFT LIMIT 1",
+      "description": "Her eksen için 1. negatif yazılımsal strok limit koruma koordinatı.",
+      "dataType": "long",
+      "range": "±999999999",
+      "default": "-999999999",
+      "note": "En küçük giriş birimi cinsindendir (IS-B için 0.001 mm)."
+    },
+    {
+      "no": 1401,
+      "category": "feed",
+      "name": "JGD - Jog Feedrate Unit",
+      "description": "Sets feedrate unit during manual jog: 0 = Feedrate per minute (mm/min), 1 = Feedrate per revolution (mm/rev).",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1410,
+      "category": "feed",
+      "name": "DRY RUN FEED RATE",
+      "description": "Kuru çalışma (Dry Run) modu aktifken eksenlerin hareket edeceği besleme hızı.",
+      "dataType": "long",
+      "range": "0–999999",
+      "default": "1000",
+      "note": "Birim: mm/dak"
+    },
+    {
+      "no": 1420,
+      "category": "feed",
+      "name": "MAX RAPID FEEDRATE",
+      "description": "Her bir eksen için G00 hızlı ilerleme hızının üst sınırı.",
+      "dataType": "long",
+      "range": "0–999999",
+      "default": "30000",
+      "note": "Birim: mm/dak"
+    },
+    {
+      "no": 1421,
+      "category": "feed",
+      "name": "F0_FEED - F0 Rapid Feedrate",
+      "description": "Sets the constant slow jog/traverse feedrate applied when rapid override is switched to the \"F0\" setting.",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1423,
+      "category": "feed",
+      "name": "MAN_FEED - Manual Feedrate",
+      "description": "Sets the default jog feedrate used when moving axes manually without using override buttons.",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1424,
+      "category": "feed",
+      "name": "JOG_FEED - Max Jog Feedrate",
+      "description": "Defines the maximum manual continuous jog feedrate for each axis.",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1425,
+      "category": "feed",
+      "name": "FL_SPEED - Zero Return Decel Speed",
+      "description": "Sets the slow deceleration feedrate (FL speed) used when approaching the reference limit switch during homing.",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1430,
+      "category": "feed",
+      "name": "MAX_FEED - Max Cutting Feedrate",
+      "description": "Configures the maximum cutting feedrate (G01/G02/G03) limit allowed during program execution.",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1620,
+      "category": "feed",
+      "name": "RAPID_ACC - Rapid Accel/Decel Time",
+      "description": "Sets the exponential/linear acceleration and deceleration time constant (in ms) for rapid positioning (G00).",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1622,
+      "category": "feed",
+      "name": "CUT_ACC - Cutting Accel/Decel Time",
+      "description": "Sets the acceleration and deceleration filter time constant (in ms) for interpolation cutting moves (G01).",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1815,
+      "category": "axis",
+      "name": "POSITION DETECTOR / APZ",
+      "description": "Mutlak enkoder ayarları. (Bit 5: APC = Mutlak enkoder aktif/pasif, Bit 4: APZ = Referans konumu senkronizasyonu)",
+      "dataType": "bit",
+      "range": "Bit",
+      "default": "0",
+      "note": "Piller bittiğinde bu parametredeki APZ biti 0'a düşer."
+    },
+    {
+      "no": 1825,
+      "category": "axis",
+      "name": "SERVO POSITION LOOP GAIN",
+      "description": "Eksenin pozisyon döngü kazancı (stiffness). Enterpolasyon yapan tüm eksenlerin kazancı birbirine eşit olmalıdır.",
+      "dataType": "word",
+      "range": "1–9999",
+      "default": "3000",
+      "note": "Birim: 0.01 / saniye (Tipik değer: 3000)"
+    },
+    {
+      "no": 1826,
+      "category": "axis",
+      "name": "IN_POS - In-Position Width",
+      "description": "Sets the positioning error limit (in units). Axis is considered \"in-position\" once following error falls below this.",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 1828,
+      "category": "axis",
+      "name": "MOVING POSITION DEVIATION LIMIT",
+      "description": "Eksen hareket halindeyken izin verilen maksimum pozisyon sapma (lag) limiti. Bu limit aşılırsa SV0411 alarmı oluşur.",
+      "dataType": "long",
+      "range": "0–99999999",
+      "default": "10000"
+    },
+    {
+      "no": 1829,
+      "category": "axis",
+      "name": "STOPPING POSITION DEVIATION LIMIT",
+      "description": "Eksen duruyorken izin verilen maksimum pozisyon sapma limiti. Limit aşılırsa SV0410 alarmı tetiklenir.",
+      "dataType": "long",
+      "range": "0–99999999",
+      "default": "1000"
+    },
+    {
+      "no": 2000,
+      "category": "axis",
+      "name": "SV_PRM - Servo Parameter Init",
+      "description": "Initializing bit for servo parameters. Used to load default motor database values into the control.",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 2020,
+      "category": "axis",
+      "name": "MOTOR ID",
+      "description": "Eksene bağlı olan servo motorun FANUC katalogundaki model kimlik (ID) numarası.",
+      "dataType": "word",
+      "range": "0–32767",
+      "default": "0",
+      "note": "Motor üzerindeki etikete ve servo el kitabına göre seçilmelidir."
+    },
+    {
+      "no": 2084,
+      "category": "axis",
+      "name": "FLEXIBLE FEED GEAR (N)",
+      "description": "Esnek besleme dişli oranı pay değeri (N/M). Enkoder pulsayısı ile vidalı mil hatvesi arasındaki dönüşümü yapar.",
+      "dataType": "word",
+      "range": "1–32767",
+      "default": "1"
+    },
+    {
+      "no": 2085,
+      "category": "axis",
+      "name": "FLEXIBLE FEED GEAR (M)",
+      "description": "Esnek besleme dişli oranı payda değeri (N/M). Enkoder pulsayısı ile vidalı mil hatvesi arasındaki dönüşümü yapar.",
+      "dataType": "word",
+      "range": "1–32767",
+      "default": "1"
+    },
+    {
+      "no": 3111,
+      "category": "display",
+      "name": "SCREEN DISPLAY CONTROL",
+      "description": "Ekrandaki çeşitli ayar ve izleme sayfalarının (Servo/Spindle tuning vb.) görünürlük bitleri.",
+      "dataType": "bit",
+      "range": "Bit",
+      "default": "0",
+      "note": "Bit 0: Servo tuning sayfası, Bit 1: Spindle tuning sayfası."
+    },
+    {
+      "no": 3202,
+      "category": "display",
+      "name": "PROTECT - Program Lock / Protect",
+      "description": "Protection flags: Bit 0 (`NE8`) locks program range 8000–8999; Bit 4 (`NE9`) locks macro range 9000–9999 from editing.",
+      "dataType": "bit",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 3208,
+      "category": "display",
+      "name": "KEY_PROT - Memory Protect Key Logic",
+      "description": "Determines how the hardware Write Protect Key interacts with program storage (enabling/disabling edit mode).",
+      "dataType": "word",
+      "range": "—",
+      "default": "—"
+    },
+    {
+      "no": 3401,
+      "category": "pmc",
+      "name": "PMC SCAN TIME",
+      "description": "PMC (Lojik program) tarama süresi periyodu.",
+      "dataType": "word",
+      "range": "1–1000",
+      "default": "8",
+      "note": "Birim: milisaniye"
+    },
+    {
+      "no": 3741,
+      "category": "spindle",
+      "name": "MAX SPINDLE SPEED (GEAR 1)",
+      "description": "1. kademe mekanik vitesteki maksimum spindle dönme devri sınırı.",
+      "dataType": "word",
+      "range": "0–24000",
+      "default": "2000",
+      "note": "Birim: RPM"
+    },
+    {
+      "no": 4082,
+      "category": "spindle",
+      "name": "SPINDLE SPEED DEVIATION LIMIT",
+      "description": "Spindle komut hızı ile geri bildirim hızı arasındaki maksimum izin verilen sapma yüzdesi.",
+      "dataType": "word",
+      "range": "0–100",
+      "default": "15",
+      "note": "Birim: Yüzde (Sapma aşıldığında SP0740 alarmı oluşur)"
+    },
+    {
+      "no": 8130,
+      "category": "axis",
+      "name": "TOTAL CONTROLLED AXES",
+      "description": "CNC kontrol sistemi tarafından kontrol edilen toplam eksen sayısı.",
+      "dataType": "byte",
+      "range": "1–32",
+      "default": "3",
+      "note": "Değiştirildiğinde tezgahın kapatılıp açılması şarttır."
+    },
+    {
+      "no": 9999,
+      "name": "CLOUD SYNC PARAMETER",
+      "description": "Bulut senkronizasyonu ile otomatik olarak eklenen test parametresi.",
+      "dataType": "bit",
+      "range": "0 veya 1",
+      "default": "0",
+      "note": "Bu parametre bulut senkronizasyonu başarısını göstermek için eklenmiştir."
+    }
+  ]
+}

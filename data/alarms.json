@@ -1,0 +1,653 @@
+{
+  "alarms": [
+    {
+      "code": "SV0401",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B",
+        "32i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: V-READY OFF",
+      "description": "Servo amplifikatörünün hazır (Ready) olduğunu bildiren sinyal CNC kontrol ünitesi tarafından alınamadı. Servo amplifikatör kapalı veya haberleşme kesilmiş.",
+      "causes": [
+        "E-Stop acil stop emniyet zincirinde kopukluk (24V kesintisi).",
+        "Güç Kaynağı Modülüne (PSM) 3-faz ana şebeke giriş gücünün gelmemesi.",
+        "Kontakör (MCC) bobininin enerjilenmemesi veya kontak arızası.",
+        "Diagnosis 358 içerisindeki bitlerin (bit 5 - bit 14) birinin 0 olması (VRDY kapatma nedeni)."
+      ],
+      "solutions": [
+        "DGN 358 (Diagnosis) değerini ikili (binary) formatta inceleyin: Bit 5 (HRDY=Hardware Ready), Bit 6 (*ESP=Acil Stop zinciri), Bit 7-9 (MCON=Sürücü Komut Sinyali), Bit 10 (CRDY=Converter Güç Kaynağı Hazır), Bit 13 (DRDY=Sürücü Hazır). Hangi bit 0 ise o devreyi kontrol edin.",
+        "Acil stop devresindeki tüm buton, kapı switch'i ve emniyet rölesi kontaklarını kontrol edin.",
+        "Güç kaynağı modülünün (PSM) üzerindeki 7-segment gösterge durumunu veya hata LED'lerini inceleyin.",
+        "Elektrik kabinindeki MCC manyetik kontaktörünün bobin gerilimini ve kontak geçişlerini teyit edin."
+      ]
+    },
+    {
+      "code": "SV0417",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B",
+        "32i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: ILLEGAL DGTL SERVO PARAMETER",
+      "description": "Dijital servo parametrelerinde (2000-2100 numaralı parametre aralığı) geçersiz veya uyumsuz değer girilmiş.",
+      "causes": [
+        "Parametre 2020 (Motor ID) değerinin takılı olan servo motor model numarasıyla eşleşmemesi.",
+        "Parametre 2022, 2023 veya 2024 parametrelerinin yanlış değerler içermesi.",
+        "FSSB (Fanuc Serial Servo Bus) otomatik set-up işleminde hata veya kablolama sırasının uyumsuzluğu."
+      ],
+      "solutions": [
+        "Diagnosis 203#4 bitini kontrol edin: Eğer 0 ise sistem parametre hatasıdır (Diagnosis 280 hata kodunu okuyun). Eğer 1 ise servo sürücü yazılımı hatasıdır (Diagnosis 352 hata kodunu okuyun). Bu kodları parametre el kitabıyla eşleştirerek hatalı parametreyi bulun.",
+        "Motor ID parametresini (No. 2020) motor etiketindeki koda göre doğrulayın. Eksen yön parametresini (No. 2022) kontrol edin (+111 veya -111 olmalıdır).",
+        "FGR Esnek Dişli Oranı (No. 2084/2085) değerlerinin 0 olmadığından ve limitleri (1-32767) aşmadığından emin olun."
+      ]
+    },
+    {
+      "code": "PS0010",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B",
+        "32i-B"
+      ],
+      "category": "Program",
+      "title": "P/S ALARM: IMPROPER G-CODE",
+      "description": "NC programında bu CNC kontrol modeli tarafından desteklenmeyen veya opsiyonu açık olmayan bir G kodu kullanıldı.",
+      "causes": [
+        "NC programında yanlış yazılmış G kodu (Örn. G95 yerine G095).",
+        "Tezgahta yüklü/aktif olmayan bir opsiyonel özellik komutu (Örn. Yüksek hızlı işleme döngüsü AICC, helisel enterpolasyon vb.)."
+      ],
+      "solutions": [
+        "Alarm veren satırdaki G kodunun yazımını kontrol edin.",
+        "Tezgah parametrelerinden ilgili G kodu opsiyonunun tezgahta açık olup olmadığını teyit edin.",
+        "CAM programının post-processor ayarının ilgili FANUC modeline uygun olduğundan emin olun."
+      ]
+    },
+    {
+      "code": "PS0011",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B",
+        "32i-B"
+      ],
+      "category": "Program",
+      "title": "P/S ALARM: CAN NOT COMMAND IN CURRENT PLANE",
+      "description": "Mevcut aktif düzlemde (G17/G18/G19) kullanılamayacak bir düzlemsel enterpolasyon veya komut girildi.",
+      "causes": [
+        "G17 aktifken X-Z düzleminde dairesel enterpolasyon (G02/G03) komutu verilmesi.",
+        "Koordinat dönüşüm komutlarının düzlem ile çakışması."
+      ],
+      "solutions": [
+        "Programın ilgili satırından önce düzlem seçim komutunu (G17: XY, G18: ZX, G19: YZ) doğru ayarlayın.",
+        "Dairesel enterpolasyon komutlarındaki eksen adreslerini seçili düzleme göre düzeltin."
+      ]
+    },
+    {
+      "code": "DS0300",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "APC ALARM: NEED REF RETURN / APZ ZERO",
+      "description": "Mutlak pozisyon encoderi (Absolute Pulse Coder) pozisyon senkronizasyonu kaybı. Tezgahın sıfır noktasının yeniden tanıtılması gerekiyor.",
+      "causes": [
+        "Absolute encoder pil geriliminin 3.0V altına düşmesi veya pilin tamamen bitmesi.",
+        "Güç kapalıyken encoder kablosunun sökülmesi veya encoderin değiştirilmesi."
+      ],
+      "solutions": [
+        "Sürücü kartı üzerindeki pili tezgah elektriği AÇIKKEN yeni 3.6V lityum pil ile değiştirin (Kapanırsa pozisyon tamamen kaybolur).",
+        "Parameter Write (PWE) = 1 yapın. SYSTEM > PARAM > No. 1815'e gidin. Eksenin APC (Bit 5) = 1 ve APZ (Bit 4) = 0 yapıp tezgahı kapatıp açın.",
+        "Tezgahı el çarkı ile fiziksel referans/home çizgilerine tam hizalayarak getirin.",
+        "Tekrar Parameter 1815'e gidip APZ (Bit 4) = 1 yapın ve tezgahı kapatıp açın. Home pozisyonu başarıyla kaydedilecektir. İşlem bitince PWE=0 yapın."
+      ]
+    },
+    {
+      "code": "DS0306",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "APC ALARM: BATTERY VOLTAGE LOW",
+      "description": "Mutlak pozisyon encoder pil gerilimi kritik seviyede düşük (pil voltajı 3.2V - 3.0V arasına indi).",
+      "causes": [
+        "Kabin içerisindeki batarya ünitesinin ömrünü tamamlamış olması."
+      ],
+      "solutions": [
+        "Tezgahın elektriğini kapatmadan (güç açıkken) pilleri yenisiyle değiştirin (Güç kapalıyken değiştirilirse sıfır noktası uçar ve DS0300 alarmı oluşur)."
+      ]
+    },
+    {
+      "code": "OT0500",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B",
+        "32i-B"
+      ],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL: +n AXIS (SOFT LIMIT 1)",
+      "description": "Belirtilen eksen, Parameter 1320 ile tanımlanmış olan pozitif yazılımsal sınır limitini aştı.",
+      "causes": [
+        "Koordinat ofsetlerinin (G54-G59) yanlış girilmesi nedeniyle hareketin tezgah sınırını aşması.",
+        "Referans noktasının kaçması veya yanlış set edilmesi."
+      ],
+      "solutions": [
+        "Tezgahı el çarkı (JOG) modunda aksi (negatif) yönde hareket ettirerek limit dışına çıkarın.",
+        "Eğer limit dışına çıkmıyorsa, Parametre 1320 limit değerini geçici olarak büyütün veya limit bypass anahtarını kullanın."
+      ]
+    },
+    {
+      "code": "OT0501",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B",
+        "32i-B"
+      ],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL: -n AXIS (SOFT LIMIT 1)",
+      "description": "Belirtilen eksen, Parameter 1321 ile tanımlanmış olan negatif yazılımsal sınır limitini aştı.",
+      "causes": [
+        "Program kodunda yanlış eksi (-) değer yazılması.",
+        "Takım ofseti veya parça sıfırının yanlış tanımlanması."
+      ],
+      "solutions": [
+        "Ekseni pozitif yönde JOG veya el çarkı ile limit dışına çıkarın.",
+        "Limit dışına çıkınca koordinatları kontrol edip hatayı düzeltin."
+      ]
+    },
+    {
+      "code": "SP0740",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM: SPEED DEVIATION",
+      "description": "Spindle hız sapması limitin üzerinde. Verilen dönme hızı komutu ile encoderdan okunan gerçek hız arasındaki fark çok yüksek.",
+      "causes": [
+        "Spindle üzerinde aşırı ağır kesme yükü veya mekanik sıkışma.",
+        "Sürücü kayışı gevşemesi veya sıyırması.",
+        "Spindle motor encoder kablosunda gürültü/parazit oluşması."
+      ],
+      "solutions": [
+        "Kesme parametrelerini hafifletin veya mekanik şanzımanı / rulmanları kontrol edin.",
+        "Motor ile şaft arasındaki kayış gerginliğini kontrol edin.",
+        "Parametre 4082 (hız sapma tolerans yüzdesi) değerini inceleyin."
+      ]
+    },
+    {
+      "code": "SP0741",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM: SPINDLE MOTOR OVERHEAT",
+      "description": "Spindle motoru sıcaklığı güvenli çalışma limitinin üzerine çıktı.",
+      "causes": [
+        "Spindle motor soğutma fanının arızalanması veya hava girişlerinin talaşla tıkanması.",
+        "Uzun süre yüksek torkta aşırı yük altında çalıştırma."
+      ],
+      "solutions": [
+        "Motor üzerindeki soğutma fanının çalışıp çalışmadığını kontrol edin.",
+        "Fanın filtrelerini temizleyin.",
+        "Motorun soğuması için tezgahı bir süre dinlenmeye bırakın."
+      ]
+    },
+    {
+      "code": "OH0700",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B",
+        "32i-B"
+      ],
+      "category": "Overheat",
+      "title": "OVERHEAT: CONTROL UNIT",
+      "description": "CNC kontrol ünitesi ana kart kafes sıcaklığı kritik eşik olan 55°C üzerine çıktı.",
+      "causes": [
+        "CNC kabin fanlarının durması veya filtrelerin tıkanması.",
+        "Kabin iç ortam sıcaklığının çok yüksek olması."
+      ],
+      "solutions": [
+        "Kabin kapağındaki fanı ve toz filtrelerini temizleyin veya fan arızalıysa değiştirin.",
+        "Kabinin doğrudan güneş ışığına veya yüksek ısı kaynağına maruz kalıp kalmadığını kontrol edin."
+      ]
+    },
+    {
+      "code": "SR0004",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B",
+        "32i-B"
+      ],
+      "category": "System",
+      "title": "SYSTEM ALARM: EMERGENCY STOP",
+      "description": "Acil stop sinyali (ESP) kesildi. CNC sistemi acil durdurma modunda kilitlendi.",
+      "causes": [
+        "Kabin üzerindeki veya operatör panelindeki E-stop butonuna basılmış olması.",
+        "PMC programı içerisindeki G008.4 (ESP) sinyalinin lojik 0 olması."
+      ],
+      "solutions": [
+        "Basılı olan acil stop butonunu çevirerek serbest bırakın.",
+        "Harici 24V emniyet rölesi ve kontaktör devrelerini kontrol edin.",
+        "PMC Ladder monitör ekranından G008.4 sinyalini izleyerek kesintinin kaynağını bulun."
+      ]
+    },
+    {
+      "code": "PS0003",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Program",
+      "title": "PROGRAM ALARM: TOO MANY DIGITS",
+      "description": "A numerical value was entered with more digits than permitted by the NC formatting rules. Edit the code block.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "PS0006",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Program",
+      "title": "PROGRAM ALARM: ILLEGAL MINUS SIGN",
+      "description": "A minus sign (`-`) was input for a G-code address that only accepts positive values. Check G-code syntax.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "PS0007",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Program",
+      "title": "PROGRAM ALARM: ILLEGAL DECIMAL POINT",
+      "description": "A decimal point (`.`) was input for an address that doesn't accept decimals, or multiple decimals were written.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "PS0009",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Program",
+      "title": "PROGRAM ALARM: ILLEGAL ADDRESS INPUT",
+      "description": "An illegal character or unsupported letter address was input in the program block. Check program syntax.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "PS0090",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Program",
+      "title": "PROGRAM ALARM: REF POSITION RETURN FAULT",
+      "description": "Reference position return (home) failed. The deceleration dog limit switch didn't trip, or speed was wrong. Retry zero return.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "PS0114",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Program",
+      "title": "PROGRAM ALARM: MACRO CALL FORMAT ERROR",
+      "description": "Syntax error in a macro subprogram call block (`G65` or `G66`). Verify arguments correspond to macro variables.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "PS0115",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Program",
+      "title": "PROGRAM ALARM: VARIABLE OUT OF RANGE",
+      "description": "A macro program number or variable number (e.g., `#` value) called in the program is out of the allowable range.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "OT0506",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL ALARM: + OVERTRAVEL (HARD LIMIT)",
+      "description": "Axis hit the physical positive overtravel limit switch. Requires overriding limits (OT Release key) and manual jogging.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "OT0507",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL ALARM: - OVERTRAVEL (HARD LIMIT)",
+      "description": "Axis hit the physical negative overtravel limit switch. Override limits and jog in positive direction.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SV0300",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: APC ALARM: HOME REQUIRED",
+      "description": "Absolute position encoder lost its home reference position. Usually due to backup battery failure. Manual home return is required.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SV0368",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: SERIAL ENCODER ERROR",
+      "description": "Communication between the servo amplifier and encoder failed. Check encoder cables for damage or loose connection.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SV0380",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: BACKUP BATTERY VOLTAGE LOW",
+      "description": "Absolute encoder backup battery voltage has dropped. Replace batteries in the amplifier box while CNC is powered ON.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SV0381",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: BACKUP BATTERY VOLTAGE ZERO",
+      "description": "Absolute encoder backup battery is dead. All axis coordinate data is lost. Replace batteries and re-establish reference home.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SV0410",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: EXCESS ERROR (STOPPED)",
+      "description": "Position deviation error when axis is stationary has exceeded Parameter 1829. Check for mechanical binding or bad gain.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SV0411",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: EXCESS ERROR (MOVING)",
+      "description": "Position deviation error during axis movement has exceeded Parameter 1828. Check for excessive cuts, mechanical bind, or motor load.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SV0436",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: SOFT THERMAL ALARM (OVERHEAT)",
+      "description": "Servo motor is overheating due to excessive continuous load. Let the motor cool and reduce cutting feedrates.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SV0438",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Servo",
+      "title": "SERVO ALARM: MOTOR OVERCURRENT",
+      "description": "Motor drive detected an overcurrent spike. Often points to short circuit in motor cables or bad transistor module in drive.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SP9012",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM: DC LINK OVERCURRENT",
+      "description": "The spindle amplifier detected excessive current on the DC bus. Check motor insulation, motor power cables, or drive components.",
+      "causes": [
+        "Sistem geri bildirimi veya donanım limit switch uyarısı.",
+        "Elektriksel bağlantı veya kablo paraziti."
+      ],
+      "solutions": [
+        "Alarm açıklamasına göre ilgili eksen kablo ve sınır anahtarlarını kontrol edin.",
+        "Tezgahı kapatıp açarak hatanın kalıcı olup olmadığını teyit edin."
+      ]
+    },
+    {
+      "code": "SV0999",
+      "title": "CLOUDSYNC ALARM TEST",
+      "description": "Bulut veri eşleşmesi sonucunda veritabanına otomatik eklenen test alarmıdır.",
+      "category": "Servo",
+      "severity": "Uyarı",
+      "series": [
+        "0i-F",
+        "30i-B"
+      ],
+      "causes": [
+        "Bulut veri senkronizasyonu testi tetiklendi."
+      ],
+      "solutions": [
+        "Senkronizasyonun çalıştığını doğrulayın."
+      ]
+    },
+    {
+      "code": "ER97",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B",
+        "32i-B"
+      ],
+      "category": "PMC",
+      "title": "I/O LINK FAILURE",
+      "description": "PMC ile I/O üniteleri arasındaki haberleşme hattında kopukluk veya ünitenin güç beslemesinde kesinti meydana geldi.",
+      "causes": [
+        "Belirtilen gruptaki sarı I/O ünitesinin 24V DC besleme sigortasının atması veya enerjisinin kesilmesi.",
+        "Modüller arasındaki I/O Link kablolarının (JD1A / JD1B) gevşemesi veya yanlış portlara takılması.",
+        "Hattın sonundaki sonlandırıcı soketinin (terminator) çıkmış veya arızalanmış olması."
+      ],
+      "solutions": [
+        "Hata veren grubun 24V DC besleme gerilimini ölçün (limitler: 21.6V - 26.4V DC).",
+        "Kabloları kontrol edin: Önceki modülün JD1A portundan çıkan kablonun sonraki modülün JD1B portuna girdiğini doğrulayın.",
+        "I/O modülünün yeşil terminal bloklarını söküp alarmı resetlemeyi deneyin. Resetlenirse harici saha elemanlarında 24V kısa devre vardır."
+      ]
+    },
+    {
+      "code": "SYS_ALM 160",
+      "series": [
+        "0i-F",
+        "30i-B",
+        "31i-B"
+      ],
+      "category": "System",
+      "title": "FSSB COMMUNICATION ERROR",
+      "description": "Fanuc Serial Servo Bus (FSSB) servo haberleşme halkasında fiber optik bağlantı koptu veya engellendi.",
+      "causes": [
+        "COP10A/COP10B fiber optik kablosunun kopması, ezilmesi veya aşırı bükülmesi (minimum büküm yarıçapı 30mm'dir).",
+        "Sürücü kartlarından birinin kontrol beslemesinin (200V / 24V) kesilmesi nedeniyle haberleşme halkasının bölünmesi.",
+        "Optik soket uçlarının tozlanması veya kirlenmesi."
+      ],
+      "solutions": [
+        "Sürücü LED'lerini inceleyin: Upstream hatası için 'L', Downstream için 'U' gösteren sürücüyü bulun. Sorun bu sürücü ile bir önceki/sonraki arasındadır.",
+        "Optik kablo uçlarını söküp alkollü bezle silin ve kuru hava tutun. Minimum 30mm büküm kuralına uyun.",
+        "Tüm servo/spindle sürücülerin sigortalarını ve kontrol panolarını kontrol edin."
+      ]
+    }
+  ]
+}

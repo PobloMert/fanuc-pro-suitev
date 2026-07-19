@@ -1,0 +1,1180 @@
+{
+  "machines": [
+    {
+      "id": 1,
+      "numarasi": "CNF 37",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 2,
+      "numarasi": "UNİ 20",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 4,
+      "numarasi": "TSL 04",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 5,
+      "numarasi": "CNT 26",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 6,
+      "numarasi": "VİNÇ 73",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 7,
+      "numarasi": "CNF 36",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 8,
+      "numarasi": "VİNÇ 43",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 9,
+      "numarasi": "ISL İPSEN ARABASI",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 10,
+      "numarasi": "ISL ENDOGAZ 01",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 11,
+      "numarasi": "CNF 13",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 12,
+      "numarasi": "CNF 05",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 13,
+      "numarasi": "CNF 16",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 14,
+      "numarasi": "CNF 46",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 15,
+      "numarasi": "KUMLAMA",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 16,
+      "numarasi": "UNİ 18",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 17,
+      "numarasi": "VİNÇ 51",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 18,
+      "numarasi": "CNF 14",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 19,
+      "numarasi": "VİNÇ 44",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 20,
+      "numarasi": "UNİ 14",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 23,
+      "numarasi": "VİNÇ 68",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 24,
+      "numarasi": "CNT 28",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 25,
+      "numarasi": "KYN 11",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 26,
+      "numarasi": "VİNÇ 58",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 29,
+      "numarasi": "CNT 18",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 30,
+      "numarasi": "CNT 21",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 31,
+      "numarasi": "ISL İPSEN MENEVİŞ 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 32,
+      "numarasi": "CNF 40",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 33,
+      "numarasi": "CNF 08",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 34,
+      "numarasi": "CNT 57",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 35,
+      "numarasi": "CNT 13",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 36,
+      "numarasi": "UNİ 10",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 37,
+      "numarasi": "ISL KUYU MENEVİŞ 08",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 38,
+      "numarasi": "CNT 04",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 39,
+      "numarasi": "CNF 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 40,
+      "numarasi": "CNF 44",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 41,
+      "numarasi": "CNF 35",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 42,
+      "numarasi": "TES 11",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 44,
+      "numarasi": "CNT 24",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 45,
+      "numarasi": "CNF 42",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 46,
+      "numarasi": "UNİ 11",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 47,
+      "numarasi": "VİNÇ 50",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 48,
+      "numarasi": "CNF 45",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 49,
+      "numarasi": "VİNÇ 17",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 50,
+      "numarasi": "ISL ENDOGAZ 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 51,
+      "numarasi": "VİNÇ 01",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 52,
+      "numarasi": "ISL KUYU MENEVİŞ 04",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 53,
+      "numarasi": "ISL KUYU MENEVİŞ 05",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 54,
+      "numarasi": "VİNÇ 39",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 55,
+      "numarasi": "CNF 18",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 56,
+      "numarasi": "CNF 04",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 57,
+      "numarasi": "TES 18",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 58,
+      "numarasi": "KYN 12",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 59,
+      "numarasi": "VİNÇ 87",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 60,
+      "numarasi": "KYN 14",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 61,
+      "numarasi": "CNT 48",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 62,
+      "numarasi": "CNF 01",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 63,
+      "numarasi": "CNF 06",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 64,
+      "numarasi": "CNF 47",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 65,
+      "numarasi": "TSL 16",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 66,
+      "numarasi": "KYN 03",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 67,
+      "numarasi": "KYN 26",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 68,
+      "numarasi": "TSL 28",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 69,
+      "numarasi": "KYN 90",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 70,
+      "numarasi": "CNF 41",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 71,
+      "numarasi": "KYN 49",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 72,
+      "numarasi": "TSL 14",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 73,
+      "numarasi": "CNF 38",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 74,
+      "numarasi": "CNT 36",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 75,
+      "numarasi": "CNF 15",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 76,
+      "numarasi": "ISL İPSEN MENEVİŞ 07",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 77,
+      "numarasi": "CNF 03",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 78,
+      "numarasi": "KYN 16",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 79,
+      "numarasi": "CNT 05",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 80,
+      "numarasi": "CNT 09",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 81,
+      "numarasi": "CNT 10",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 82,
+      "numarasi": "CNT 29",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 83,
+      "numarasi": "CNT 30",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 84,
+      "numarasi": "TSL 15",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 85,
+      "numarasi": "CNT 42",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 86,
+      "numarasi": "KYN 13",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 87,
+      "numarasi": "KYN 66",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 88,
+      "numarasi": "VİNÇ 70",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 89,
+      "numarasi": "CNT 39",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 90,
+      "numarasi": "TSL 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 91,
+      "numarasi": "TSL 05",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 92,
+      "numarasi": "VİNÇ 42",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 93,
+      "numarasi": "CNT 20",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 94,
+      "numarasi": "TSL 06",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 95,
+      "numarasi": "TSL 07",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 96,
+      "numarasi": "TSL 08",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 97,
+      "numarasi": "TSL 09",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 98,
+      "numarasi": "TSL 10",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 99,
+      "numarasi": "TSL 13",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 100,
+      "numarasi": "VİNÇ 67",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 101,
+      "numarasi": "CNT 35",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 102,
+      "numarasi": "VİNÇ 24",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 103,
+      "numarasi": "CNF 43",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 104,
+      "numarasi": "VİNÇ 66",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 105,
+      "numarasi": "UNİ 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 106,
+      "numarasi": "VİNÇ 48",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 107,
+      "numarasi": "CNF 11",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 108,
+      "numarasi": "CNF 33",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 109,
+      "numarasi": "CNT 17",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 110,
+      "numarasi": "CNT 15",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 111,
+      "numarasi": "VİNÇ 92",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 112,
+      "numarasi": "CNF 10",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 113,
+      "numarasi": "VİNÇ 82",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 114,
+      "numarasi": "VİNÇ 80",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 115,
+      "numarasi": "TSL 19",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 116,
+      "numarasi": "CNT 47",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 117,
+      "numarasi": "TSL 29",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 118,
+      "numarasi": "CNF 24",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 119,
+      "numarasi": "TSL 03",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 120,
+      "numarasi": "TSL 18",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 121,
+      "numarasi": "VİNÇ 79",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 122,
+      "numarasi": "TSL 01",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 123,
+      "numarasi": "VİNÇ 13",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 124,
+      "numarasi": "VİNÇ 88",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 125,
+      "numarasi": "VİNÇ 81",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 126,
+      "numarasi": "VİNÇ 83",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 127,
+      "numarasi": "ISL İPSEN FIRIN 01",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 128,
+      "numarasi": "ISL KUYU MENEVİŞ 03",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 129,
+      "numarasi": "ISL KUYU FIRIN 01",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 130,
+      "numarasi": "CNF 19",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 131,
+      "numarasi": "ISL KUYU FIRIN 03",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 132,
+      "numarasi": "ISL KUYU FIRIN 04",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 133,
+      "numarasi": "ISL KUYU FIRIN 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 134,
+      "numarasi": "CNF 31",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 135,
+      "numarasi": "ISL İPSEN FIRIN 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 136,
+      "numarasi": "CNF 30",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 137,
+      "numarasi": "TES 12",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 138,
+      "numarasi": "CNT 27",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 139,
+      "numarasi": "VİNÇ 20",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 140,
+      "numarasi": "VİNÇ 74",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 141,
+      "numarasi": "ISL İPSEN MENEVİŞ 01",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 143,
+      "numarasi": "KYN 18",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 144,
+      "numarasi": "VİNÇ 90",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 145,
+      "numarasi": "VİNÇ 60",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 148,
+      "numarasi": "VİNÇ 86",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 149,
+      "numarasi": "TSL 23",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 150,
+      "numarasi": "TSL 24",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 151,
+      "numarasi": "TSL 25",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 152,
+      "numarasi": "TSL 26",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 153,
+      "numarasi": "CNF 39",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 154,
+      "numarasi": "KYN 10",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 155,
+      "numarasi": "CNF 34",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 156,
+      "numarasi": "UNİ 04",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 157,
+      "numarasi": "CNT 44",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 158,
+      "numarasi": "CNT 45",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 159,
+      "numarasi": "TSL 11",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 160,
+      "numarasi": "CNT 12",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 161,
+      "numarasi": "CNT 40",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 162,
+      "numarasi": "CNT 33",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 163,
+      "numarasi": "CNT 31",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 164,
+      "numarasi": "CNT 11",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 165,
+      "numarasi": "CNT 50",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 166,
+      "numarasi": "TES 39",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 167,
+      "numarasi": "UNİ 06",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 168,
+      "numarasi": "CNT 51",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 169,
+      "numarasi": "CNF 17",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 170,
+      "numarasi": "CNT 25",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 171,
+      "numarasi": "CNF 21",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 172,
+      "numarasi": "TSL 20",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 174,
+      "numarasi": "VİNÇ 56",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 175,
+      "numarasi": "TES 09",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 176,
+      "numarasi": "ISL KUYU YAĞ 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 177,
+      "numarasi": "ISL İPSEN MENEVİŞ 04",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 178,
+      "numarasi": "CNT 06",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 179,
+      "numarasi": "CNT 07",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 180,
+      "numarasi": "VİNÇ 52",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 181,
+      "numarasi": "CNT 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 182,
+      "numarasi": "UNİ 12",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 183,
+      "numarasi": "TES 17",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 184,
+      "numarasi": "CNT 14",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 185,
+      "numarasi": "ISL İPSEN MENEVİŞ 03",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 187,
+      "numarasi": "TES 08",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 188,
+      "numarasi": "VİNÇ 36",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 190,
+      "numarasi": "KYN 06",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 191,
+      "numarasi": "VİNÇ 49",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 192,
+      "numarasi": "UNİ 19",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 193,
+      "numarasi": "CNF 07",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 194,
+      "numarasi": "TES 13",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 195,
+      "numarasi": "ISL İPSEN MENEVİŞ 05",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 197,
+      "numarasi": "VİNÇ 61",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 198,
+      "numarasi": "VİNÇ 75",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 199,
+      "numarasi": "NİTRASYON 02",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 200,
+      "numarasi": "TES 10",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 201,
+      "numarasi": "UNİ 23",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 202,
+      "numarasi": "İNDİKSİYON",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 203,
+      "numarasi": "KYN 08",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 204,
+      "numarasi": "TSL 22",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 205,
+      "numarasi": "UNİ 15",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 206,
+      "numarasi": "OVALAMA",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 207,
+      "numarasi": "TSL 27",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 208,
+      "numarasi": "KYN 32",
+      "bolum": "",
+      "tip": ""
+    },
+    {
+      "id": 209,
+      "numarasi": "CNF 09",
+      "bolum": "",
+      "tip": ""
+    }
+  ]
+}

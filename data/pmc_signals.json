@@ -1,0 +1,249 @@
+{
+  "pmc_signals": [
+    {
+      "address": "G0008.4",
+      "symbol": "*ESP",
+      "direction": "PMC → CNC",
+      "description": "Emergency Stop (*ESP). Safety signal. Active low. Must be held at `1` for normal operation. If `0`, system goes into E-Stop.",
+      "ladder_example": "PMC Ladder programında G0008.4 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0007.2",
+      "symbol": "ST",
+      "direction": "PMC → CNC",
+      "description": "Cycle Start (ST). Triggers automatic program run on rising edge (from `0` to `1`).",
+      "ladder_example": "PMC Ladder programında G0007.2 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0008.5",
+      "symbol": "*SP",
+      "direction": "PMC → CNC",
+      "description": "Feed Hold (*SP). Program execution feed hold. Active low. Must be held at `1` to run. If set to `0`, axis motion pauses.",
+      "ladder_example": "PMC Ladder programında G0008.5 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0007.1",
+      "symbol": "STLK",
+      "direction": "PMC → CNC",
+      "description": "Start Lock (STLK). Interlocks cycle start. When set to `1`, program run commands are ignored.",
+      "ladder_example": "PMC Ladder programında G0007.1 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0008.0",
+      "symbol": "*IT",
+      "direction": "PMC → CNC",
+      "description": "All-Axis Interlock (*IT). Active low interlock. When set to `0`, all axes movements are decelerated and stopped immediately.",
+      "ladder_example": "PMC Ladder programında G0008.0 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0008.1",
+      "symbol": "DRN",
+      "direction": "PMC → CNC",
+      "description": "Dry Run (DRN). Enables Dry Run. When `1`, programmed feeds (`F`) are ignored; axes move at manual jog feedrates.",
+      "ladder_example": "PMC Ladder programında G0008.1 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0008.2",
+      "symbol": "BDT",
+      "direction": "PMC → CNC",
+      "description": "Block Delete / Skip (BDT). Block delete status. When `1`, CNC skips lines of G-code starting with a slash (`/`).",
+      "ladder_example": "PMC Ladder programında G0008.2 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0008.3",
+      "symbol": "*SBK",
+      "direction": "PMC → CNC",
+      "description": "Single Block (*SBK). Active low. When set to `0`, CNC stops execution after finishing the current block.",
+      "ladder_example": "PMC Ladder programında G0008.3 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0008.7",
+      "symbol": "ERS",
+      "direction": "PMC → CNC",
+      "description": "External Reset (ERS). Commands a CNC system reset when set to `1` by the ladder logic.",
+      "ladder_example": "PMC Ladder programında G0008.7 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0043.0",
+      "symbol": "MD1",
+      "direction": "PMC → CNC",
+      "description": "Mode Select Bit 0 (MD1). Bit 0 of mode selection code. Combine with MD2 and MD4 to command CNC modes.",
+      "ladder_example": "PMC Ladder programında G0043.0 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0043.1",
+      "symbol": "MD2",
+      "direction": "PMC → CNC",
+      "description": "Mode Select Bit 1 (MD2). Bit 1 of mode selection code.",
+      "ladder_example": "PMC Ladder programında G0043.1 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0043.2",
+      "symbol": "MD4",
+      "direction": "PMC → CNC",
+      "description": "Mode Select Bit 2 (MD4). Bit 2 of mode selection code (selects Auto, MDI, Edit, Jog, Handle).",
+      "ladder_example": "PMC Ladder programında G0043.2 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0012.0 - G0012.7",
+      "symbol": "*FV0 - *FV7",
+      "direction": "PMC → CNC",
+      "description": "Feedrate Override Bits (*FV0 - *FV7). 8-bit Gray code or binary code defining the feedrate override percentage (0% to 200%).",
+      "ladder_example": "PMC Ladder programında G0012.0 - G0012.7 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0014.0 - G0014.7",
+      "symbol": "*OV0 - *OV7",
+      "direction": "PMC → CNC",
+      "description": "Spindle Override Bits (*OV0 - *OV7). Bits specifying the spindle speed override percentage (typically 50% to 120%).",
+      "ladder_example": "PMC Ladder programında G0014.0 - G0014.7 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0096.0 - G0096.3",
+      "symbol": "*ROV1 - *ROV2",
+      "direction": "PMC → CNC",
+      "description": "Rapid Traverse Override (*ROV1 - *ROV2). Controls rapid override limits (e.g., F0, 25%, 50%, 100%).",
+      "ladder_example": "PMC Ladder programında G0096.0 - G0096.3 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0100.0",
+      "symbol": "+J1",
+      "direction": "PMC → CNC",
+      "description": "Axis 1 Plus Jog (+J1). Manual jog command for the first axis (typically X) in the positive direction.",
+      "ladder_example": "PMC Ladder programında G0100.0 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0100.1",
+      "symbol": "-J1",
+      "direction": "PMC → CNC",
+      "description": "Axis 1 Minus Jog (-J1). Manual jog command for the first axis in the negative direction.",
+      "ladder_example": "PMC Ladder programında G0100.1 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0102.0",
+      "symbol": "+J2",
+      "direction": "PMC → CNC",
+      "description": "Axis 2 Plus Jog (+J2). Manual jog command for the second axis (typically Y/Z) in the positive direction.",
+      "ladder_example": "PMC Ladder programında G0102.0 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0102.1",
+      "symbol": "-J2",
+      "direction": "PMC → CNC",
+      "description": "Axis 2 Minus Jog (-J2). Manual jog command for the second axis in the negative direction.",
+      "ladder_example": "PMC Ladder programında G0102.1 adresi olarak takip edilir."
+    },
+    {
+      "address": "G0004.3",
+      "symbol": "FIN",
+      "direction": "PMC → CNC",
+      "description": "Auxiliary Function Done (FIN). Completion signal. PMC sets to `1` to tell CNC that the requested M/S/T command is complete.",
+      "ladder_example": "PMC Ladder programında G0004.3 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0000.4",
+      "symbol": "SPL",
+      "direction": "CNC → PMC",
+      "description": "Feed Hold Status Lamp (SPL). Feeds back `1` when the CNC is currently paused in a feed hold state.",
+      "ladder_example": "PMC Ladder programında F0000.4 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0000.5",
+      "symbol": "STL",
+      "direction": "CNC → PMC",
+      "description": "Cycle Start Status Lamp (STL). Feeds back `1` when the CNC is currently running a program in auto/MDI mode.",
+      "ladder_example": "PMC Ladder programında F0000.5 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0000.6",
+      "symbol": "SA",
+      "direction": "CNC → PMC",
+      "description": "Servo Ready (SA). Feeds back `1` when the servo system power loop is active and servos are ready.",
+      "ladder_example": "PMC Ladder programında F0000.6 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0000.7",
+      "symbol": "OP",
+      "direction": "CNC → PMC",
+      "description": "Auto Operation Active (OP). Feeds back `1` when the CNC is currently running a program in auto/MDI mode.",
+      "ladder_example": "PMC Ladder programında F0000.7 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0003.5",
+      "symbol": "MMEM",
+      "direction": "CNC → PMC",
+      "description": "Memory Mode Status (MMEM). Feeds back `1` when the CNC is switched to Memory (Auto) program execution mode.",
+      "ladder_example": "PMC Ladder programında F0003.5 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0003.3",
+      "symbol": "MMDI",
+      "direction": "CNC → PMC",
+      "description": "MDI Mode Status (MMDI). Feeds back `1` when the CNC is switched to Manual Data Input (MDI) mode.",
+      "ladder_example": "PMC Ladder programında F0003.3 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0003.6",
+      "symbol": "MEDT",
+      "direction": "CNC → PMC",
+      "description": "Edit Mode Status (MEDT). Feeds back `1` when the CNC is switched to program EDIT mode.",
+      "ladder_example": "PMC Ladder programında F0003.6 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0003.2",
+      "symbol": "MJ",
+      "direction": "CNC → PMC",
+      "description": "Jog Mode Status (MJ). Feeds back `1` when the CNC is switched to Manual Jog mode.",
+      "ladder_example": "PMC Ladder programında F0003.2 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0003.1",
+      "symbol": "MH",
+      "direction": "CNC → PMC",
+      "description": "Handle Mode Status (MH). Feeds back `1` when the CNC is switched to Manual Pulse Generator (Handle) mode.",
+      "ladder_example": "PMC Ladder programında F0003.1 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0007.0",
+      "symbol": "MF",
+      "direction": "CNC → PMC",
+      "description": "M-code Strobe (MF). Set to `1` by CNC when an M-code is executed. PMC must execute it, then toggle FIN (G4.3) to clear.",
+      "ladder_example": "PMC Ladder programında F0007.0 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0007.2",
+      "symbol": "SF",
+      "direction": "CNC → PMC",
+      "description": "Spindle Function Strobe (SF). Set to `1` by CNC when a spindle speed S-code is commanded. Cleared via FIN.",
+      "ladder_example": "PMC Ladder programında F0007.2 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0007.3",
+      "symbol": "TF",
+      "direction": "CNC → PMC",
+      "description": "Tool Function Strobe (TF). Set to `1` by CNC when a tool T-code is commanded. Cleared via FIN.",
+      "ladder_example": "PMC Ladder programında F0007.3 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0002.0",
+      "symbol": "SAR",
+      "direction": "CNC → PMC",
+      "description": "Spindle Speed Reached (SAR). Spindle feedback. Set to `1` when the physical spindle speed matches the S-code commanded target.",
+      "ladder_example": "PMC Ladder programında F0002.0 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0002.2",
+      "symbol": "SST",
+      "direction": "CNC → PMC",
+      "description": "Spindle Zero Speed (SST). Spindle feedback. Set to `1` when the spindle is completely stopped or below zero-speed threshold.",
+      "ladder_example": "PMC Ladder programında F0002.2 adresi olarak takip edilir."
+    },
+    {
+      "address": "F0045.0",
+      "symbol": "RST",
+      "direction": "CNC → PMC",
+      "description": "CNC Reset Status (RST). Feeds back `1` when the CNC is undergoing reset (emergency stop, manual reset button, etc.).",
+      "ladder_example": "PMC Ladder programında F0045.0 adresi olarak takip edilir."
+    }
+  ]
+}

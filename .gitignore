@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.log
+data/ui_error_log.txt
+data/*.bak
+scratch/
+.DS_Store
+Thumbs.db

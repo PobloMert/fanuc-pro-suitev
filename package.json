@@ -1,0 +1,20 @@
+{
+  "name": "fanuc-pro-suite",
+  "version": "1.0.0",
+  "description": "MTB Elektrik Bakım Yönetim Uygulaması",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox --disable-gpu-disk-cache",
+    "dev": "electron . --dev --no-sandbox --disable-gpu-disk-cache"
+  },
+  "keywords": [
+    "fanuc",
+    "cnc",
+    "pmc"
+  ],
+  "author": "MTB Breakers",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^43.0.0"
+  }
+}

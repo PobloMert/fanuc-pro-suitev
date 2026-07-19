@@ -1,0 +1,20 @@
+{
+  "backup_logs": [
+    {
+      "id": 1,
+      "tezgah_id": 1,
+      "son_yedek_tarihi": "12.01.2026",
+      "yedekleyen": "AHMET MERT ÖZER",
+      "dosya_konumu": "DNC-SERVER/BACKUPS/CNF37_SRAM_20260112.FDB",
+      "aciklama": "Yıllık periyodik bakım sonrası SRAM yedeklemesi yapıldı."
+    },
+    {
+      "id": 2,
+      "tezgah_id": 2,
+      "son_yedek_tarihi": "20.12.2025",
+      "yedekleyen": "MEHMET KILIÇ",
+      "dosya_konumu": "DNC-SERVER/BACKUPS/UNI20_SRAM_20251220.FDB",
+      "aciklama": "Eksen motoru değişimi öncesi NC parametreleri yedeklendi."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "alarms": [
+    {
+      "id": 1,
+      "address": "A0.0",
+      "code": "EX0001",
+      "title": "LUBRICATION PRESSURE FAULT",
+      "description": "Merkezi yağlama tankında kızak yağ basıncı yetersiz seviyede. Kızak aşınmasını önlemek için sistem acil duruşa geçer.",
+      "causes": [
+        "Yağ tankı filtresinin tıkanması.",
+        "Yağ seviyesinin minimum sınırın altına düşmesi.",
+        "Basınç switch'i (X8.2) geri besleme arızası."
+      ],
+      "solutions": [
+        "Yağ seviyesini kontrol edip eksikse tamamlayın.",
+        "Yağ pompası basınç göstergesini kontrol edin (en az 15 bar olmalıdır).",
+        "PMC STATUS ekranından X8.2 sinyalinin pompa çalıştığında 1 olduğunu doğrulayın."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "keep_relays": [
+    {
+      "id": "K00.0",
+      "name": "Spindle Interlock Bypass",
+      "type": "Keep Relay",
+      "description": "Fener mili kilidini devre dışı bırakır. Kurulum ve test esnasında kapı açıkken milin dönmesini sağlamak için kullanılır.",
+      "note": "İş güvenliği açısından normal çalışma modunda 0 olmalıdır."
+    },
+    {
+      "id": "K00.1",
+      "name": "Door Safety Interlock Bypass",
+      "type": "Keep Relay",
+      "description": "Kapı güvenlik anahtarı kilidini iptal eder. Kapı açıkken CNC programının çalıştırılabilmesini sağlar.",
+      "note": "Kalıphane ayarlarında parça hizalama için kullanılır."
+    },
+    {
+      "id": "K00.2",
+      "name": "Chip Conveyor Auto Start",
+      "type": "Keep Relay",
+      "description": "Döngü başlangıcında (Cycle Start) talaş konveyörünün otomatik çalışmasını etkinleştirir.",
+      "note": "1 = Otomatik başlat, 0 = Manuel kumanda panelinden başlat."
+    },
+    {
+      "id": "K00.3",
+      "name": "Coolant Pressure Warning Bypass",
+      "type": "Keep Relay",
+      "description": "Soğutma sıvısı basınç alarmı uyarısını devre dışı bırakır. Basınç anahtarı arızalandığında geçici olarak açılır.",
+      "note": "Pompa kuru çalıştırılmamalıdır."
+    },
+    {
+      "id": "K01.2",
+      "name": "Tailstock Interlock Bypass",
+      "type": "Keep Relay",
+      "description": "Karşı punta bağlantı kilidini iptal eder. Punta pimi takılı olmasa bile iş milinin dönmesine izin verir.",
+      "note": "Kısa parça işlerken açılması gerekir."
+    },
+    {
+      "id": "T001",
+      "name": "Lubrication Interval Timer",
+      "type": "Timer",
+      "description": "Otomatik kızak yağlama ünitesinin çalışma periyodunu belirler (saniye cinsinden).",
+      "note": "Varsayılan değer: 1800 saniye (30 dakika)."
+    },
+    {
+      "id": "T002",
+      "name": "Spindle Lubrication Delay",
+      "type": "Timer",
+      "description": "Fener mili rulman yağlama havası gecikme süresi.",
+      "note": "Mil durduktan sonra yağlama havasının ne kadar süreyle açık kalacağını kontrol eder."
+    },
+    {
+      "id": "T003",
+      "name": "Chip Conveyor Run Duration",
+      "type": "Timer",
+      "description": "Konveyörün periyodik modda ne kadar süre (saniye) çalışacağını ayarlar.",
+      "note": "Varsayılan değer: 300 saniye."
+    }
+  ]
+}

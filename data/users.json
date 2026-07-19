@@ -1,0 +1,7 @@
+{
+  "users": [
+    { "id": 1, "name": "Admin", "role": "admin", "pin": "1234", "color": "#3b82f6", "initials": "AD" },
+    { "id": 2, "name": "Bakım Teknisyeni", "role": "technician", "pin": "5678", "color": "#10b981", "initials": "BT" },
+    { "id": 3, "name": "Operatör", "role": "operator", "pin": "9999", "color": "#f59e0b", "initials": "OP" }
+  ]
+}

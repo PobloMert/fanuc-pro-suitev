@@ -1,0 +1,4700 @@
+{
+  "maintenances": [
+    {
+      "id": 1,
+      "tezgah_id": 1,
+      "tarih": "01-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "MAGAZİN YARIDA KALMIŞ. 2 ADET FARKLI ARIZA VERİYORDU YARIDA KALAN MAGAZİN KURTARILDI GEREKLİ AYARLARI YAPILIP TEST EDİLDİ. ARIZALI SENSÖR DEĞİŞTİRİLDİ. TÜM SİSTEM OPERATÖRLE TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 2,
+      "tezgah_id": 2,
+      "tarih": "01-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "A EKSENİNİN PARAMETRE AYARLARI TEKRARDAN YAPILDI SERVO MOTORA BİNEN YÜKE BAKILDI. SORUN GÖRÜLMEDİ İDEAL SEVİYELERDE",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 3,
+      "tezgah_id": 131,
+      "tarih": "01-04-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "KAPAK SENSÖRLERİ GÖRMÜYOR SENSÖR AYARLARI YAPILIP TESTLERİ YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 4,
+      "tezgah_id": 4,
+      "tarih": "01-04-2024",
+      "bakim_yapan": "HAYATİ KARABAYIR",
+      "aciklama": "X EKSENİ CETVELİ DÜZGÜN ÖLÇMÜYORDU. SÖKÜLÜP TEMİZLİĞİ YAPILDI. REFARANS AYARLARI YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 5,
+      "tezgah_id": 5,
+      "tarih": "01-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAHTA KISA DEVRE VARDI. BULUNDU. I/0 KARTINDA ATIK SİGORTA DEĞİŞİMİ YAPILDI. TAKIM DEĞİŞİMİ YAPARKEN YARIDA KALMIŞ. HER TAKIM DEĞİŞİMİNDE ALARMA GEÇİYORDU, YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 6,
+      "tezgah_id": 6,
+      "tarih": "01-04-2024",
+      "bakim_yapan": "HAYATİ KARABAYIR",
+      "aciklama": "VİNÇ KANTARINDA  KABLO KOPMUŞ. KOPUK KABLONUN TAMİRİ YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 7,
+      "tezgah_id": 7,
+      "tarih": "01-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH EMG' DEN ÇIKMIYORDU. GEREKLİ KONTROLLER SAĞLANDI. TEZGAH EMG'DEN ÇIKARILDI. ANAKARTTA ARZALI OLAN RÖLE YENİSİYLE DEĞİŞTİRİLDİ. HİDROLİK DEVREYE GİRMİYORDU, ARIZA TESPİT EDİLİP GÖNDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 8,
+      "tezgah_id": 1,
+      "tarih": "02-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "İÇ AYDINLATMA YANMIYOR. ELİMİZDE NİKİ PROJEKTÖR YOK SİPARİŞ EDİLDİ. GELİNCE MONTAJ YAPILACAK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 9,
+      "tezgah_id": 8,
+      "tarih": "02-04-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "VİNÇ KUMANDASI ÇALIŞMIYOR. KUMANDANIN TAMİRİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 10,
+      "tezgah_id": 9,
+      "tarih": "02-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ARABANIN HAREKETİ KABLO KANALININ PERİYODİK TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 11,
+      "tezgah_id": 10,
+      "tarih": "02-04-2024",
+      "bakim_yapan": "HAYATİ KARABAYIR-OZAN MERT TOPÇU",
+      "aciklama": "PANO İÇİ KLİMA ÜNİTESİ TEMİZLİĞİ YAPILDI, DEVREYE ALINDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 12,
+      "tezgah_id": 2,
+      "tarih": "03-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "TEZGAH EKRANINDA ALARM VAR RESET TUŞU İŞLEVSİZ KALIYORDU. GEREKLİ KONTROLLER YAPILDI. SAĞ TARAFTAKİ PİSTON KISMI KIRILMIŞ BOŞTA DURUYORDU. MEKANİKÇİLERE ARIZA İLETİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 13,
+      "tezgah_id": 11,
+      "tarih": "03-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TÜM EKSEN SÜRÜCÜLERİ FAN ALARMI VERİYORDU. SÜRÜCÜLER RESETLENDİ. GEREKLİ KONTROLLER YAPILDI. ÇALIŞMAYAN FAN GÖRÜLMEDİ. ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 14,
+      "tezgah_id": 12,
+      "tarih": "03-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "MOTOR OVERLOOD HATASI VARDI. KONTROLLER YAPILDI. HİDROLİK MOTOR TERMİĞİ ATIYOR. 45A ÇEKTİĞİ GÖRÜLDÜ POMPA KISMI AYRILDI.ÖLÇÜMLERİ YAPILDI AKIMLARI NORMAL. MEKANİKÇİLERE İLETİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 15,
+      "tezgah_id": 13,
+      "tarih": "03-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "MOTOR OVERLOOD HATASI VARDI. KONTROLLER YAPILDI. ARIZALI OLAN YARDIMCI KONTAK YENİSİYLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 16,
+      "tezgah_id": 14,
+      "tarih": "03-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "X-Y-Z EKSENLERİ YAĞ BASINÇ ALARMI VERİYOR . KONTROLLER YAPILDI. İSTENİLEN BASINCA GELMİYOR (15) BASINÇ AYARI TEKRAR YAPILDI (10) MEKANİKÇİLERLE BİRLİKTE BAKILDI ARIZA MEKANİKÇİLER TARAFINDAN BAKILACAK",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 17,
+      "tezgah_id": 1,
+      "tarih": "03-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SPİNDIL SOĞUTMA ÜNİTESİ ALARMA GEÇMİŞ. KONTROLLERİ YAPILDI. ARIZA GİDERİLDİ.SOĞUTMA ÜNİTESİNİN TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 18,
+      "tezgah_id": 15,
+      "tarih": "03-04-2024",
+      "bakim_yapan": "HAYATİ KARABAYIR",
+      "aciklama": "VİNÇ KANCASI KAÇIRDIĞI İÇİN FREN AYARI YAPILDI.MALZEME ÇIKIŞ KAPISI KİTLEMEDİĞİ İÇİN PİSTON APARATI AYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 19,
+      "tezgah_id": 16,
+      "tarih": "04-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "NEASURE FORWARD ALARMI VARDI. ARIZALI SENSÖR DEĞİŞİMİ YAPILDI. HAVA KAÇAKLARI MEKANİKÇİ ÇAKMAKÇIYLA GİDERİLDİ. PİSTON ARIZALIYDI, SÖKÜLÜP ARIZALI GİDERİLDİ. MESURE  AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 20,
+      "tezgah_id": 17,
+      "tarih": "04-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "VİNÇ KABLO TAŞIMA ARABASI YERİNDEN ÇIKMIŞ. YERİNE TAKILDI. TESTLERİ YAPILIP İŞLETMEYE TESLİM EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 21,
+      "tezgah_id": 12,
+      "tarih": "04-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "MEKANİKÇİLER TARAFINDAN HİDROLİK POMPA MOTORUNUN BAĞLANTILARI YAPILDI. ATC VE SPİNDIL REFERANSLARI KONTROL EDİLDİ. TAKIM DEĞİŞTİRMEDE SORUN GÖRÜLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 22,
+      "tezgah_id": 15,
+      "tarih": "04-04-2024",
+      "bakim_yapan": "HAYATİ KARABAYIR",
+      "aciklama": "ÇIKIŞ KAPISI  KİLİT SİVİCİ ARIZALI OLDUĞU İÇİN YENİSİYLE DEĞİŞTİRİLDİ. NORMAL ÇALIŞIYOR",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 23,
+      "tezgah_id": 20,
+      "tarih": "04-04-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAHTA ENEJİ VAR AYNA HAREKET ETMİYOR GEREKLİ KONTROLLER YAPILDI. RULMAN DAĞILMIŞ. MEKANİKÇİLERE ARIZA İLETİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 24,
+      "tezgah_id": 19,
+      "tarih": "04-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "10 TONLUK VİNÇ ÇARPMIŞLAR KABLO ARABASI TAŞIMA RAYLARI YAMULUP DEFORME OLMUŞ DEĞİŞİMLERİ YAPILIP TESTLERİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 25,
+      "tezgah_id": 25,
+      "tarih": "04-04-2024",
+      "bakim_yapan": "HAYATİ KARABAYIR",
+      "aciklama": "FİLTRE MOTORU ÇALIŞMIYOR ATIK SİGORTA GEREKLİ KONTROLLER SONRASINDA TEKRAR KURULDU.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 26,
+      "tezgah_id": 1,
+      "tarih": "04-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "GECELERİ TEZGAH İÇİ KARANLIK OLDUĞUNDAN GEÇİCİ AYDINLATMA YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 27,
+      "tezgah_id": 131,
+      "tarih": "05-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "REDÜKTÖR BAĞLANTI AYAKLARI KIRILMIŞ MEKANİKÇİLER TARAFINDAN TAMİRİ YAPILDI MOTOR YÖNÜ DEĞİŞTİRİLDİ KAPAK AÇMA KAPAMA SENSÖR AYARI YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 28,
+      "tezgah_id": 129,
+      "tarih": "05-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "MEKANİKÇİLER TARAFINDAN TOPLANAN KUYU KAPAĞININ ELEKTRİK BAĞLANTILARI YAPILDI KAPAK AÇMA KAPAMA SENSÖR AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 29,
+      "tezgah_id": 23,
+      "tarih": "05-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ELEKTRİK KONTROLLERİ YAPILDI. ARIZA MEKANİKÇİLERE İLETİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 30,
+      "tezgah_id": 24,
+      "tarih": "06-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "PUNTA ÇALIŞMIYORDU YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 31,
+      "tezgah_id": 7,
+      "tarih": "06-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "YATAY FREZE, İÇTEN SOĞUTMA AÇILDIĞINDA TERMİK ATIYORDU. TAMİRİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 32,
+      "tezgah_id": 26,
+      "tarih": "06-04-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "ÇALIŞMIYORDU TAMİRİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 33,
+      "tezgah_id": 132,
+      "tarih": "06-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "PANO SOĞUTMA ÜNİTESİ SÖKÜLÜP TEMİZLİĞİ YAPILDI. MONTAJI YAPILIP BAĞLANTILARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 34,
+      "tezgah_id": 131,
+      "tarih": "06-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ELEKTİRİK PANO SOĞUTMA ÜNİTESİ SÖKÜLÜP TEMİZLİĞİ YAPILDI. MONTAJI YAPILIP BAĞLANTILARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 35,
+      "tezgah_id": 119,
+      "tarih": "08-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TAŞLAMA TEZGAHI ÇALIŞMIYORDU. TAMİRİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 36,
+      "tezgah_id": 12,
+      "tarih": "08-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ATC KOLU TAKILI KALMIŞTI.TEZGAH VALF GRUPLARINDAN ATC KOLU VALFTE HOME POZİSYONUNA GETİRİLDİ. MAGAZİN KARIŞMIŞ DÜZELTİLDİ. TEZGAH TAKIM DEĞİŞTİRME İŞLEMİ BAŞARI İLE TAMAMLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 37,
+      "tezgah_id": 29,
+      "tarih": "08-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAHIN PANO TEMİZLİĞİ VE PANO İÇİ KLİMA TEMİZLİĞİ YAPILDI. ARIZALI FANLAR DEĞİŞTİRİLDİ TEZGAH BAKIM SONRASI TÜM FONKSİYONLARI DENENDİ, ÇALIŞMAYAN AKSAM BULUNMAMAKTADIR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 38,
+      "tezgah_id": 9,
+      "tarih": "08-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KABLO KANALI KIRILMIŞ KIRILAN KANAL YERİNE TAKILDI. ARABA HAREKET ETTİRİLDİ KANAL ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 39,
+      "tezgah_id": 30,
+      "tarih": "13-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAHIN PANO TEMİZLİĞİ VE ELEKTRİK KONTROLLERİ YAPILDI TEZGAH ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 40,
+      "tezgah_id": 30,
+      "tarih": "13-04-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "KONVEYÖR MOTORU ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 41,
+      "tezgah_id": 24,
+      "tarih": "15-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH PUNTA BASMIYOR. ARIZALI OLAN TAİLSTİCK SİVİCİ YENİSİ İLE DEĞİŞTİRİLDİ. PATLAK OLAN TEZGAH İÇİ AYDINLATMA YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 42,
+      "tezgah_id": 9,
+      "tarih": "15-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SAĞ ÇATAL SENSÖRÜNDE DEFARMASYON VARDI. KONTROLLER YAPILDI SENSÖR ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 43,
+      "tezgah_id": 31,
+      "tarih": "15-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SAĞ ÇATAL SENSÖRÜNDE DEFRMASYON VARDI. KONTROLLERİ YAPILDI SENSÖR ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 44,
+      "tezgah_id": 15,
+      "tarih": "15-04-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "KUMLAMA ASKI POZİSYON HATASI VERİYORDU. KONTROL VE TESTLERİ YAPILDI ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 45,
+      "tezgah_id": 9,
+      "tarih": "15-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "PERİYODİK TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 46,
+      "tezgah_id": 32,
+      "tarih": "15-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "PALET DEĞİŞTİRME PİSTON SENSÖRÜ GÖRMÜYORDU AYAR VE TEMİZLİĞİ YAPILDI. MAKİNA DENENDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 47,
+      "tezgah_id": 129,
+      "tarih": "16-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ÜST KAPAK SENSÖRÜNÜN GÖRMEDİĞİ SÖYLENDİ KONTROLLER YAPILDI SORUN GÖRÜLMEDİ SENSÖRLER ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 48,
+      "tezgah_id": 33,
+      "tarih": "16-04-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAHIN MAGAZİNİ ÇALIŞMIYORDU, ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 49,
+      "tezgah_id": 4,
+      "tarih": "15-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "TEZGAH BUSBAR ÇIKIŞ KUTUSU TAKILIP ELEKTRİK BESLEME KABLOSUNUN MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 50,
+      "tezgah_id": 34,
+      "tarih": "17-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "KABLO TAVASI VE BUSBAR ÇIKIŞ KUTUSU MONTAJI YAPILDI. BESLEME KABLOSU ÇEKİLİP REKLAJ VE ELEKTRİK BAĞLANTILARI YAPILDI YAĞ SOĞUTUCU ÜNİTESİ ELEKTRİK BAĞLANTILARI YAPILDI TEZGAH ENERJİ VERİLMEYE HAZIR HALE GELDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 51,
+      "tezgah_id": 35,
+      "tarih": "17-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "İÇ AYDINLATMA LANBASI PATLAMIŞ YENİSİ İLE DEĞİŞTİRİLDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 52,
+      "tezgah_id": 36,
+      "tarih": "18-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TEZGAH ÇALIŞMIYORDU BAKIMLARI YAPILDI ŞUAN ÇALIŞIR VAZİYETTE.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 53,
+      "tezgah_id": 37,
+      "tarih": "18-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-OZAN MERT TOPÇU",
+      "aciklama": "KAPAK SİVİCİ KIRILMIŞ,YENİ SİVİÇ UYARLANIP BAĞLANTILARI YAPILDI,SİVİÇ AYARI YAPILDI KAPAK ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 54,
+      "tezgah_id": 15,
+      "tarih": "18-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KAPAKLARI AÇILMIYORDU,KONTROLLERİ YAPILDI,ÇALIŞIYOR TAKİP EDİLECEK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 55,
+      "tezgah_id": 33,
+      "tarih": "19-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TEZGAHIN EKRAN TUŞLARI ÇALIŞMIYORDU,ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 56,
+      "tezgah_id": 38,
+      "tarih": "19-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TEZGAH \"Z\" EKSEN REFERANSI KAÇIKTI \"+Z\" LİMİT AYARI YÜKSELTİLDİ \"Z\" EKSEN İSTENİLEN NOKTAYA REFERANS AYARI YAPILDI. TEZGAH DENENDİ,ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 57,
+      "tezgah_id": 33,
+      "tarih": "19-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TEZGAHIN MAGAZİNİ TAKILI KALMIŞTI,(UZUN TAKIM BAĞLANTISINDAN DOLAYI)SIKIŞAN TAKIM YERİNDEN ÇIKARILDI. MAGAZİN MANUELE ÇEVRİLİP YAMULAN SAC DÜZELTİLDİ,TEZGAH TEST EDİLDİ,ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 58,
+      "tezgah_id": 32,
+      "tarih": "19-04-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "GÖZLEMLER SONUCU PALET DEĞİŞTİRME KOLU HER ZAMAN AYNI NOKTADA TAKILI KALDIĞI GÖRÜLDÜ,PLC EKRANINDA O KONUMDAKİ SENSÖRLER TESPİT EDİLDİ İŞLEMLER SONUCUNDA PALET ALTINDAKİ CLAMP,UNCLAP SİVİÇ GÖRMEDİĞİ GÖRÜLDÜ AYARLARI YAPILDI. MAKİNA DENENDİ,ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 59,
+      "tezgah_id": 4,
+      "tarih": "20-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TEZGAHA SİPARİŞ EDİLEN CETVEL GELDİ. ESKİ CETVEL ŞUAN ÇALIŞIR DURUMDA. SÖKÜLÜP TEMİZLİĞİ YAPILDI.YENİ CETVEL TAŞLAMA TEZGAHI İÇİN YEDEĞE ALINDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 60,
+      "tezgah_id": 39,
+      "tarih": "20-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TEZGAHIN VİNÇ SİGORTASI ATMIŞ,YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 61,
+      "tezgah_id": 40,
+      "tarih": "20-04-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "YATAY FREZE, HİDROLİK SIKMA ÇALIŞMIYORDU. ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 62,
+      "tezgah_id": 7,
+      "tarih": "20-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "YATAY FREZE KONTROL PANELİNDEKİ VE EL ÇARKINDAKİ ACİL STOP ÇALIŞMIYORDU. TAMİR EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 63,
+      "tezgah_id": 41,
+      "tarih": "20-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ- AHMET MERT ÖZER",
+      "aciklama": "YATAY FREZE PALET DEĞİŞTİRME YARIDA KALMIŞ MANUEL İNTERLOCK HATASI VERİYORDU. PROJEDEN PALET İŞLEM VALFLERİ TESPİT EDİLİP. MANUEL OLARAK PALET KONUMU HOME POZİSYONUNA GETİRİLDİ.\"Z\" EKSEN KAÇIK OLDUĞU İÇİN ATC KOLU DA TAKILI KALMIŞ. ATC KOLU MANUEL DÜZELTİLİP Z EKSEN REFERANS VE TAKIM DEĞİŞTİRME REFERANS AYARLARI YAPILDI.MAKİNA DENENDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 64,
+      "tezgah_id": 16,
+      "tarih": "22-04-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TABLA İLERLEMİYOR. ARIZALIYDI ARIZA GİDERİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 65,
+      "tezgah_id": 42,
+      "tarih": "22-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TESTERENİN LAMBASI YANMIYORDU. YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 66,
+      "tezgah_id": 129,
+      "tarih": "22-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ELEKTRİK PANO SOĞUTMA ÜNİTESİ SÖKÜLÜP TEMİZLİĞİ YAPILDI. GERİ YERİNE  MONTAJI YAPILIP BAĞLANTILARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 67,
+      "tezgah_id": 132,
+      "tarih": "22-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ELEKTRİK PANO SOĞUTMA ÜNİTESİ SÖKÜLÜP TEMİZLİĞİ YAPILDI. GERİ MONTAJI YAPILIP BAĞLANTALARI YAPILDI. ÇALIŞIYOR",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 68,
+      "tezgah_id": 133,
+      "tarih": "23-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "ELEKTRİK PANO SOĞUTMA ÜNİTESİ SÖKÜLÜP TEMİZLİĞİ YAPILDI. GERİ YERİNE MONTAJ YAPILDI. BAĞLANTILARI YAPILDI. ÇALIŞIR DURUMDA",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 69,
+      "tezgah_id": 44,
+      "tarih": "23-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "MORI SEIKI NT4300 5 EKSENLİ TEZGAHIN 10 ADET EKSEN PİLİ BİTMİŞ ELİMİZDE OLMADIĞI İÇİN ACİL OLARAK TEMİN EDİLDİ YENİSİ İLE DEĞİŞTİRİLDİ TEZGAH ÜZERİNDE PİL TARİHİ TEZGAHIN BAKIM SAYFASINA KAYDEDİLDİ X-Y-Z-C-B EKSENLERİN REFERANS AYARI YAPTIRILDI. ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 70,
+      "tezgah_id": 131,
+      "tarih": "23-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "ELEKTRİK PANO SOĞUTMA ÜNİTESİ SÖKÜLÜP TEMİZLİĞİ YAPILDI. GERİ YERİNE MONTAJI YAPILIP BAĞLANTILARI YAPILDI ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 71,
+      "tezgah_id": 9,
+      "tarih": "24-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ- AHMET MERT ÖZER",
+      "aciklama": "KABLO KANALI KOPMUŞTU. ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 72,
+      "tezgah_id": 13,
+      "tarih": "24-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAH TAKIM FIRLATIYORDU. ATC KOLU ARIZALI  OLDUĞU TESPİT EDİLDİ. ATC KOLU SÖKÜLDÜ HOME POZİSYONUNA GETİRİLDİ ATC KOLU TAMİR EDİLENE KADAR MANUEL TAKIM DEĞİŞTİRİLME YAPILACAK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 73,
+      "tezgah_id": 41,
+      "tarih": "24-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH REFERANSA GİTMİYOR. KİTLENEN  REFERANSLAR KURTARILDI. ATC MANUEL CYCLE TAMAMLANDI. OPERATÖRLE TEST EDİLDİ. ARIZA GİDERİLDİ TAKİP EDİLECEK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 74,
+      "tezgah_id": 45,
+      "tarih": "24-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "YATAY FREZE, PALET DEĞİŞTİRME TUŞU AKTİF ÇALIŞIYORDU. ARIZALI BUTON YENİSİYLE DEĞİŞTİRİLDİ. OPERATÖR İLE BİRLİKTE TEST EDİLDİ. ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 75,
+      "tezgah_id": 40,
+      "tarih": "24-04-2024",
+      "bakim_yapan": "HAYATİ KARABAYIR",
+      "aciklama": "TEZGAHIN ÜZERİNDEKİ VİNCİN KÖPRÜ HIZLI OLDUĞUNDAN TONAJLI YÜKLERDE SALLANTI YAPIYORDU. KÖPRÜNÜN HIZI DÜŞÜRLDÜ. OPERATÖRÜN İSTEĞİ ÜZERE.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 76,
+      "tezgah_id": 13,
+      "tarih": "24-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAHIN DIŞTAN SOĞUTMASI HAVA YAPMIŞTI. DIŞTAN SOĞUTMA MOTORU ÇALIŞMIYORDU. YARDIMCI KONTAĞIN BİRİ GEÇİRMİYORDU. TAMİR EDİLDİ. ÇALIŞIR DURUMDA.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 77,
+      "tezgah_id": 46,
+      "tarih": "25-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAH İLERLEME MOTORU ÇALIŞMIYORDU. ARIZA GİDERİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 78,
+      "tezgah_id": 47,
+      "tarih": "25-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "VİNÇ SAĞA SOLA HAREKET ETMİYORDU. ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 79,
+      "tezgah_id": 48,
+      "tarih": "25-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "YCM BORVENK ALERM VERİYORDU. SENSÖR YERİNDEN ÇIKMIŞ. TAKILIP AYARLARI YAPILDI. OPERATÖRLE BİRLİKTE TEST EDİLDİ. ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 80,
+      "tezgah_id": 49,
+      "tarih": "25-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ÇALIŞMIYORDU. TAMİRİ YAPILDI ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 81,
+      "tezgah_id": 50,
+      "tarih": "25-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "İPSEN ENDOGAZ 2 PANO KLİMASI HATA VERİYORDU. ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 82,
+      "tezgah_id": 46,
+      "tarih": "25-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "İLERLEME MOTORU RULMAN KAPAKLARINDA BOŞLUK VARDI. MOTOR ZORLANIYORDU. SÖKÜLÜP ATOLYEYE BAKIMA ALINDI .",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 83,
+      "tezgah_id": 51,
+      "tarih": "25-04-2024",
+      "bakim_yapan": "VİNÇ ARZILAYDI. ARZA GİDERİLDİ.",
+      "aciklama": "MEHMET KILIÇ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 84,
+      "tezgah_id": 52,
+      "tarih": "25-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ELEKTRİK PANO SOĞUTMA ÜNİTESİ SÖKÜLÜP TEMİZLİĞİ YAPILDI. YERİNE MONTOJ YAPILIP BAĞLANTILARI YAPILDI. . ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 85,
+      "tezgah_id": 53,
+      "tarih": "25-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ELEKTRİK PANO SOĞUTMA ÜNİTESİ SÖKÜLÜP TEMİZLİĞİ YAPILDI. YERİNE MONTAJ YAPILIP BAĞLANTILARI YAPILDI. ÇALIŞIYOLAR",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 86,
+      "tezgah_id": 38,
+      "tarih": "26-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TAŞLAMA TEZGAHI EL ÇARKI GÜVENLİK BUTONU ZOR BASIYORDU DİĞER GÜVENLİK BUTONU İLE YER DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 87,
+      "tezgah_id": 54,
+      "tarih": "26-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KUMANDA DESTEK KABLOSU KOPMUŞ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 88,
+      "tezgah_id": 55,
+      "tarih": "27-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "PISTON SÖKÜLDÜ VİTES GEÇİŞLERİ AYARLANDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 89,
+      "tezgah_id": 9,
+      "tarih": "29-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SENSÖR DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 90,
+      "tezgah_id": 56,
+      "tarih": "29-04-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "LAMBA DEĞİŞTİRİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 91,
+      "tezgah_id": 57,
+      "tarih": "29-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "LAMBA DEĞİŞTİRİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 92,
+      "tezgah_id": 12,
+      "tarih": "30-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TUŞ DEĞİŞTİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 93,
+      "tezgah_id": 12,
+      "tarih": "30-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "X VE Y EXENİ TANITILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 94,
+      "tezgah_id": 23,
+      "tarih": "30-04-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SÜRÜCÜ MONTAJI YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 95,
+      "tezgah_id": 58,
+      "tarih": "30-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "C EXCN MOTORU OLMADIĞI İÇİN SİPARİŞİ VERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 96,
+      "tezgah_id": 59,
+      "tarih": "02-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ACİL STOP TAKILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 97,
+      "tezgah_id": 60,
+      "tarih": "02-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KONBİNASYON PANO MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 98,
+      "tezgah_id": 61,
+      "tarih": "03-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "PUNTA KİLİTLİ SWİCİ ARIZALI OLDUĞUNDAN YENİSİYLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 99,
+      "tezgah_id": 35,
+      "tarih": "03-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "AYNA KAPAMA AÇMA BOBİN SOKETLERİ DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 100,
+      "tezgah_id": 62,
+      "tarih": "04-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "VİNÇ KUMANDA ONARILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 101,
+      "tezgah_id": 5,
+      "tarih": "06-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ARA YATAK PEDALI ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 102,
+      "tezgah_id": 40,
+      "tarih": "06-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "VİNÇ ARABASININ SÜRÜCÜ MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 103,
+      "tezgah_id": 63,
+      "tarih": "07-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ATAN TERMİK KURULDU",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 104,
+      "tezgah_id": 64,
+      "tarih": "07-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAH PANO BAKIMLARI YAPILDI. PİLLERİ DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 105,
+      "tezgah_id": 13,
+      "tarih": "08-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAHTA ALERM VARDI ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 106,
+      "tezgah_id": 65,
+      "tarih": "08-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "MEKANİKÇİLER İÇİN CETVEL SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 107,
+      "tezgah_id": 66,
+      "tarih": "08-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "BUTON DEĞİŞTİRİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 108,
+      "tezgah_id": 37,
+      "tarih": "08-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ATIK SİGORTA KURULDU",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 109,
+      "tezgah_id": 67,
+      "tarih": "08-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KAYNAK MAKİNASI ARZALIYDI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 110,
+      "tezgah_id": 12,
+      "tarih": "08-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ATC SENSÖR AYARI YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 111,
+      "tezgah_id": 68,
+      "tarih": "09-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "HİDROLİK ARZASI GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 112,
+      "tezgah_id": 69,
+      "tarih": "09-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ARIZA GİDERİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 113,
+      "tezgah_id": 70,
+      "tarih": "09-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAHTA ALARM VARDI GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 114,
+      "tezgah_id": 16,
+      "tarih": "09-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAHTA ALARM VARDI GİDERİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 115,
+      "tezgah_id": 71,
+      "tarih": "09-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ATIK SİGORTA KALDIRILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 116,
+      "tezgah_id": 72,
+      "tarih": "10-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH REFERANS SWİCHİ AYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 117,
+      "tezgah_id": 73,
+      "tarih": "10-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ARIZALI FANLAR DEĞİŞTİRİLDİ KLİMA TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 118,
+      "tezgah_id": 68,
+      "tarih": "10-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ARIZALI FANLAR DEĞİŞTİRİLDİ TRAFO TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 119,
+      "tezgah_id": 33,
+      "tarih": "11-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KAVRAMA GRUBU YERİNE TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 120,
+      "tezgah_id": 73,
+      "tarih": "13-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KONVEYÖR SWİCİ DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 121,
+      "tezgah_id": 35,
+      "tarih": "14-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "AYNA TAMİRİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 122,
+      "tezgah_id": 7,
+      "tarih": "15-05-2024",
+      "bakim_yapan": "MEHMET AKKURT",
+      "aciklama": "HİDROLİK VE SPİNDAL KISMINA YAĞ EKLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 123,
+      "tezgah_id": 74,
+      "tarih": "15-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SIKIŞAN KONVEYÖR TEMİZLİNİP ÇALIŞMASI SAĞLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 124,
+      "tezgah_id": 75,
+      "tarih": "15-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ALARM VERİYORMUŞ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 125,
+      "tezgah_id": 76,
+      "tarih": "17-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "MENEVİŞ 7 KLİMA SCKETİ ÇIKMIŞ YERİNE TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 126,
+      "tezgah_id": 32,
+      "tarih": "17-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ŞANZIMAN VİTES GEÇİŞİNE AYAR YAPIDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 127,
+      "tezgah_id": 77,
+      "tarih": "20-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SU SEBİLİ SU KAÇIRDIĞI İÇİN SİGORTA ATIYOR SEBİLİN. ARIZALI OLDUĞU BİLDİRİLDİ SİGORTA KURULDU.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 128,
+      "tezgah_id": 74,
+      "tarih": "20-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "EXEN SÜRÜCÜ RADYÖTÖRLERİ TEMİZLİĞİ YAPILDI FANLAR ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 129,
+      "tezgah_id": 42,
+      "tarih": "20-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KAPI SWİCİ YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 130,
+      "tezgah_id": 78,
+      "tarih": "20-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "DEMİR TOZU NEDENİ İLE SİGORTA ATMIŞ DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 131,
+      "tezgah_id": 79,
+      "tarih": "20-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ARIZALI SENSÖR KABLOSU İLE DEĞİŞTİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 132,
+      "tezgah_id": 80,
+      "tarih": "21-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAHLARA KAPI SWİCİ TAKILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 133,
+      "tezgah_id": 81,
+      "tarih": "21-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAHLARA KAPI SWİCİ TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 134,
+      "tezgah_id": 82,
+      "tarih": "21-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAHA KAPI SWİCİ TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 135,
+      "tezgah_id": 83,
+      "tarih": "21-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAHA KAPI SWİCİ TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 136,
+      "tezgah_id": 4,
+      "tarih": "23-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "MANYETİK MOTOR(SIYIRICI) ÇALIŞMIYOR DUMAN ATMIŞ YEDEK MOTOR TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 137,
+      "tezgah_id": 84,
+      "tarih": "23-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "HİDROLİK MOTOR ISINIYORDU PERVORESİ TOZ BALÇIK BAĞLANMIŞ SÖKÜLÜP TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 138,
+      "tezgah_id": 4,
+      "tarih": "23-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SÖKÜLEN SIYIRICI MOTOR BAKIMLARI YAPILDI DENENDİ ÇALIŞIYOR",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 139,
+      "tezgah_id": 85,
+      "tarih": "23-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "HİDROLİK MOTOR SOĞUTMA  İÇİN KABLO ÇEKİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 140,
+      "tezgah_id": 74,
+      "tarih": "23-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "PİL ALARMI VERİYOR SÜRÜCÜ PİLİ DEĞİŞTİRİLDİ AYARLARI SETLENDİ. Z X SPİDLE GÖRÜCÜ PİLLERİ 4 ADET ALACAK ŞEKİLDE DEĞİŞTİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 141,
+      "tezgah_id": 74,
+      "tarih": "24-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH PİL ALARMI VERİYORDU PİL DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 142,
+      "tezgah_id": 41,
+      "tarih": "24-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAH ALARM VERİYOR YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 143,
+      "tezgah_id": 86,
+      "tarih": "25-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SÜRÜCÜ ALARM VARDI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 144,
+      "tezgah_id": 87,
+      "tarih": "25-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "VİNÇ ÇALIŞMIYOR YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 145,
+      "tezgah_id": 70,
+      "tarih": "27-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ALARM VERİYOR YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 146,
+      "tezgah_id": 88,
+      "tarih": "27-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ÇALIŞMIYOR KONTROLLERİ YAPILIP ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 147,
+      "tezgah_id": 89,
+      "tarih": "27-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SWİC YERİNDEN ÇIKMIŞ. TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 148,
+      "tezgah_id": 68,
+      "tarih": "28-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "BASINÇ ALARMI VERİYOR YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 149,
+      "tezgah_id": 39,
+      "tarih": "28-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI SWİCİ AKTİF HALE GETİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 150,
+      "tezgah_id": 70,
+      "tarih": "28-04-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SWİTCH AYARI YAPIDI ALARM GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 151,
+      "tezgah_id": 90,
+      "tarih": "28-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "EKRAN TUŞ PANELLERİ DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 152,
+      "tezgah_id": 39,
+      "tarih": "29-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TAKIM UNCHLAMP SWİCHİ  ARIZALIYDI YENİSİ İLE DEĞİŞTİRİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 153,
+      "tezgah_id": 73,
+      "tarih": "29-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAH PARÇA BEKLEDİĞİ İÇİN ÇALIŞMIYORDU. ÇALIŞABİLMESİ İÇİN ATC KAPI SWİCİ KÖRLENDİ PARÇA GELİNCE DÜZELTİLECEK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 154,
+      "tezgah_id": 90,
+      "tarih": "29-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI GÜVENLİK SWİCHİ TAKILDI BAĞLANTI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 155,
+      "tezgah_id": 119,
+      "tarih": "29-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI GÜVENLİK SWİCHİ TAKILDI BAĞLANTI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 156,
+      "tezgah_id": 4,
+      "tarih": "29-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI GÜVENLİK SWİCHİ TAKILDI BAĞLANTI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 157,
+      "tezgah_id": 91,
+      "tarih": "29-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI GÜVENLİK SWİCHİ TAKILDI BAĞLANTI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 158,
+      "tezgah_id": 119,
+      "tarih": "30-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH MAL İŞLERKEN STOP GEÇİRYOR SWİCH KABLOSU TEMASIZLIK YAPIYOR  2 ADET SWİC KABLOSU DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 159,
+      "tezgah_id": 92,
+      "tarih": "30-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "UZAKTAN KUMANDA TAKILDI ÇALIŞIYOR",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 160,
+      "tezgah_id": 39,
+      "tarih": "30-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TAKIM UNCLAMP SWİCH ARIZALIYDI. YENİSİYLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 161,
+      "tezgah_id": 119,
+      "tarih": "30-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KAPI GÜVENLİK SWİCH YOKTU YENİ SWİCH AYARLANIP BAĞLANTILARI YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 162,
+      "tezgah_id": 4,
+      "tarih": "30-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI GÜVENLİK SWİCH YOKTU YENİ SWİCH AYARLANIP BAĞLANTILARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 163,
+      "tezgah_id": 93,
+      "tarih": "30-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH İKAZ LAMBASININ YEŞİLİ YANMIYORDU YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 164,
+      "tezgah_id": 9,
+      "tarih": "31-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ÇATAL SENSÖRÜ YAMULMUŞ YENİSİYLE DEĞİŞTİRİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 165,
+      "tezgah_id": 91,
+      "tarih": "31-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI GÜVENLİK SWİTCHLERİ YOKTU YENİ TAKILIP KABLO ÇEKİLDİ. BAĞLANTILARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 166,
+      "tezgah_id": 94,
+      "tarih": "31-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KAPI GÜVENLİK SWİTCHLERİ YOKTU YENİ TAKILIP KABLO ÇEKİLDİ. BAĞLANTILARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 167,
+      "tezgah_id": 95,
+      "tarih": "31-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KAPI GÜVENLİK SWİTCHLERİ YOKTU YENİ TAKILIP KABLO ÇEKİLDİ. BAĞLANTILARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 168,
+      "tezgah_id": 96,
+      "tarih": "31-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI GÜVENLİK SWİTCHLERİ YOKTU YENİ TAKILIP KABLO ÇEKİLDİ. BAĞLANTILARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 169,
+      "tezgah_id": 97,
+      "tarih": "31-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KAPI GÜVENLİK SWİTCHLERİ YOKTU YENİ TAKILIP KABLO ÇEKİLDİ. BAĞLANTILARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 170,
+      "tezgah_id": 98,
+      "tarih": "31-05-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KAPI GÜVENLİK SWİTCHLERİ YOKTU YENİ TAKILIP KABLO ÇEKİLDİ. BAĞLANTILARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 171,
+      "tezgah_id": 99,
+      "tarih": "31-05-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI GÜVENLİK SWİTCHLERİ YOKTU YENİ TAKILIP KABLO ÇEKİLDİ. BAĞLANTILARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 172,
+      "tezgah_id": 72,
+      "tarih": "31-05-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KAPI GÜVENLİK SWİTCHLERİ YOKTU YENİ TAKILIP KABLO ÇEKİLDİ. BAĞLANTILARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 173,
+      "tezgah_id": 74,
+      "tarih": "02-06-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAH ALARM VERİYOR. ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 174,
+      "tezgah_id": 100,
+      "tarih": "02-06-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ARIZA GİDERİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 175,
+      "tezgah_id": 101,
+      "tarih": "03-06-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "FAN ALARIMI VARDI. ARIZALI GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 176,
+      "tezgah_id": 9,
+      "tarih": "03-06-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ARABA HAREKET ETMİYORDU BARİYER TAMPONU ARIZALIYDI SÖKÜLÜP KÜRLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 177,
+      "tezgah_id": 23,
+      "tarih": "04-06-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ARIZA GİDERİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 178,
+      "tezgah_id": 83,
+      "tarih": "04-06-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ARIZALI TUŞ YENİSİYLE DEĞİŞTİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 179,
+      "tezgah_id": 102,
+      "tarih": "04-06-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ELEKTRİK ARIZASI GİDERİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 180,
+      "tezgah_id": 103,
+      "tarih": "05-06-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TRAFO ISINIYOR FAN MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 181,
+      "tezgah_id": 104,
+      "tarih": "05-06-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ARIZASI GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 182,
+      "tezgah_id": 91,
+      "tarih": "05-06-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "BİLEME ÇALIŞMIYOR. ARIZALI SENSÖR YENİSİYLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 183,
+      "tezgah_id": 73,
+      "tarih": "05-06-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KONVEYER ZİNCİR KOPTU BİLGİSİ VEREN SENSÖR ARIZALIYDI. DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 184,
+      "tezgah_id": 53,
+      "tarih": "06-06-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ISITICI SİGORTASI ATIYOR. 3 ADET REZİSTANS  DEĞİŞİMİ YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 185,
+      "tezgah_id": 81,
+      "tarih": "06-06-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "RETERANS AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 186,
+      "tezgah_id": 23,
+      "tarih": "07-06-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ÇALIŞMIYOR ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 187,
+      "tezgah_id": 66,
+      "tarih": "10-06-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAYNAK MAKİNASININ ARIZALI OLAN AÇMA KAPAMA TUŞU DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 188,
+      "tezgah_id": 73,
+      "tarih": "10-06-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "MOTOR SAĞLAM SENSÖR DEĞİŞTİRİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 189,
+      "tezgah_id": 105,
+      "tarih": "11-06-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "2' NOLU TORNA TEZGAHINA Z VE X EXLERİNE DİJİTAL CETVEL UYARLANDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 190,
+      "tezgah_id": 105,
+      "tarih": "12-06-2024",
+      "bakim_yapan": "AHMET  MERT ÖZER",
+      "aciklama": "YENİ TAKILAN DİJİTAL İÇİN BESLEME KABLOSU ÇEKİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 191,
+      "tezgah_id": 31,
+      "tarih": "12-06-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ISITICI  KONTAKTÖRÜ DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 192,
+      "tezgah_id": 73,
+      "tarih": "18-06-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "EMG KONTAĞI YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 193,
+      "tezgah_id": 41,
+      "tarih": "18-06-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "SPİNDLE SÜRÜCÜSÜ ARIZAYA GEÇMİŞ KONTROLLERİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 194,
+      "tezgah_id": 119,
+      "tarih": "08-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAH İLERLEME YAPMIYORDU SİVİÇ KABLOSU GEVŞEMİŞ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 195,
+      "tezgah_id": 39,
+      "tarih": "08-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SWİCH DEĞİŞMİ YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 196,
+      "tezgah_id": 106,
+      "tarih": "09-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ÇARPIŞMA SENSÖRÜ KİRDEN DOLAYI GÖRMÜYOR  CAMI TEMİZLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 197,
+      "tezgah_id": 82,
+      "tarih": "09-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "X VE Z EKSEN AYARLARI YAPILDI TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 198,
+      "tezgah_id": 39,
+      "tarih": "09-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAHIN TAKIM ALMA BIRAKMA TUŞU ARIZALI. DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 199,
+      "tezgah_id": 107,
+      "tarih": "10-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "EL ÇARKI DÖNERKEN SIKIŞMA YAPIYORDU DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 200,
+      "tezgah_id": 108,
+      "tarih": "08-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ARIZA TESPİT EDİLİP ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 201,
+      "tezgah_id": 66,
+      "tarih": "10-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ÇALIŞMASINA ENGEL Bİ DURUM YOK RESETLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 202,
+      "tezgah_id": 109,
+      "tarih": "11-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TANK TEMİZLİĞİ İÇİN ELEKTİRİK BAĞLANTILARI SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 203,
+      "tezgah_id": 45,
+      "tarih": "11-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "SARIMDAN GELEN HELEZYON MOTORUNUN ELEKTİRİK BAĞLANTISI YAPILDI. AKIMLAR ÖLÇÜLDÜ DEVREYE ALINDI ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 204,
+      "tezgah_id": 110,
+      "tarih": "11-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAHIN X VE Y EKSEN REFERANS AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 205,
+      "tezgah_id": 45,
+      "tarih": "12-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "EKSEN PİLİ DEĞİŞTİRİLDİ EKSEN REFERANS AYARLANIP TESLİM EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 206,
+      "tezgah_id": 100,
+      "tarih": "16-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KABLO TAŞIYICI ARABASI DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 207,
+      "tezgah_id": 111,
+      "tarih": "17-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "YIRTILAN KABLONUN İZOLESİ ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 208,
+      "tezgah_id": 45,
+      "tarih": "17-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "EL ÇARKI KABLOSU ONARILDI. KONVEYÖR MOTORU YANMIŞ MEKANİKÇİLER MOTORU ALABİLMESİ İÇİN ELEKTİRİK BAĞLANTILARI SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 209,
+      "tezgah_id": 91,
+      "tarih": "18-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "MEKANİKÇİLERİN ÇALIŞABİLMESİ İÇİN TEZGAHTAN CETVEL SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 210,
+      "tezgah_id": 112,
+      "tarih": "18-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ATC KOLU TAKILIYOR. KURTARILDI. ÇALIIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 211,
+      "tezgah_id": 113,
+      "tarih": "19-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ARABA SWİCH APARATLARI KAYIŞ OLMASI GEREKEN KONUMA AYARLANDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 212,
+      "tezgah_id": 114,
+      "tarih": "19-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KABLODA TEMASSIZLIK TESPİT EDİLDİ KABLO DAMARI DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 213,
+      "tezgah_id": 15,
+      "tarih": "19-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KUMLAMA KAPI SWİCİ YERİNDEN ÇIKMIŞ TEKRAR YERİNE MONTAJLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 214,
+      "tezgah_id": 115,
+      "tarih": "22-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "MANUEL ÇEVİRME TUŞU ÇALIŞMIYOR YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 215,
+      "tezgah_id": 15,
+      "tarih": "22-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "VİNÇ KABLOSU SÖKÜLÜP YERİNE UZAKTAN KUMANDALI CİHAZ BAĞLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 216,
+      "tezgah_id": 116,
+      "tarih": "23-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KONVERYÖR ARIZASI GİDERİLDİ MAKİNA TESLİM EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 217,
+      "tezgah_id": 45,
+      "tarih": "23-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SARIMDAN GELEN KONVEYÖR  MOTORU YERİNE MONTAJI VE ELEKTİRİK BAĞLANTILARI YAPILDI. ÖLÇÜMLERİ YAPILDI. ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 218,
+      "tezgah_id": 7,
+      "tarih": "24-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KLAVYE TAKIMI ARIZALI OLAN TEZGAHIN KLAVYESİ TAKILDI. ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 219,
+      "tezgah_id": 31,
+      "tarih": "24-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "MOTOR RULMANLARI DAĞILMIŞ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 220,
+      "tezgah_id": 88,
+      "tarih": "26-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ATAN SİGORTA KURULDU BİR SORUN GÖRÜLMEDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 221,
+      "tezgah_id": 90,
+      "tarih": "27-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TÜM PANO FAN FİLTRELERİ YENİLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 222,
+      "tezgah_id": 99,
+      "tarih": "27-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TÜM PANO FAN FİLTRELERİ YENİLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 223,
+      "tezgah_id": 68,
+      "tarih": "30-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "GÜÇ KAYNAĞI ARIZALANMIŞ. DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 224,
+      "tezgah_id": 117,
+      "tarih": "30-07-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "AYAK PEDALI KONTAK BLOĞU YERİNDEN KAYMIŞ DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 225,
+      "tezgah_id": 118,
+      "tarih": "30-07-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KUMANDA BAĞLANTI. SOKETİNDE KABLOLAR YERİNDEN ÇIKMIŞ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 226,
+      "tezgah_id": 103,
+      "tarih": "31-07-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SWİCH APARATI GEVŞEMİŞ SIKILDI. AYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 227,
+      "tezgah_id": 119,
+      "tarih": "01-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "MOTOR ÖLÇÜLDÜ YANIK. SARIMA GİDECEK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 228,
+      "tezgah_id": 40,
+      "tarih": "01-08-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "SWİCH AYARI YAPILDI ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 229,
+      "tezgah_id": 32,
+      "tarih": "06-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SARIMDAN GELEN KONVEYÖR MOTORU BAĞLANTISI YAPILDI. ÖLÇÜMLERİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 230,
+      "tezgah_id": 120,
+      "tarih": "07-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "EKRAN ARZALIYDI. YENİSİYLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 231,
+      "tezgah_id": 121,
+      "tarih": "07-08-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KUMANDA KABLOSUNDA TEMASSIZLIK VARDI. KABLO DAMARI DEĞİŞTİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 232,
+      "tezgah_id": 45,
+      "tarih": "07-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "1-0 CHANNEL PROGRAM ATMA KANAL SEÇİMİ KABLODAN ATMAK İÇİN 2 NO'LU KANALA AYARLANDI PROGRAM ATILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 233,
+      "tezgah_id": 12,
+      "tarih": "07-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ELEKTİRİK KABLOLARI SÖKÜLDÜ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 234,
+      "tezgah_id": 122,
+      "tarih": "07-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ.",
+      "aciklama": "AYDINLATMA TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 235,
+      "tezgah_id": 2,
+      "tarih": "08-08-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "A EKSEN ZORLAMADAN DOLAYI ALARM VERİYORDU. PARAMETRE AYARI TEKRAR YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 236,
+      "tezgah_id": 123,
+      "tarih": "09-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ACİL STOP KORUMA KAPAĞI TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 237,
+      "tezgah_id": 124,
+      "tarih": "09-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "2 ADET BUTONUN YAYLARI BOZULMUŞ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 238,
+      "tezgah_id": 124,
+      "tarih": "09-08-2024",
+      "bakim_yapan": "ÖMER AKKURT.AHMET MERT ÖZER.MEHMET KILIÇ.OZAN MERT TOPÇU",
+      "aciklama": "2 ADET BUTONUN YAYLARI BOZULMUŞ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 239,
+      "tezgah_id": 9,
+      "tarih": "09-08-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "KIRILAN KABLO KANALI YENİLENDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 240,
+      "tezgah_id": 94,
+      "tarih": "09-08-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "ÇALIŞIRKEN PARÇADAN ZARAR GÖREN SENSÖR DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 241,
+      "tezgah_id": 103,
+      "tarih": "10-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "ATC KAPI SİVİCİ ARIZALI OLDUĞU TESPİT EDİLDİ,MAKİNA GARANTİDE OLDUĞU İÇİN SERVİSTEN SİVİÇ TALEP EDİLDİ,GELEN SİVİÇ YERİNE TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 242,
+      "tezgah_id": 125,
+      "tarih": "11-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "KÖPRÜ YÜRÜYÜŞ HELİKOPTER SİVİCİ ALÇIPAN DUVARIN ŞASESİ YAMUK OLDUĞU VE VİNCİN YÜRÜYÜŞ YOLUNA GELDİĞİ GÖRÜLDÜ,VİNÇ ÇALIŞTIRILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 243,
+      "tezgah_id": 126,
+      "tarih": "12-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "DEFORME OLAN VİNÇ KABLOSU YENİLENDİ,OPERETÖR İLE DENENDİ,ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 244,
+      "tezgah_id": 133,
+      "tarih": "12-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "3 ADET THERMACOUPLE YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 245,
+      "tezgah_id": 127,
+      "tarih": "12-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "ASANSÖR SİVİÇ ARIZASI VARDI,SİVİÇ OLMASI GEREKEN YERDEN KOPMUŞ,DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 246,
+      "tezgah_id": 2,
+      "tarih": "13-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "BAFFLE SENSÖRÜ KAYMIŞ,SENSÖR GÖRMÜYORDU AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 247,
+      "tezgah_id": 82,
+      "tarih": "13-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "Z EKSEN REFERANS AYARI KAYMIŞ,REFERANS AYARI YAPILDI,PUNTA PİMİ REFERANS SİVİCİ ARIZALI ELİMİZDE YOK BAŞKA SİVİÇ UYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 248,
+      "tezgah_id": 125,
+      "tarih": "14-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "KEDİ FREN AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 249,
+      "tezgah_id": 113,
+      "tarih": "14-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "KANCA FREN AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 250,
+      "tezgah_id": 128,
+      "tarih": "14-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "KAPAK SİVİÇ AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 251,
+      "tezgah_id": 129,
+      "tarih": "14-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "KAPAK SİVİÇ AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 252,
+      "tezgah_id": 130,
+      "tarih": "16-08-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "2 ADET YENİ AYDINLATMA MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 253,
+      "tezgah_id": 55,
+      "tarih": "17-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "İÇ AYDINLATMALAR İYİ AYDINLATMIYORDU. YENİLERİYLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 254,
+      "tezgah_id": 75,
+      "tarih": "17-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "YENİ GELEN KAPI SİVİÇLERİNİN BAĞLANTILARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 255,
+      "tezgah_id": 134,
+      "tarih": "19-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ŞALTER İÇ YAY VE DIŞ YAY AÇMA KAPAMA MEKANİZMASI YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 256,
+      "tezgah_id": 135,
+      "tarih": "20-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "PLC ÜNİTESİNİN ARIZALI CPU KARTI YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 257,
+      "tezgah_id": 136,
+      "tarih": "22-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SOĞUTMA YAĞI ŞAMANDIRASI TAKILI KALMIŞ. TEMİZLİĞİ YAPILDI. OPERATÖRLE BİRLİKTE TEST EDİLDİ SORUN GÖRÜLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 258,
+      "tezgah_id": 137,
+      "tarih": "22-08-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "AYDINLATMA YANMIYORDU.AMPULÜ PATLAMIŞ YENİSİYLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 259,
+      "tezgah_id": 138,
+      "tarih": "23-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ANA KONTAKTÖR BOBİNİ ARIZALI. YENİSİYLE DEĞİŞTİRİLDİ. OPERATÖRLE TEST EDİLDİ SORUN GÖRÜLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 260,
+      "tezgah_id": 139,
+      "tarih": "23-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KONTAK BLOĞU GEVŞEMİŞ VE ACİL STOP APARATI KIRILMIŞ. YENİSİYLE DEĞİŞTİRİLDİ TEST EDİLDİ SORUN GÖRÜLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 261,
+      "tezgah_id": 140,
+      "tarih": "23-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "YENİ KUMANDA KABLOSU YAPILIP MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 262,
+      "tezgah_id": 10,
+      "tarih": "26-08-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "PİLOT ALEVİ ARIZALI YENİSİYLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 263,
+      "tezgah_id": 5,
+      "tarih": "04-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "I/O KARTINDA KARARMA VARDI. BAĞLANTI LEHİMİ KOPMUŞ. KART TEMİZLİĞİ YAPILDI. KOPAN LEHİM YENİLENDİ. ATIK SİGORTA DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 264,
+      "tezgah_id": 141,
+      "tarih": "06-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "ISITICI KONTAKTÖRÜ TAKILI KALIYOR. YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 265,
+      "tezgah_id": 7,
+      "tarih": "11-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "KONVEYÖR TEMİZLİK İÇİN ELEKTRİK BAĞLANTILARI SÖKÜLDÜ. TEMİZLİKTEN SONRA ELEKTRİK BAĞLANTILARI YAPILDI. OPERATÖRLE BİRLİKTE TEST EDİLDİ SORUN GÖRÜLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 266,
+      "tezgah_id": 123,
+      "tarih": "13-09-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "ACİL STOP YERİNDEN ÇIKMIŞ. YERİNE TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 267,
+      "tezgah_id": 112,
+      "tarih": "14-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "EL ÇARKI X EKSENİNDE HAREKET ETMİYORDU. X KANALINDA KART ÇIKIŞ VERMİYOR. 4 NOLU YEDEK KART EKSENİNE BAĞLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 268,
+      "tezgah_id": 119,
+      "tarih": "16-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ARIZALI SÜRÜCÜ SÖKÜLÜP TAMİRE GÖNDERİLECEK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 269,
+      "tezgah_id": 97,
+      "tarih": "16-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TSL 3' ÜN EKRANI SÖKÜLÜP 9'A TAKILDI. 9 DEVREYE ALINDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 270,
+      "tezgah_id": 41,
+      "tarih": "16-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "HİDROLİK YAĞ BASINÇ MOTORU KABLOSU YANDIĞI İÇİN YÜKSELMİYORDU YANIK YERLER ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 271,
+      "tezgah_id": 131,
+      "tarih": "16-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KAPAK SÖKÜLÜMÜ İÇİN MOTOR THERMOCCUPLE ELEKTRİK BAĞLANTILARI SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 272,
+      "tezgah_id": 133,
+      "tarih": "16-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SSR  ARIZALI YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 273,
+      "tezgah_id": 75,
+      "tarih": "16-09-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAH İÇ AYDINLATMA DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 275,
+      "tezgah_id": 31,
+      "tarih": "17-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SICAKLIK SET DEĞERİ SET DEĞERİNDEN YÜKSEK OLUYORDU KONTROLLER SONUCUNDA REZİSTANS KONTAKTÖRÜ YAPIŞIK KALDIĞI TESPİT EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 276,
+      "tezgah_id": 118,
+      "tarih": "17-09-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KUMANDA SOKKETEN KOPMUŞ SAKAT TARAFI YENİDEN YAPILIP TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 277,
+      "tezgah_id": 143,
+      "tarih": "18-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "OTOMATİK ÇALIŞMA BUTON KONTAĞI ARZALIYDI. TAKILMA YAPIYOR DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 278,
+      "tezgah_id": 121,
+      "tarih": "20-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "MOTOR DEMONTE EDİLİP ÖLÇÜMLERİ YAPILDI. SARIMA GİTMESİ GEREKİYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 279,
+      "tezgah_id": 120,
+      "tarih": "20-09-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "MEKANİK BAKIM ÇALIŞABİLMESİ İÇİN ELEKTRİK BAĞLANTILARI SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 280,
+      "tezgah_id": 114,
+      "tarih": "21-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "VİNÇ KUMANDA KABLOSUNUN DAMARINDA TEMASSIZLIK TESPİT EDİLDİ. YEDEK DAMAR KULANILDI ÇALIŞIYOR .",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 281,
+      "tezgah_id": 144,
+      "tarih": "21-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SOKEDİ KIRILIP KABLOLARI KOPMUŞ. SOKET YENİSİ İLE DEĞİŞTİRİLDİ ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 282,
+      "tezgah_id": 145,
+      "tarih": "21-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "SİGORTASI ATMIŞ KONTROL EDİLİP ATAN SİGORTA KURULDU.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 283,
+      "tezgah_id": 128,
+      "tarih": "21-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KAPAK SİVİÇ AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 284,
+      "tezgah_id": 86,
+      "tarih": "21-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "ŞARTEL BUTONU KIRILMIŞ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 285,
+      "tezgah_id": 58,
+      "tarih": "23-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "FİLTE MOTORU ÇALIŞMIYORDU,SİGORTASI ATMIŞ ÖLÇÜMLERİ YAPILDI BİR SORUN GÖRÜLMEDİ,SİGORTA KURULDU ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 286,
+      "tezgah_id": 82,
+      "tarih": "23-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "PİL DEĞİŞİMİ VE EKSEN AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 287,
+      "tezgah_id": 148,
+      "tarih": "24-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KEDİNİN 2. KADEMESİ ÇALIŞMIYORDU,KABLO DAMARINDA TEMASSIZLIK TESPİT EDİLDİ. YEDEK DAMAR KULLANILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 288,
+      "tezgah_id": 109,
+      "tarih": "24-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "ARIZALI OLAN KAPI SİVİCİ YENSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 289,
+      "tezgah_id": 15,
+      "tarih": "24-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KAPI SİVİCİ DÜŞMÜŞ YERİNE MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 290,
+      "tezgah_id": 138,
+      "tarih": "25-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "ARIZALI OLAN KAPI SİVİÇLERİ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 291,
+      "tezgah_id": 32,
+      "tarih": "25-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "M19 SENSÖRÜ ARIZALANMIŞ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 292,
+      "tezgah_id": 138,
+      "tarih": "26-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KIRILAN ŞARTEL YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 293,
+      "tezgah_id": 36,
+      "tarih": "26-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "BOZUK OLAN AYDINLATMA BUTONU YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 294,
+      "tezgah_id": 114,
+      "tarih": "28-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "VİNÇ KUMANDASINDA TEMASSIZLIK VARDI KOPUK DAMAR YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 295,
+      "tezgah_id": 121,
+      "tarih": "28-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-OZAN MERT TOPÇU-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "SARIMDAN GELEN KEDİ MOTORUNUN ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 296,
+      "tezgah_id": 149,
+      "tarih": "30-09-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "EKSEN PİLİ BİTTİĞİ İÇİN ALARM VERİYORDU,PİL DEĞİŞTİRİLİP REFERANS AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 297,
+      "tezgah_id": 150,
+      "tarih": "30-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "EKSEN PİLİ BİTTİĞİ İÇİN ALARM VERİYORDU,PİL DEĞİŞTİRİLİP REFERANS AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 298,
+      "tezgah_id": 151,
+      "tarih": "30-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "EKSEN PİLİ BİTTİĞİ İÇİN ALARM VERİYORDU,PİL DEĞİŞTİRİLİP REFERANS AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 299,
+      "tezgah_id": 152,
+      "tarih": "30-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "EKSEN PİLİ BİTTİĞİ İÇİN ALARM VERİYORDU,PİL DEĞİŞTİRİLİP REFERANS AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 300,
+      "tezgah_id": 153,
+      "tarih": "30-09-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "M19 GÖRMÜYORDU,SENSÖR ARIZALANMIŞ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 301,
+      "tezgah_id": 30,
+      "tarih": "01-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TALLSTACK SWİCH TAKILMA YAPMIŞ DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 302,
+      "tezgah_id": 97,
+      "tarih": "01-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAHIN BİLEME SENSÖRLERİ VE KABLOLARI YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 303,
+      "tezgah_id": 125,
+      "tarih": "02-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "UZAKTAN KUMANDASI TAMİRDEN GELDİ YERİNE MONTAJ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 304,
+      "tezgah_id": 155,
+      "tarih": "02-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "MDI TUŞ TAKIMI YENİSİ GELDİ YERİNE TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 305,
+      "tezgah_id": 119,
+      "tarih": "02-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "9' NOLUDAN SÖKÜLEN EKRAN VE TUŞ TAKIMI 3' NO LU TEZGAHA TAKILDI VE VALF GRUBUNDAKİ SOKETLER YENİLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 306,
+      "tezgah_id": 156,
+      "tarih": "03-10-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TABLA SAĞ/SOL KUMANDA ANAHTARI YENİLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 307,
+      "tezgah_id": 130,
+      "tarih": "04-10-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ATC ARM HOMU POZİYONUNA GETİRİLDİ TAKIM DEĞİŞTİRME YAPIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 308,
+      "tezgah_id": 157,
+      "tarih": "05-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH BORYAĞI TANKI SIYIRICISINA 6 METRE KABLO ÇEKİLDİ. (UZATILDI)",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 309,
+      "tezgah_id": 158,
+      "tarih": "05-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH BORYAĞI TANKI SIYIRICISINA 6 METRE KABLO ÇEKİLDİ. (UZATILDI)",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 310,
+      "tezgah_id": 15,
+      "tarih": "06-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI AÇILMIYORDU  KAPI KİLİT SWİCH'İ BİLGİSİ GELMEDİĞİ TESPİT EDİLDİ. AYAR YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 311,
+      "tezgah_id": 97,
+      "tarih": "08-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TAMİRDEN GELEN EKRANIN MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 312,
+      "tezgah_id": 61,
+      "tarih": "08-10-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAH REFERANS AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 313,
+      "tezgah_id": 159,
+      "tarih": "09-10-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ARIZALI OLAN SENSÖR YENİSİYLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 314,
+      "tezgah_id": 31,
+      "tarih": "09-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TERMİK TIRNAKLARI KIRILMIŞ ÇALIŞMASINA ENGEL BİR DURUM YOK",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 315,
+      "tezgah_id": 160,
+      "tarih": "14-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "X EKSEN \"EMG\" SWİCHİ KABLOSU KOPMUŞ ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 316,
+      "tezgah_id": 54,
+      "tarih": "14-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "KABLO VE KUMANDA İLE BİRLİKTE YENİLENDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 317,
+      "tezgah_id": 5,
+      "tarih": "15-10-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KISA DEVRE  BULUNAMADI ATAN SİGORTA YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 318,
+      "tezgah_id": 29,
+      "tarih": "15-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SORUN ÇÖZÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 319,
+      "tezgah_id": 5,
+      "tarih": "11-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "HİDROLİK DEVREYE GİRMİYOR BASINÇ AYARI  YAPILIP TEST EDİLDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 320,
+      "tezgah_id": 41,
+      "tarih": "11-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "35 HİDROLİK YAŞ EKLENMİŞ YAPILDI MOTOR AMPER VE SARIM ÖLÇÜMLERİ KONTROL EDİLDİ. ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 321,
+      "tezgah_id": 109,
+      "tarih": "12-10-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KONVEYÖR' ÜN MOTORUNUN KABLOSUNUN 1' İNDE OKSİTLENME OLUP MOTOR 2 FAZ' A KALMIŞ KABLO ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 322,
+      "tezgah_id": 41,
+      "tarih": "12-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "YANIK KOKUSU GELEN MOTOR SÖKÜLDÜ BAKIM İÇİN ATÖLYEYE ALINDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 323,
+      "tezgah_id": 39,
+      "tarih": "12-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ATC KOLU POZİSYONU AKTARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 324,
+      "tezgah_id": 5,
+      "tarih": "12-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "İÇ AYDINLATMA ÇALIŞMIYOR YENİ LAMBA TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 325,
+      "tezgah_id": 160,
+      "tarih": "14-10-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "X EKSEN EMG SWİCH KABLOSU KOPMUŞ ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 326,
+      "tezgah_id": 5,
+      "tarih": "15-02-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ATAN SİGORTA YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 327,
+      "tezgah_id": 29,
+      "tarih": "15-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KIZAK YAĞI DOLU AMA ALARM GEÇİYOR KIZAK YAĞLAMA ÜNİTESİNİN SORUNU GİDERİLİR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 328,
+      "tezgah_id": 161,
+      "tarih": "15-10-2024",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "TEZGAH KAPI SWİCH AYARI İSTİYOR.SWİCH  AYARI YAPILDI. TEST EDİLDİ. ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 329,
+      "tezgah_id": 5,
+      "tarih": "16-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "HİDROLİK KESİLDİ ALARM AÇAN TEZGAH RESETLENDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 330,
+      "tezgah_id": 162,
+      "tarih": "16-10-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAPI GÜVENLİK SWİCH ARIZALIYDI YENİSİ İLE DEĞİŞTİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 331,
+      "tezgah_id": 85,
+      "tarih": "16-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "ARIZALI OLAN KAPI GÜVENLİK SVİCİ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 332,
+      "tezgah_id": 132,
+      "tarih": "17-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "SSR KONTROLLERİ YAPILDI,2 ADET SSR YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 333,
+      "tezgah_id": 15,
+      "tarih": "17-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "SİVİÇ GEVŞEMİŞ,AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 334,
+      "tezgah_id": 129,
+      "tarih": "18-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "1. VE 2.BÖLGE GRUP REZİSTANS AMPER KONTROLLERİ YAPILDI,2.BÖLGE SSR ARIZALI YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 335,
+      "tezgah_id": 117,
+      "tarih": "21-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "ARIZALI OLAN SWİTCH YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 336,
+      "tezgah_id": 163,
+      "tarih": "21-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "PUNTA BASMIYOR,ARIZALI OLAN SWİTCH YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 337,
+      "tezgah_id": 165,
+      "tarih": "21-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KOPAN KABLO KOPTUĞU YERDEN YENİLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 338,
+      "tezgah_id": 82,
+      "tarih": "21-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "REFERAN AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 339,
+      "tezgah_id": 90,
+      "tarih": "22-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "TALAŞ SIYIRICISI SİGORTA ATTIRIYORDU,KONTROLLER SONUCUNDA MOTORUN KABLOSUNDA TEMASSIZLIK OLUP 2 FAZA KALDIĞI TESPİT EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 340,
+      "tezgah_id": 31,
+      "tarih": "23-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KONTAKTÖR TAKILI KALIYORDU YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 341,
+      "tezgah_id": 99,
+      "tarih": "24-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "TEZGAHIN CETVELİ YAĞ,TOZ VS KİRLERDEN DOLAYI ÖLÇÜMLERDE KAYMA MEVCUT BUNUN ÖNLENMESİ AMACI İLE CETVEL İÇİN SİPARİŞ EDİLEN LASTİK CETVELE MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 342,
+      "tezgah_id": 117,
+      "tarih": "24-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "SİPARİŞ EDİLEN PUNTA BOBİNİ ELİMİZE ULAŞTI VE YERİNE MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 343,
+      "tezgah_id": 77,
+      "tarih": "25-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "TAKIM DEĞİŞTİRME BUTONUNUN KABLOSUNDA TEMASSIZLIK TESPİT EDİLDİ,KABLO ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 344,
+      "tezgah_id": 91,
+      "tarih": "25-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KIRILAN SWİTCH YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 345,
+      "tezgah_id": 166,
+      "tarih": "26-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KANCA MOTORU YANDIĞINDAN MÜTEVELLİT SARIMA GÖNDERİLMESİ İÇİN ELEKTRİK BAĞLANTILARI SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 346,
+      "tezgah_id": 132,
+      "tarih": "21-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "SSR KONTROLLERİ YAPILDI 3.BÖLGE SAĞLAM FAKAT REZİSTANSLARDA PATLAK VAR KUYU SOĞUMAYA ALINDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 347,
+      "tezgah_id": 45,
+      "tarih": "30-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "SOĞUTMA ÜNİTESİ ÇALIŞMIYOR,TEZGAHA DEVİR VERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 348,
+      "tezgah_id": 33,
+      "tarih": "30-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "İÇTEN SOĞUTMA ŞAMANDIRASI AYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 349,
+      "tezgah_id": 18,
+      "tarih": "30-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KISA DEVRE VARDI,SİGORTA ATTIRIYORDU,KISA DEVRE BULUNDU.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 350,
+      "tezgah_id": 127,
+      "tarih": "31-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "BLOWER MOTORU YANIK OLDUĞUNDAN MÜTEVELLİT SARIMA GÖNDERİLMESİ İÇİN ELEKTRİK BAĞLANTISI SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 351,
+      "tezgah_id": 113,
+      "tarih": "31-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "MOTORLU SİREN PERVANE SIYIRMIŞ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 352,
+      "tezgah_id": 5,
+      "tarih": "31-10-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "ARIZALI OLAN AYAK PEDALI YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 353,
+      "tezgah_id": 45,
+      "tarih": "01-11-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "SPİNDIL SOĞUTMA POMPASI ARIZALI OLUP POMPA SİPARİŞİ VERİLMİŞTİ,SİPARİŞ ÜZERİNE GELEN POMPANIN MONTAJI VE ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 354,
+      "tezgah_id": 5,
+      "tarih": "02-11-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "2 ADET SENSÖR KIRILMIŞ,KIRILAMADAN DOLSAYI KISA DEVRE OLUŞUP SİGORTA ATTIRMIŞ ATAN SİGORTA VE 2 ADET SWİTCH YENİSİ İLE DEĞİŞTİRİDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 355,
+      "tezgah_id": 33,
+      "tarih": "04-11-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "BOR YAĞ ŞAMANDIRANIN AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 356,
+      "tezgah_id": 77,
+      "tarih": "06-11-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "TEZGAHTA KISA DEVRE VARDI,HİDROLİK DEVREYE GİRMİYORDU,KISA DEVRE BULUNUP ONARILDI. TOOL CLAMP VE UNCLAMP TUŞU YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 357,
+      "tezgah_id": 77,
+      "tarih": "07-11-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "ATC KOLU KIRILMASINDAN MÜTEVELLİT MAGAZİN VE ATC KOLUNUN HOME POZİSYONU KAYMIŞ,AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 358,
+      "tezgah_id": 58,
+      "tarih": "09-11-2024",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "YEDEKTE BULUNAN TORÇ MAKİNAYA MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 360,
+      "tezgah_id": 154,
+      "tarih": "09-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ROBOT PİL DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 361,
+      "tezgah_id": 109,
+      "tarih": "12-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "OKSİTLENME SONUCU KABLODA TEMASSIZLIK OLUŞUP MOTOR 2 FAZA KALDI KABLO ONARILDI,",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 362,
+      "tezgah_id": 131,
+      "tarih": "12-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ELEKTRONİK BASINÇ GÖSTERGESİ ÇALIŞMIYOR,KUYU 4'TEN SÖKÜLÜP KUYU 3'E TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 363,
+      "tezgah_id": 41,
+      "tarih": "12-11-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "Y EKSENİ ATC KOLU TAM KARŞILAMIYORDU,EKSEN MOTORU YERİNDEN SÖKÜLÜP VİDALI MİLDEN YERİNE GETİRİLDİ MOTOR YERİNE GETİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 364,
+      "tezgah_id": 152,
+      "tarih": "13-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KISA DEVRE VARDI KONTROLLER SONUCUNDA MAGAZİN KAOI SENSÖRÜNDE SORUN OLDUĞU TESPİT EDİLDİ,YENİ SENSÖR UYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 365,
+      "tezgah_id": 2,
+      "tarih": "13-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KONTROLLER SONUCUNDA SWİTCH TAKILI KALDIĞI TESPİT EDİLDİ,SWİTCH DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 366,
+      "tezgah_id": 155,
+      "tarih": "14-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "SPİNDLE SOĞUTMA ÜNİTESİNE BASAN HİYDROLİK POMPA DAĞILMIŞ,YEDEKTE DURAN POMPANIN MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 367,
+      "tezgah_id": 136,
+      "tarih": "16-11-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "ATC KOLU YARIDA KALMIŞ MANUEL HOME POZİSYONUNA ALINDI,DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 368,
+      "tezgah_id": 62,
+      "tarih": "16-11-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAHIN GARANTİSİ DEVAM ETMEKTE ATC KOLU KURTARILDI,TEKRAR YARIDA KALIYOR PAZARTESİ SERVİS İLE İLETİŞİME GEÇİLECEK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 369,
+      "tezgah_id": 65,
+      "tarih": "18-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KIRIK OLAN DÜĞME VE LAMBA YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 370,
+      "tezgah_id": 55,
+      "tarih": "19-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "SPİNDLE MOTOR BAĞLANTILARI VE TESTLER YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 371,
+      "tezgah_id": 81,
+      "tarih": "20-11-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "FANUC EKSEN SÜRÜCÜ PİLLERİ BİTMİŞ,PİLLER YENİSİ İLE DEĞİŞTİRİLDİ. TEZGAH REFERANS AYARLARINI UNUTMUŞ TEKRARDAN X-Z REFERANS AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 372,
+      "tezgah_id": 82,
+      "tarih": "20-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "VİTES GEÇİŞLERİNDE SORUN VAR PİSTON YAĞ KAÇIRIYOR ŞANZIMAN LOW VİTESİ AYARLANDI,TEZGAH ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 373,
+      "tezgah_id": 133,
+      "tarih": "20-11-2024",
+      "bakim_yapan": "MUHAMMET TAHA KILIÇ",
+      "aciklama": "ROLE ARIZALI YENİSİ İLE DEĞİŞTİRİLDİ,ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 374,
+      "tezgah_id": 97,
+      "tarih": "21-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "EKSEN SES YAPIYOR,MOTOR VE CETVEL BAĞLANTILARI SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 377,
+      "tezgah_id": 82,
+      "tarih": "26-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "YAPILAN KONTROLLER SONUCUNDA VİTES GEÇİŞLERİNİ ALGILAYAN SENSÖRLERİN ARIZALI OLDUĞU TESPİT EDİLDİ.STOKLARIMIZDA AYNI SENSÖRDEN BULUNMADIĞINDAN UYGUN BİR SENSÖR UYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 378,
+      "tezgah_id": 16,
+      "tarih": "26-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAH İŞLEM TAMAMLANDIĞI HALDE ÇALIŞMAYA DEVAM EDİUORMUŞ GİBİ GÖRÜNÜYOR ANA SİLİNDİRİ SERBEST BIRAKMIYORDU REFERANS VE LİMİT NOKTALARI KONTROL EDİLDİ SWİTCHLERİN DURUMU İNCELENDİ BİR SORUN GÖRÜLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 379,
+      "tezgah_id": 168,
+      "tarih": "26-11-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "ARA YATAK REFERANSI BULMUYORDU ARA YATAK PİM REFERANS NOKTALARI UNUTTURULMUŞTUR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 380,
+      "tezgah_id": 153,
+      "tarih": "26-11-2024",
+      "bakim_yapan": "MUHAMMET TALHA KILIÇ",
+      "aciklama": "SİPARİŞ EDİLEN BOBİN YERİNE MONTAJI YAPILMIŞTIR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 381,
+      "tezgah_id": 94,
+      "tarih": "27-11-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "REFERANS SENSÖRÜ ARIZALI OLDUĞU TESPİT EDİLMİŞ.YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 382,
+      "tezgah_id": 41,
+      "tarih": "27-11-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "PALET YARIDA KALMIŞ. MANUEL OLARAK PALETE HAREKET VERİLİP İŞLEMİ TAMAMLANDI. SWİTCH VE SENSÖR KONTROLLERİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 383,
+      "tezgah_id": 95,
+      "tarih": "29-11-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "TAMİRDEN GELEN EKRANIN YERİNE MONTAJI YAPILIP EKSEN AYARLARI YAPILDI. OPERATÖRLE BİRLİKTE TEST EDİLDİ SORUN GÖRÜLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 384,
+      "tezgah_id": 165,
+      "tarih": "03-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "PUNTA SENSÖR KABLOSU DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 385,
+      "tezgah_id": 168,
+      "tarih": "03-12-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "ARA YATAK SENSÖRÜ ARIZALIYDI. YENİSİYLE DEĞİŞTİRİLDİ VE REFERANS NOKTALARI AYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 386,
+      "tezgah_id": 169,
+      "tarih": "05-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ŞAMANDIRA DÜZELTİLDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 388,
+      "tezgah_id": 82,
+      "tarih": "09-12-2024",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "Z EKSEN REFERANS AYARI VE LİMİT AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 389,
+      "tezgah_id": 134,
+      "tarih": "09-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ARIZALI OLAN ROLE SÖKÜLÜP YENİSİ MONTAJLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 390,
+      "tezgah_id": 7,
+      "tarih": "10-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ARIZALI OLAN HANDLE ÇARKI SİPARİŞ VERİLMİŞ,GELEN ÇARK YERİNE MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 392,
+      "tezgah_id": 7,
+      "tarih": "12-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "MAGAZİN KAPI KİLİDİ YERİNE OTURMUYORDU DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 393,
+      "tezgah_id": 44,
+      "tarih": "12-12-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-OZAN MERT TOPÇU",
+      "aciklama": "FAN ALARMI VERİYORDU EKSEN SÜRÜCÜLERİ SÖKÜLDÜ. BOZUK OLAN FANLAR TEMİZLENİP MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 396,
+      "tezgah_id": 170,
+      "tarih": "16-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ANA TRAFO ARIZALI OLDUĞU TESPİT EDİLDİ. 65 KWA TRAFO YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 397,
+      "tezgah_id": 41,
+      "tarih": "16-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "PALET DEĞİŞTİRME TUŞU BOZUK YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 398,
+      "tezgah_id": 160,
+      "tarih": "17-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KISA DEVRE OLAN KABLO DEĞİŞTİRİLDİ. X EKSENİNİN KLEMENSLERİ YENİSİ İLE DEĞİŞTİRİDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 400,
+      "tezgah_id": 62,
+      "tarih": "18-12-2024",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "İÇTEN SOĞUTMA ÇALIŞMIYORDU.FİLTRE BASINÇ SWİTCH'İ TAKILI KALMIŞ,DÜZELTİLDİ.SWİTCH AYARI YAPILDI.OPERATÖRLE TEST EDİLDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 401,
+      "tezgah_id": 172,
+      "tarih": "19-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ARIZALI LAMBA YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 402,
+      "tezgah_id": 20,
+      "tarih": "19-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET TAHA KILIÇ",
+      "aciklama": "TEZGAHTA BULUNAN 4X4 BESLEME KABLOSU YETERSİZ KALDĞINDAN MÜTEVELLİT 4X16 BESLEME KABLOSU ÇEKİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 403,
+      "tezgah_id": 170,
+      "tarih": "20-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ARIZALI OLAN TRAFO YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 404,
+      "tezgah_id": 84,
+      "tarih": "20-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ACİL STOP ESKİ OLDUĞUNDAN MÜTEVELLİT YENİSİ İLE DEĞİŞTİRİLİP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 405,
+      "tezgah_id": 159,
+      "tarih": "20-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "SWİTCH'LER KONTROL EDİLDİ. KONTROLLER SONUCUNDA SWİTCH'LER ARIZALI OLDUĞUNDAN MÜTEVELLİT 3 ADET SWİTCH YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 406,
+      "tezgah_id": 63,
+      "tarih": "20-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ŞAMANDIRA TAKILI KALMIŞ BAKIMI YAPILIP AYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 408,
+      "tezgah_id": 94,
+      "tarih": "23-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KONTROLLERİMİZE GÖRE BİLEME SWİTCHİ ARIZALI SWİTCH GÖRMÜYORDU. YENİSİ UYARLANIP BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 409,
+      "tezgah_id": 83,
+      "tarih": "24-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU-MEHMET KILIÇ",
+      "aciklama": "SENSÖR AYARI BOZULDUĞU İÇİN GÖREVİNİ GERÇEKLEŞTİREMİYOR. SENSÖRÜN AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 410,
+      "tezgah_id": 55,
+      "tarih": "24-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KAPI KAPALI OLMASINA RAĞMEN KAPIYI KAPALI OLARAK GÖRMÜYORDU,KONTROLLER SONUCUNDA KAPI SWİTCH'İNİN KABLOSUNDA KOPUK TESPİT EDİLDİ. ESKİ DEFORME OLAN KABLO SÖKÜLÜP YENİ KABLO BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 411,
+      "tezgah_id": 85,
+      "tarih": "25-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAHTA BULUNAN ŞARTEL ARIZALI OLDUĞUNDAN DOLAYI DEĞİŞTİRİLMESİ GEREKİYOR,ELİMİZDE ŞARTELİN AYNISINDAN BULUNMADIĞI İÇİN FARKLI ŞARTEL UYARLANIP MONTAJI VE BAĞLANTISI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 412,
+      "tezgah_id": 61,
+      "tarih": "25-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "PUNTA ÇALIŞMIYORDU,KONTROLLER SONUCUNDA SWİTCH'İN TAKILI KALDIĞI TESPİT EDİLDİ,SWİTCH DÜZELTİLDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 413,
+      "tezgah_id": 56,
+      "tarih": "26-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ATC KOLU TAKILI KALDI,KOL KURTARILIP M19 AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 414,
+      "tezgah_id": 149,
+      "tarih": "26-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TAŞLAMA 23,24,25,26 NOLU TEZGAHLARIN MORPOS ÖLÇÜM CİHAZ PİLLERİNİN DEĞİŞİMLERİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 415,
+      "tezgah_id": 97,
+      "tarih": "27-12-2024",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TESTERE BÖLÜMÜNDE BULUNAN 9,10,11,13 NOLU TEZGAHLARIN AYDINLATMALARI DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 416,
+      "tezgah_id": 135,
+      "tarih": "01-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAHIN İÇ KAPISINDA BULUNAN KAPI SWİTCH'İ ÇALIŞMIYORDU,KONTROLLER SONUCUNDA SWİTCH'İN SOKETİNİN KIRIK OLDUĞU TESPİT EDİLDİ. SOKET YENİSİ İLE DEĞİŞTİRİLİP TEST EDİLDİ. HER HANGİ BİR SORUN GÖRÜLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 417,
+      "tezgah_id": 56,
+      "tarih": "04-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAHTA BULUNAN ATC KOLU SIKIŞMIŞ,ATC KOLU KURTARILIP OPERETÖR EŞLİĞİNDE TESTLER YAPILDI. ÇALIŞMASINA ENGEL BİR DURUM YOK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 418,
+      "tezgah_id": 174,
+      "tarih": "06-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ARIZALI OLAN VİNÇ KONTROL EDİLDİ. KONTROLLER SONUCUNDA KONTAKTÖR YAPIŞIK KALIP YANDIĞI VE  BOBİNİN KULLANILAMAZ HALE GELDİĞİ TESPİT EDİLDİ. KONTAKTÖRÜN BOBİNİ DEĞİŞTİRİLİP TEST EDİLDİ. OPERATÖRE TESLİM EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 419,
+      "tezgah_id": 6,
+      "tarih": "06-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "VİNÇ KANCASI TEK KADEMEYE UYGUN OLARAK ÇALIŞTIĞI İÇİN BİZDEN İSTENEN 2 KADEMELİ ÇALIŞMAYI FALİYETE GEÇİRMEK ÜZERE VİNÇ PANOSU SÖKÜLÜP ATÖLYEYE ALINDI. PANOYA BAŞTAN DEVRE YAPILARAK HAZIR HALE GETİRİLDİ. HAZIR OLAN PANO YERİNE MONTAJI YAPILIP TEST YAPILDI. HER HANGİ BİR SORUN GÖRÜLMEDİ OPERETÖRE TESLİM EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 420,
+      "tezgah_id": 133,
+      "tarih": "07-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "PANODA GÖRÜLMESİ GEREKEN DEĞERLER GÖRÜLMÜYORDU,SSR'LERİ KONTROL ETMEK İÇİN ÖLÇÜM YAPILDI. SSR'LERDE BİR SORUN GÖRÜLMEDİ,REZİSTANS PATLAK OLDUĞU TESPİT EDİLİP. BÖLÜM SORUMLUSUNA BİLGİ VERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 421,
+      "tezgah_id": 168,
+      "tarih": "08-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "REFERAN AYARI BOZUK OLAN TEZGAH'A REFERANS AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 422,
+      "tezgah_id": 81,
+      "tarih": "08-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAH T9 KOMUTUNU ALMIYODU,TEZGAHA T9 KOMUTU UNUTTURULUP TEKRAR TANITILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 423,
+      "tezgah_id": 121,
+      "tarih": "08-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "VİNÇ ARABA YÜRÜTME MOTORU ARIZALI OLDUĞUNDAN DOLAYI MOTOR SARIMA GİTMESİ İÇİN SÖKÜLÜP YERİNE YEDEKTE BULUNAN MOTOR'UN MONTAJI YAPILIP AYNI ZAMANDA ELEKTRİK BAĞLANTISI YAPILDI. TEST EDİLDİ,ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 424,
+      "tezgah_id": 97,
+      "tarih": "08-01-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "BİLEMENİN WALF İÇİN ELEKTRİK BAĞLANTISI YAPILIDI. TEST EDİLDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 425,
+      "tezgah_id": 56,
+      "tarih": "09-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "M19 GÖRMÜYORDU PARAMETRELERDEN AYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 426,
+      "tezgah_id": 153,
+      "tarih": "10-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAH İÇ AYDINLATMASI ARIZALI. YENİ AYDINLATMA MONTAJI VE ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 427,
+      "tezgah_id": 112,
+      "tarih": "13-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "YENİ GELEN HANDLE YERİNE TAKILDI TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 428,
+      "tezgah_id": 175,
+      "tarih": "13-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KOPAN KABLO EKLENDİ İZOLE EDİLDİ,ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 429,
+      "tezgah_id": 88,
+      "tarih": "14-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "MAGAZİNDE BULUNAN TAKIMLARIN YERLERİ KARIŞMIŞ TAKIM KODU AYARLANARAK MAGAZİNDEKİ TAKIMLAR DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 430,
+      "tezgah_id": 119,
+      "tarih": "14-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TAMİRDEN GELEN EKRAN YERİNE TAKILDI. PARAMETRE AYARLARI YAPILIP DC MOTOR ELİMİZDE OLMADIĞI İÇİN AYNA MOTORU ASENKRON MOTORA DÖNDERİLECEK. REVİZYON İÇİN MOTORA UYGUN SÜRÜCÜ SİPARİŞ VERİLECEK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 431,
+      "tezgah_id": 94,
+      "tarih": "14-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "BİLEME SENSÖRÜ KABLOSU ARIZALIYMIŞ YENİSİ İLE DEĞİŞTİRİLİP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 432,
+      "tezgah_id": 56,
+      "tarih": "16-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ATC KOLU TAKILI KALMIŞ,KOL KURTARILIP M19 AYARI YENİDEN YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 433,
+      "tezgah_id": 155,
+      "tarih": "16-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "PALET DEĞİŞİMİ YAPMIYOR. \"D\" EKSENİ HAREKET ETTİRİLİP TABLA TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 434,
+      "tezgah_id": 176,
+      "tarih": "16-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "REFLEKTÖRLÜ SENSÖR ARIZALIYDI.YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 435,
+      "tezgah_id": 119,
+      "tarih": "16-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAH AYNA MOTORU AC'DEN DC'YE ÇEVRİLDİ. MOTORA BESLEME KABLOSU ÇEKİLİP BAĞLANTILARI YAPILDI. GELEN YENİ SÜRÜCÜNÜN MONTAJI YAPILIP GEREKLİ BAĞLANTILARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 436,
+      "tezgah_id": 127,
+      "tarih": "16-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "THERMACOUPLE ARIZALI OLDUĞU TESPİT EDİLDİ YENİ THERMACOUPLE'UN BAĞLANTILARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 437,
+      "tezgah_id": 54,
+      "tarih": "17-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "UZAKTAN KUMANDA BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 438,
+      "tezgah_id": 177,
+      "tarih": "17-01-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "YAPIŞIK KALAN KONTAKTÖR YENİSİ İLR DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 439,
+      "tezgah_id": 24,
+      "tarih": "17-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "ARIZLI OLAN PUNTA SWİTCH'İ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 440,
+      "tezgah_id": 144,
+      "tarih": "20-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KUMANDA KABLOSUNUN DAMARI KOPMUŞ,YEDEK DAMAR KULLANILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 441,
+      "tezgah_id": 44,
+      "tarih": "21-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "POMPA MOTOR BAĞLANTILARI YAPILDI,YENİ TAKILAN ŞAMANDIRALARIN AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 442,
+      "tezgah_id": 18,
+      "tarih": "21-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "BOZUK OLAN LAMBA YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 443,
+      "tezgah_id": 41,
+      "tarih": "21-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "SENSÖR VE SENSÖR KOBLALARI DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 444,
+      "tezgah_id": 26,
+      "tarih": "22-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "1. KADEME HIZ KONTAKTÖRÜ ARIZALIYDI. YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 445,
+      "tezgah_id": 82,
+      "tarih": "22-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "MOTOR KAYIŞINA KABLO SIKIŞTIĞI İÇİN KISA DEVRE YAPIP TEZGAHIN ÇÖKMESİNE SEBEP OLUYORDU ZARAR GÖREN KABLOLAR İZOLE EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 446,
+      "tezgah_id": 178,
+      "tarih": "23-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "\"Z\" EKSEN REFERANS AYARLARI KAYMIŞ,REFERANS AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 447,
+      "tezgah_id": 70,
+      "tarih": "24-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "SÜRÜCÜ SÖKÜLDÜ TEMİZLİĞİ YAPILIP GERİ YERİNE TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 448,
+      "tezgah_id": 90,
+      "tarih": "24-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KIRILAN SENSÖR YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 449,
+      "tezgah_id": 121,
+      "tarih": "24-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "ÇIKAN KABLO YERİNE TAKILDI. EK APARAT YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 450,
+      "tezgah_id": 15,
+      "tarih": "24-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "VİNÇ SWİTCH AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 451,
+      "tezgah_id": 40,
+      "tarih": "24-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "GÜVENLİK ALARMI VERİYORDU GEVŞEK VİDALAR SIKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 452,
+      "tezgah_id": 170,
+      "tarih": "28-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "BOZUK OLAN AMPUL YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 453,
+      "tezgah_id": 8,
+      "tarih": "28-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KABLO YÜRÜME KANALI BOZUK DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 454,
+      "tezgah_id": 179,
+      "tarih": "30-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "PUNTA SWİTCH BOZUK YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 455,
+      "tezgah_id": 44,
+      "tarih": "30-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KAPI SWİTCH AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 456,
+      "tezgah_id": 103,
+      "tarih": "30-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "PARAMETRE AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 457,
+      "tezgah_id": 136,
+      "tarih": "31-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "TEZGAH PİL DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 458,
+      "tezgah_id": 141,
+      "tarih": "31-01-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "FAN VE PANO İÇİ TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 459,
+      "tezgah_id": 15,
+      "tarih": "01-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KAPI SWİTCH MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 460,
+      "tezgah_id": 55,
+      "tarih": "03-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "SERVO MOTOR MEKANİKÇİLERİN ÇALIŞABİLMESİ İÇİN SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 461,
+      "tezgah_id": 99,
+      "tarih": "03-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "CETVEL MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 462,
+      "tezgah_id": 115,
+      "tarih": "04-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "SENSÖRÜN KABLOSUNDA TEMASSIZLIK TESPİT EDİLDİ. SENSÖR DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 464,
+      "tezgah_id": 113,
+      "tarih": "05-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "UZAKTAN KUMANDANIN ŞARJ SOKETİNİN KABLOSU KOPMUŞ LEHİMLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 465,
+      "tezgah_id": 97,
+      "tarih": "05-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "PROGRAMSAL HATA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 466,
+      "tezgah_id": 125,
+      "tarih": "05-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "81-82 NO'LU VİNÇ'E UZAKTAN KUMANDA TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 467,
+      "tezgah_id": 134,
+      "tarih": "05-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "SWİTCH'LER TAM BASMIYORDU GEREKLİ AYARLAMALAR YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 468,
+      "tezgah_id": 141,
+      "tarih": "06-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "KONTAKTÖR YAPIŞIK KALMIŞ YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 469,
+      "tezgah_id": 72,
+      "tarih": "06-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TEZGAH REVİZYON İÇİN PANO SÖKÜLÜP ATÖLYEYE ALINDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 470,
+      "tezgah_id": 15,
+      "tarih": "08-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KAPI SWİTCH KIRILMIŞ YENİ SWİTCH TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 471,
+      "tezgah_id": 24,
+      "tarih": "08-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "PUNTA PİMİ AÇILMIYORDU. KABLOSU KOPMUŞ KABLO ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 472,
+      "tezgah_id": 180,
+      "tarih": "08-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "ÇİFT KADEME ARIZALI. BUTON YENİSİ İLE DEĞİŞRİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 473,
+      "tezgah_id": 121,
+      "tarih": "10-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "SWİTCH AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 474,
+      "tezgah_id": 124,
+      "tarih": "10-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "2. KADEME KÖPRÜ İLERLEME KABLOSUNDA TEMASSIZLIK YEDEK DAMAR KULLANILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 475,
+      "tezgah_id": 83,
+      "tarih": "10-02-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "Z+ LİMİT AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 476,
+      "tezgah_id": 24,
+      "tarih": "10-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "PUNTA SWİTCH TAKILI KALMIŞ DÜZELTİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 477,
+      "tezgah_id": 177,
+      "tarih": "13-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "SÜRÜCÜ VE REZİSTANS KONTROLLERİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 478,
+      "tezgah_id": 8,
+      "tarih": "13-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KUMANDA KABLOSU DEFORME OLMUŞ,ÖLÇÜ ALINIP YENİ KABLONUN BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 479,
+      "tezgah_id": 177,
+      "tarih": "14-02-2025",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "REZİSTANS KABLOSU OKSİTLENİP KOPMUŞ. PAPUÇ BASILIP BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 480,
+      "tezgah_id": 181,
+      "tarih": "15-02-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAH TARET YERİNE OTURMADIĞI İÇİN ALARMA GEÇMİŞ. TARET YERİNE OTURTULDU.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 481,
+      "tezgah_id": 182,
+      "tarih": "17-02-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KIRIK OLAN ŞARTEL YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 482,
+      "tezgah_id": 24,
+      "tarih": "19-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "BOZUK OLAN AYDINLATMA YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 483,
+      "tezgah_id": 183,
+      "tarih": "19-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "BESLEME KABLOSUNUN FAZLARINDAN BİRİ GEVŞEK KALDIĞİ İÇİN TEZGAH ALARMA GEÇİYOR,KABLO SIKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 484,
+      "tezgah_id": 124,
+      "tarih": "19-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KUMANDA KABLOSUNUN DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 485,
+      "tezgah_id": 91,
+      "tarih": "20-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SIYIRICI MOTORU YANMIŞ SARIMA GÖNDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 486,
+      "tezgah_id": 44,
+      "tarih": "20-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "MAGAZİN KOLU YARIDA KALMIŞ SENSÖRLER GÖRMÜYORDU.KOL MANUEL OLARAK DÜZELTİLDİ.DENEMELERİ YAPILDI.ARIZA GİDERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 487,
+      "tezgah_id": 40,
+      "tarih": "21-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TAKIM DEĞİŞTİRME SIRASINDA ARAYA TALAŞ GİRMİŞ BU NEDENLE ATC KOLU YARIDA KALMIŞ SERVİS MODUNA ALINIP TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 488,
+      "tezgah_id": 5,
+      "tarih": "21-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "BOZUK OLAN LAMBA DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 489,
+      "tezgah_id": 144,
+      "tarih": "24-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KUMANDA KABLOSUNUN SOKETİ KIRILMIŞ KABLOLAR SÖKÜLÜP YENİ SOKET TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 490,
+      "tezgah_id": 185,
+      "tarih": "24-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "YENİ GELEN THERMACOUPLE ESKİSİNE GÖRE SOKETİ FARKLI OLDUĞU İÇİN ESKİ SOKET KESİLİP UYARLANDI.DENEMESİ YAPILDI SORUN GÖRÜLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 491,
+      "tezgah_id": 31,
+      "tarih": "25-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "UPS ALARMI VARDI.PANODA BULUNAN 2 ADET 12V 7Ah AKÜLERİN DEĞİŞİMİ YAPILI ARIZA RESETLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 492,
+      "tezgah_id": 15,
+      "tarih": "25-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SÖKÜLEN ELVATOR MOTORUNUN ELEKTRİK BĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 493,
+      "tezgah_id": 2,
+      "tarih": "25-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "BAF PİSTONU SIKIŞMIŞ KURTARILIP YAĞLANDI VE TEMİZLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 494,
+      "tezgah_id": 39,
+      "tarih": "26-02-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "SOĞUTMA SİSTEMİNİN KOMPRESÖR KONDANSATÖRÜ BOZULMUŞ,KONDANSATÖR UYARLANIP TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 496,
+      "tezgah_id": 163,
+      "tarih": "27-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TÜM EKSENLERİN PİL DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 497,
+      "tezgah_id": 187,
+      "tarih": "27-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SWİTCH BOR YAĞI VE TALAŞ GİBİ BENZER UNSURLARDAN DOLAYI BASILI KALMIŞ BUTON DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 498,
+      "tezgah_id": 103,
+      "tarih": "27-02-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "MAGAZİN KAPISI AÇIK GÖRÜYOR MAKİNANIN ÜSTÜNDE BULUNAN SWİTCH AYARLANIP OPERATÖR İLE TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 499,
+      "tezgah_id": 19,
+      "tarih": "02-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KIRILAN KABLO YÜRÜTME KANALI KIRILMIŞ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 500,
+      "tezgah_id": 52,
+      "tarih": "03-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "3. BÖLGE REZİSTANS KISA DEVRE VAR. KUYU SOĞUMAYA ALINDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 501,
+      "tezgah_id": 99,
+      "tarih": "06-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "YENİ GELEN MANYETİK SIYIRICININ ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 502,
+      "tezgah_id": 15,
+      "tarih": "06-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SARIMDAN GELEN KANCA FREN BOBİN MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 503,
+      "tezgah_id": 90,
+      "tarih": "08-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "MOTOR SARGILARI YANMIŞ MOTOR DEĞİŞİMİ YAPILIP MONTAJI VE ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 504,
+      "tezgah_id": 182,
+      "tarih": "08-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "BOR YAĞ MOTORU YANMIŞ YEDEK MOTORUN MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 505,
+      "tezgah_id": 90,
+      "tarih": "10-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TEZGAHIN ARIZALI OLAN SIYIRICISI SÖKÜLÜP YEDEKTE BULUNAN SIYIRICININ MONTAJI VE ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 506,
+      "tezgah_id": 70,
+      "tarih": "12-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SÜRÜCÜ SÖKÜLÜP BAKIM İÇİN ATAYÖYE ALINDI. KONTROLLER SONUCUNDA RADYATÖR FANININ ARIZALI OLDUĞU VE BU YÜZDEN TEZGAHIN ALARMA GEÇTİĞİ TESPİT EDİLDİ FAN DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 507,
+      "tezgah_id": 138,
+      "tarih": "12-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SÜRÜCÜLERİN 2 ADET FANI SÖKÜLDÜ BUNLARDAN 1 TANESİ ARIZALI OLDUĞUNDAN DOLAYI YENİSİ İLE DEĞİŞTİRİLDİ. DİĞER FAN SĞLAM OLDUĞU İÇİN TEMİZLENİP HER 2 FAN'IN YERİNE MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 508,
+      "tezgah_id": 136,
+      "tarih": "12-03-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ATC KAPISININ ARIZALI OLAN YAKINLIK SENSÖRÜ YENİSİ İLE DEĞİŞTİRİLDİ. KAPI VE SENSÖR AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 509,
+      "tezgah_id": 121,
+      "tarih": "12-03-2025",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "ARIZALI VE KABLOLARI DEFORME OLMUŞ VİNÇ KUMANDA KABLOSU SÖKÜLÜP KABLO YENİLENDİ. YENİLENEN KABLO MONTAJI VE ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 510,
+      "tezgah_id": 12,
+      "tarih": "12-03-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ŞANZIMAN MANUEL OLARAK HAREKET VERİLDİ. VİTESE GEÇİRİLİP OPERETÖR İLE TEST EDİLİDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 511,
+      "tezgah_id": 14,
+      "tarih": "12-03-2025",
+      "bakim_yapan": "ÖMER AKKURT",
+      "aciklama": "KIZAK YAĞLAMA ÜNİTESİ HATA VERİYOR. YEDEK OLARAK ELİMİZDE OLMADIĞI İÇİN SİPARİŞ EDİLEN GELENE KADAR ESKİSİNİN ÜSTÜNDE YENİ DEVRE YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 512,
+      "tezgah_id": 188,
+      "tarih": "13-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KEDİ MOTORU SAĞ TARAFA HARETİ YAVAŞ İLERLİYORDU KONTROLLER SONUCUNDA KUMANDADA BULUNAN KEDİ SAĞ KONTAĞININ CİVATALARI GEVŞEMİŞ TAM BASILAMADIĞI İÇİNDE 2. KADEMEYE GEÇMİYORDU GEVŞEYEN VİDALAR SIKILIP DEFORME OLAN BUTON YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 513,
+      "tezgah_id": 119,
+      "tarih": "15-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TAŞ MOTORUNUN ELEKTİRİK BAĞLANTISI SÖKÜLDÜ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 515,
+      "tezgah_id": 190,
+      "tarih": "14-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "SOKETİN KABLOLARI KOPMUŞ. LEHİMLENDİ VE İZOLESİ YAPILDIKTAN SONRA OPERETÖR İLE TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 517,
+      "tezgah_id": 165,
+      "tarih": "15-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ-MEHMET KILIÇ",
+      "aciklama": "KONTROLLER YAPILDI. TEZGAH EMG'DEN ÇIKMIYORDU. EKRANIN ARKASINDA BULUNAN 2 ADET 1A SİGORTA ATMIŞ DEĞİŞTİRİLİP OPERETÖR İLE DENENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 518,
+      "tezgah_id": 46,
+      "tarih": "17-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAH İLERLEME YAPMIYOR ŞİKAYETİ BİZLERE ULAŞTI. KONTROLLER SONUCUNDA MALZEMEYE FAZLA BASKI UYGULANDIĞI İÇİN TERMİK ATTIRDIĞI GÖRÜLDÜ. TERMİK KURULDU OPERETÖRE BİLGİ VERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 519,
+      "tezgah_id": 46,
+      "tarih": "17-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "SÜREKLİ TERMİK ATTIRIYORDU. MOTOR'UN SARGILARI SAĞLAM DURUMDA TERMİK ESKİ OLDUĞU İÇİN YENİSİNİN MONTAJI YAPILIP ELEKTRİK BAĞLANTILARI YAPILDI OPERETÖR İLE TEST EDİLİDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 520,
+      "tezgah_id": 23,
+      "tarih": "18-03-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KABLODA KOPUKLUK TESPİT EDİLDİ. YENİ KABLO UYARLANDI TEST EDİLİDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 521,
+      "tezgah_id": 26,
+      "tarih": "18-03-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ-OZAN MERT TOPCU",
+      "aciklama": "KONTROLLER YAPILDIĞINDA SİGORTANIN ATIK OLDUĞU TESPİT EDİLDİ. SİGORTA KALDIRILDI ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 522,
+      "tezgah_id": 165,
+      "tarih": "18-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MEHMET KILIÇ-MUHAMMET KILIÇ",
+      "aciklama": "KISA DEVREDEN DOLAYI TEZGAH I-O SİGORTA ATMIŞ. KISA DEVRE BULUNUP ONARILDI. SİGORTA DEĞİŞİMİ YAPILIP OPERETÖR EŞLİĞİNDE TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 523,
+      "tezgah_id": 61,
+      "tarih": "19-03-2025",
+      "bakim_yapan": "MUHAMMMET KILIÇ",
+      "aciklama": "TEZGAHTA BULUNAN 2 ADET İÇ AYDINLATMA ARIZALI. YENİSİ İLE DEĞİŞTİRİLİP MONTAJI VE ELEKTİRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 524,
+      "tezgah_id": 191,
+      "tarih": "21-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KABLO DAMARI ARZALI OLDUĞU İÇİN YUKARI HAREKET ETMİYORDU PANODAN VE SOKETTEN YEDEK DAMAR KULLANILARAK DÜZELTİLİP ÇALIŞIR HALE GETİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 525,
+      "tezgah_id": 70,
+      "tarih": "21-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "REFARANS VE OVER TRAVEL SWTCH'İ ARZALIYDI SÖKÜLDÜ ELİMİZDE YOK YENİSİ SİPARİŞ EDİLECEK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 526,
+      "tezgah_id": 192,
+      "tarih": "21-03-2025",
+      "bakim_yapan": "OZAN MERT TOPÇU",
+      "aciklama": "TEZGAHTA BULUNAN Y KAFA DİŞLİ MOTORU BAKIM İÇİN ATOLYEYE ALINIP ÖLÇÜLERİ, TEMİZLİĞİ VE RULMAN DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 527,
+      "tezgah_id": 193,
+      "tarih": "22-03-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "B EKSEN REFERANSI YENİDEN AYARLANDI. A EKSEN VE B EKSEN SERVO MOTORLARI İLE ENKODERLERİ TEMİZLENDİ. KUMANDA VE ENERJİ BAĞLANTI SOKETLERİ SIKILDI. OPERATÖR İLE YAPILAN TESTLERDE HERHANGİ Bİ SORUN TESTİP EDİLMEDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 528,
+      "tezgah_id": 194,
+      "tarih": "22-04-2025",
+      "bakim_yapan": "OZAN MERT TOPÇU-MUHAMET TALHA KILIÇ",
+      "aciklama": "MALZEMEYİ KESTİKTEN SONRA DİYER KESECEĞİ MALZEMEYİ ALIRKEN MAKİNA DURUYORDU KONTROLLER SONUCUNDA SWİTCH 'İN TAKILI KALDIĞI TESPİT EDİLDİ ARZALI SWİTCH YENİSİ İLE DEĞİŞTİRİLİP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 529,
+      "tezgah_id": 134,
+      "tarih": "24-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "ELİMİZDE 24 AC BOBİN YOK DC BOBİN TAKILIP UYARLANDI AC BOBİN SİPARİŞ VERİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 530,
+      "tezgah_id": 193,
+      "tarih": "24-03-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "KONTROLLER YAPILDI. KONTROLLER SONUCUNDA APC \"B\" EKSEN PİLİNİN BİTTİĞİ VE BU YÜZDEN REFERANS'I KAYBETTİĞİ GÖRÜLDÜ. PİL DEĞİĞŞİMİ YAPILIP REFERANS AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 531,
+      "tezgah_id": 124,
+      "tarih": "26-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KIRICI İÇİ MONTAJ BÖLÜMÜNDE BULUNAN VİNÇ'İN KUMANDA KABLOSUNDA TEMASSIZLIK TESPİT EDİLDİ. YEDEK DAMAR BULUNAMADIĞI İÇİN KUMANDA KABLOSUNUN ÖLÇÜSÜ ALINIP YENİ KABLONUN KUMANDA VE SOKET BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 532,
+      "tezgah_id": 31,
+      "tarih": "26-03-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "YAPILAN ÖLÇÜMLERDE REZİSTANS TERMİĞİ VE YARDIMCI KONTAĞI GEÇİRMİYORDU. YENİSİ İLE DEĞİŞTİRİLİP TESTLER YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 533,
+      "tezgah_id": 53,
+      "tarih": "26-03-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ-MEHMET KILIÇ",
+      "aciklama": "YAPILAN ÖLÇÜMLERDE REZİSTANS TERMİĞİ,YARDIMCI KONTAĞI GEÇİRMİYORDU VE 2 ADET REZİSTANSIN PATLAK OLDUĞU TESPİT EDİLDİ. REZİSTANS VE TERMİĞİ YENİSİ İLE DEĞİŞTİRİLİP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 534,
+      "tezgah_id": 20,
+      "tarih": "26-03-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "OTO İLERLEME BUTONU ESKİ OLDUĞUNDAN VE PASLANDIĞINDAN DOLAYI OTO İLERLEME ÇALIŞMIYORDU. YENİ BUTON UYARLANIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 535,
+      "tezgah_id": 2,
+      "tarih": "20-03-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "SENSÖR KABLOSU YERİNDEN ÇIKMIŞ. ÇIKAN SENSÖR KABLOSU YERİNE TAKILDI. SENSÖRÜN ETRAFINDA BULUNAN TALAŞLAR TEMİZLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 536,
+      "tezgah_id": 165,
+      "tarih": "27-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "FAN ELİMİZDE YOK. TEMİZLENİP YERİNE TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 538,
+      "tezgah_id": 70,
+      "tarih": "28-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ-ÖMER AKKURT-AHMET MERT ÖZER",
+      "aciklama": "TEZGAHIN MUADİL SWİTCH'İ GELDİ YERİNE UYARLANIP AYARLARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 539,
+      "tezgah_id": 72,
+      "tarih": "29-03-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT-MUHAMMET KILIÇ-OZAN MERT TOPCU",
+      "aciklama": "TEZAGAH REVİZYONUNA BAŞLANMIŞ OLUP TÜM BESLEME KABLOLARI.3 ADET KAPI GÜVENLİK SWİTCH'İ VE APARATLARI İLE BİRLİKTE MONTAJI VE BAĞLANTILARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 540,
+      "tezgah_id": 72,
+      "tarih": "02-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ-ÖMER AKKURT-MUHAMMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "REVİZYONA DEVAM EDİLEN TEZGAHA PANO MONTAJI VE TEPE LAMBASININ MONTAJI YAPILDI. PANO İÇİ MOTOR BESLEME VE KUMANDA KABLOSU BAĞLANTILARINA BAŞLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 541,
+      "tezgah_id": 72,
+      "tarih": "03-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "REVİZE EDİLEN TEZGAHIN ELEKTRİKSEL BAĞLANTILARI BİTMİŞ OLUP TÜM BAĞLANTILARIYAPILDI. ENERJİ VERMEYE HAZIR HALE GETİRİLDİ. \"X\" EKSEN CETVEL MONTAJI YAPILDI. TEZGAH İÇERİSİNDE KULLANILAN BESLEME VE KUMANDA KABLOLARI NUMARALANDIRILARAK KODLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 542,
+      "tezgah_id": 1,
+      "tarih": "03-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ",
+      "aciklama": "TRAFODA BULUNAN 2 ADET SOĞUTMA FANI DEĞİŞİMİ YAPILIP TRAFO TEMİZLİĞİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 543,
+      "tezgah_id": 101,
+      "tarih": "04-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "X VE Z SÜRÜCÜ FANLARININ ÜZERİNDE BULUNAN FANLARIN ALARMINI VERİYORDU. FANLAR KONTROL EDİLDİ. HERHANGİ BİR SORUN GÖRÜLMEDİ .",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 544,
+      "tezgah_id": 12,
+      "tarih": "07-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "SÜRÜCÜLERİN ÜZERİNDE BULUNAN FANLAR KİRDEN DOLAYI SIKIŞMA YAPIYORDU FAN SOĞUTAMIYOR VE BU YÜZDEN DOLAYI ALARMA GEÇİYORDU. FANLAR SÖKÜLÜP DEVRE TEMİZLEYİCİ İLE TEMİZLENİP YERİNE MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 545,
+      "tezgah_id": 70,
+      "tarih": "07-04-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAHIN PALET DEĞİŞİMİ İÇİN ÇİFT TARAFLI PALET REFERANSLARI TEKRARDAN AYARLANIP DENEMELERİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 546,
+      "tezgah_id": 185,
+      "tarih": "07-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ",
+      "aciklama": "ISI DEĞERLERİNİ GÖSTERMİYORDU TAHERMACOUPLE'LAR KONTROL EDİLDİ. KONTROLLER SONUCUNDA 1 ADET THERMACOUPLE'UN ARIZALI OLDUĞU TESPİT EDİLDİ. ARIZALI OLAN THERMACOUPLE YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 547,
+      "tezgah_id": 197,
+      "tarih": "07-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ",
+      "aciklama": "KONTAK BLOĞU GEÇİRMİYORDU. YENİSİ İLE DEĞİŞTİRİLİP ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 548,
+      "tezgah_id": 132,
+      "tarih": "07-04-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "YAĞ OLMASINA RAĞMEN YAĞ SEVİYE ALARMI VERİYORDU. YAPILAN KONTROLLERDE YAĞ SEVİYE ÇUBUĞUNA  KADAR YAĞIN OLMADIĞI GÖRÜLDÜ. YAĞ İLAVESİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 549,
+      "tezgah_id": 185,
+      "tarih": "08-04-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ-MEHMET KILIÇ",
+      "aciklama": "ASANSÖR NİHAİ POZİSYON HATASI VERİYORDU. YAPILAN KONTROLLERDE AŞAĞI SWİTCH KABLOSUNDA KOPUKLUK OLDUĞU TESPİT EDİLDİ. KABLO ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 550,
+      "tezgah_id": 156,
+      "tarih": "08-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "KAVRAMA BOBİN FIRÇASI ARIZALI İDİ YENİSİ İLE DEĞİŞTİRİLDİ. ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 551,
+      "tezgah_id": 165,
+      "tarih": "08-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER-ÖMER AKKURT",
+      "aciklama": "TAZGAH FAN MOTOR ALARM'I VERİYORDU. YAPILAN KONTROLLERDE EKRANIN ARKASINDA BULUNAN SOĞUTMA FANI ARIZALANMIŞ FAN SİPARİŞ EDİLDİ GELMESİ BEKLENİYORDU. GELEN FANIN MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 552,
+      "tezgah_id": 124,
+      "tarih": "08-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "VİNÇ ARABA SWİTCH KABLOSUNDA KOPUKLUK OLDUĞU TESPİT EDİLDİ. SWİTCH PANODAN KÖPRÜLENİP ÇALIŞIR HALE GETİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 553,
+      "tezgah_id": 124,
+      "tarih": "09-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "SAĞ SOLA HAREKET ETMİYORDU. KONTROLLER SONUCUNDA KELEBEK SWİTCH'İN KABLOSUNDA KOPUKLUK TESPİT EDİLDİ. KELEBEK SWİTCH İPTAL EDİLMİŞ KABLOSU YENİLENİP KELEBEK SWİTCH DEVREYE ALINDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 554,
+      "tezgah_id": 134,
+      "tarih": "09-04-2025",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "ATC KOLU MAGAZİN SİDE SENSÖRÜ VE SPİNDLE SİDE SWİTCH'İ YENİLERİ İLE DEĞİŞTİRİLDİ. ATC KOLU VE PLEYTİN TEMİZLİĞİ YAPILARAK SIVI GRES YAĞ İLE YENİDEN YAĞLANDI.ATC KOL SİLİNDİRİNİN BASINÇ AYARI YAPILDI. SÖKÜLEN SAC PARÇALAR YENİDEN MONTE EDİLDİ. HİDROLİK TANKIN MANOMETRELERİNDEKİ YAĞ KAÇAĞI GİDERİLDİ. OPERETÖR İLE BİRLİKTE TESTLER YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 555,
+      "tezgah_id": 198,
+      "tarih": "10-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "İÇİNDEKİ ACİL STOP'UN MONTAJININ YAPILDIĞI DEMİR AKSAM KIRILMIŞ BU SEBEPTEN DOLAYI FARKLI ÇEŞİT ACİL STOP UYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 556,
+      "tezgah_id": 134,
+      "tarih": "10-04-2025",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "ARIZA DEVEM EDİYORDU. POT MAGAZNİN SİDE,SPİNDLE SİDE,VALF BOBİNLERİ VE PLC ÇIKIŞ ROLESİ DEĞİŞTİRİLDİ.MAKİNA TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 557,
+      "tezgah_id": 168,
+      "tarih": "11-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TARET TAKIM DEĞİŞTİRME YAPARKEN BAZI TAKIMLARDA TAKIMI OKUMUYORDU OFSETLİ TAKIMLARDA SORUN OLDUĞU GÖZLEMLENDİ TAKIM ÖMRÜ ZAMANI SIFIRLAMIŞ TARİHLER AYARLANDI. TEZGAH DÜZELDİ TÜM TAKIMLAR DENENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 558,
+      "tezgah_id": 81,
+      "tarih": "14-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "\"Z\" EKSEN REFERANS AYARI KAYIK YENİ REFERANS AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 559,
+      "tezgah_id": 199,
+      "tarih": "14-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAHIN FAN MOTORU BAKIM VE RULMAN DEĞİŞİMİ İÇİN ATÖLYEYE ALINDI. FAKAT ELİMİZDE MOTORA UYGUN RULMAN BULUNMADIĞI İÇİN SİPARİŞ EDİLDİ. RULMAN ELİMİZE ULAŞTIĞINDA MOTOR TOPLANACAK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 560,
+      "tezgah_id": 41,
+      "tarih": "15-04-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "TEZGAHTA BULUNAN HİROLİK MOTORUNDAN DUMAN GELİYORMUŞ. YAPILAN ÖLÇÜMLERDE KISA DEVRE OLDUĞU MOTORUN YANDIĞI TESPİT EDİLDİ. MOTOR SARIMA GÖNDERİLECEK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 561,
+      "tezgah_id": 200,
+      "tarih": "17-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAHIN BESLEME KABLOSUNA AĞIR DEMİR PARÇA DÜŞMEŞİ SEBEBİ İLE KABLO KOPMUŞ. KOPAN KABLO BUSBAR'DAN SÖKÜLÜP ÖLÇÜSÜ ALINDI. YENİ KABLO İÇİN DUVARA TAVA DÖŞENDİ. EKSTRA OLARAK YERDE GİDEN BESLEME KABLOSUNA ZARAR GELMEMESİ ADINA KABLONUN İÇİNDEN RAHAT BİR ŞEKİLDE GEÇEBİLECEĞİ DEMİR BORU YERE SABİTLENDİ. YENİ KABLO TAVADAN VE DEMİR BORUDAN GEÇRİLEREK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 562,
+      "tezgah_id": 181,
+      "tarih": "17-04-2025",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "YAPILAN KONTROLLERDE REFERANS SWİTCH APARATININ YERİNDEN KAYDIĞI TESPİT EDİLDİ VE YENİDEN AYARLANDI. DENEME TESTLERİ TAMAMLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 563,
+      "tezgah_id": 41,
+      "tarih": "17-04-2025",
+      "bakim_yapan": "MUHAMMET TALHA KILIÇ-MEHMET KILIÇ",
+      "aciklama": "\"B\" EKSEN PİLİ BİTMİŞ. YENİ PİL TAKILIP \"B\" EKSEN REFERANS AYARI YAPILIP ENCODERE KAYDEDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 564,
+      "tezgah_id": 41,
+      "tarih": "17-04-2025",
+      "bakim_yapan": "MUHAMMET TALHA KILIÇ",
+      "aciklama": "SARIMDAN GELEN MOTORUN ELEKTRİK BAĞLANTISI VE ÖLÇÜMLERİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 565,
+      "tezgah_id": 201,
+      "tarih": "17-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MEHMET KILIÇ",
+      "aciklama": "TEZGAHIN AYNA MOTORU BAKIM İÇİN SÖKÜLDÜ. RULMAN DEĞİŞİMİ VE MOTOR TEMİZLİĞİ YAPILDI. ÜZERİNDE BULUNAN DEFORME OLMUŞ BESLEME KABLOSU DEĞİŞTİRİLİP YERİNE SUYA VE HAREKETE DAYANIKLI HO7RNF KABLO KULLANILDI. BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 566,
+      "tezgah_id": 155,
+      "tarih": "18-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "MAGAZİN FANUC SERVO SÜRÜCÜSÜ PİLİ BİTMİŞ YENİSİ İLE DEĞİŞTİRİLDİ",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 567,
+      "tezgah_id": 182,
+      "tarih": "18-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ",
+      "aciklama": "YAPILAN ÖLÇÜMLERDE MOTORUN YANIK OLDUĞU TESPİT EDİLDİ. ELİMİZDE YEDEK OLARAK BULUNAN MOTORUN MONTAJI VE ELEKTRİK BAĞLANTISI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 568,
+      "tezgah_id": 4,
+      "tarih": "18-04-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "BOR YAĞ MOTORU SÖKÜLÜP RULMANLARI DEĞİŞTİRİLDİ VE SARIMA GÖNDERİLDİ. SARIMDAN GELEN MOTOR TOPLANIP TEST VE ÖLÇÜMLERİ YAPILDI. YEDEĞE AYRILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 569,
+      "tezgah_id": 159,
+      "tarih": "19-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TAŞLAMADA BULUNAN TAŞLAMA YUKARI KALDIRMA SWİTCH'İNİN KABLOSU KOPMUŞ. KOPAN KABLO SOKETLİ OLDUĞU İÇİN SOKETİ İLE BERABER DEĞİŞİMİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 570,
+      "tezgah_id": 129,
+      "tarih": "21-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "KONTROLLER YAPILDI. KONTROLLER SONUCUNDA 3. GRUP 2. BÖLGEDE BULUNAN REZİSTANS PATLAK ÇALIŞMASINA ENGEL BİR DURUM YOK. İŞLETME MÜSAİT OLDUĞUNDA KUYU SOĞUTMAYA ALINIP REZİSTANS KONTROLÜ YAPILACAK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 571,
+      "tezgah_id": 55,
+      "tarih": "23-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ-MUHAMMET KILIÇ-OZAN MERT TOPCU",
+      "aciklama": "İÇTEN SOĞUTMA MOTORU SÖKÜLÜP 19'A TAKILDI. SARIMDAN GELEN MOTOR 18'E TAKILDI. AKIMLARI VE YÖN TESTİ YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 572,
+      "tezgah_id": 63,
+      "tarih": "23-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ-MEHMET KILIÇ",
+      "aciklama": "ŞAMANDIRANIN ÜZERİNDE BULUNAN 3 ADET MANYETİK SENSÖRÜN KONTROLLERİ VE TESTLERİ YAPILDI. KONTROLLER SONUCUNDA TANKIN DOLDUĞUNU GÖREN SENSÖR YERİNDEN ÇIKTIĞI İÇİN TANKIN DOLDUĞUNU GÖRMÜYOR BU SEBEPTEN DOLAYI TAŞMA YAPIYORDU SENSÖR SABİTLENDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 573,
+      "tezgah_id": 44,
+      "tarih": "24-04-2025",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ",
+      "aciklama": "TEZGAHIN TÜM EKSENLERİNE AİT PERİYODİK PİL DEĞİŞİMLERİ GERÇEKLEŞTİRİLMİŞTİR. YAPILAN KONTROLLER SONUCUNDA TEZGAH SORUNSUZ ŞEKİLDE ÇALIŞMAKTADIR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 574,
+      "tezgah_id": 2,
+      "tarih": "25-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MEHMET KILIÇ",
+      "aciklama": "KONTOLLER YAPILDI. KONTROLLER SONUCUNDA 2 ADET PORSELEN SİGORTANIN ATTIĞI TESPİT EDİLDİ. HERHANGİ BİR KISA DEVRE GÖRÜLMEDİ. ATAN SİGORTALAR DEĞİŞTİRİLDİ. TEZGAH TEST EDİLDİ ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 575,
+      "tezgah_id": 202,
+      "tarih": "25-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ-OZAN MERT TOPCU-MUHAMMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "TEZGAHIN  AYNA MOTORU SESLİ ÇALIŞIYOR VE SÜRÜCÜSÜ ARIZALIYDI. SÜRÜCÜ TAMİRE GÖNDERİLDİ. MOTORA BAKIM YAPILIP TEKRAR YERİNE MONTAJI VE ELEKTRİK BAĞLANTISI YAPILDI. TAMİRDEN GELEN SÜRÜCÜ YERİNE MONTAJI YAPILIP BAĞLANTILARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 576,
+      "tezgah_id": 109,
+      "tarih": "26-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ",
+      "aciklama": "TEZGAHIN AYAK PEDALININ KABLOSU DEFORME OLMUŞ VE KABLONUN BİR ÇOK YERİNDE ÇATLAKLAR MEVCUT. AYAK PEDELI SÖKÜLÜP BAKIMI YAPILIRKEN AYNI ZAMANDA KABLOSU YENİLENDİ. TEZGAHA MONTAJI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 577,
+      "tezgah_id": 152,
+      "tarih": "26-04-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "SARIMDAN GELEN BİLEME MOTORUNUN MONTAJI VE ELEKTRİK BAĞLANTISI YAPILDI. TESTLER YAPILDI. HERHANGİ BİR SORUNA RASTLANMADI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 578,
+      "tezgah_id": 203,
+      "tarih": "28-04-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ-OZAN MERT TOPCU",
+      "aciklama": "KOMBİNASYON KUTUSUNDAN 2 ADET KAYNAK MAKİNASI BESLENDİĞİ İÇİN SİGORTA ATTIRIYORDU. ÜZERİNDE BULUNAN 32A SİGORTA KÜÇÜK KALIYOR. BU SEBEPTEN UYGUN GÖRÜLEN 63A C TİPİ SİGORTA TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 579,
+      "tezgah_id": 172,
+      "tarih": "28-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MEHMET KILIÇ",
+      "aciklama": "TEZGAH'IN YERİNİN DEĞİŞİKLİK YAPILMASI GEREKTİĞİ SÖYLENDİ. ELEKTRİK BAĞLANTISI VE KABLO TAVASI SÖKÜLDÜ. TEZGAH TAŞIMA İŞLEMİ YAPILDI. TEKRAR UYGUN ŞEKİLDE TAVA MONTAJI VE ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 580,
+      "tezgah_id": 204,
+      "tarih": "28-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MEHMET KILIÇ",
+      "aciklama": "TEZGAHIN YER DEĞİŞİMİ İÇİN ELEKTRİK BAĞLANTISI VE KABLO TAVASI SÖKÜLDÜ. TEZGAH TAŞINABİLİR HALE GETİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 581,
+      "tezgah_id": 204,
+      "tarih": "29-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ",
+      "aciklama": "TEZGAH'IN YERİNİN DEĞİŞİKLİK YAPILMASI GEREKTİĞİ SÖYLENDİ. ELEKTRİK BAĞLANTISI VE KABLO TAVASI SÖKÜLDÜ. TEZGAH TAŞIMA İŞLEMİ YAPILDI. TEKRAR UYGUN ŞEKİLDE TAVA MONTAJI VE ELEKTRİK BAĞLANTISI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 582,
+      "tezgah_id": 129,
+      "tarih": "30-04-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "KUU REZİSTANSLARDAN ŞASE ALIP KISA DEVRE YAPIYOR. BU SEBEPLE SİGORTA ATTIRIYOR. KUYU SOĞUMAYA ALINIP BÖLÜM SORUMLUSUNA BİLGİ VERİLDİ. KUYU SOĞUDUĞUNDA KONTROLLER SAĞLANACAK.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 583,
+      "tezgah_id": 141,
+      "tarih": "30-04-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ",
+      "aciklama": "KONTAKTÖR YAPIŞIK KALMIŞ BE SEBEPTEN DOLAYI KONTAKTÖR TAKILIP KONTROL EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 584,
+      "tezgah_id": 131,
+      "tarih": "03-05-2025",
+      "bakim_yapan": "AHMET MERT ÖZER-MEHMET KILIÇ-MUHAMMET KILIÇ",
+      "aciklama": "DIŞ KAPI KAPAMA ALARMI VERİYORDU. KAPI SWİTCH AYARI BOZULMUŞ YENİDEN AYARLANIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 585,
+      "tezgah_id": 31,
+      "tarih": "04-05-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "REZİSTANS KONTAKTÖRÜ ENERJİ GELDİĞİ HALDE ÇEKMEDİĞİ GÖZLEMLENDİ BOZUK OLAN KONTAKTÖR YENİSİ İLE DEĞİŞTİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 586,
+      "tezgah_id": 105,
+      "tarih": "06-05-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "ELEKTRİK TESİSATI KAPSAMINDA, 3 ADET ÜÇLÜ PRİZ, TEZGAH ÇEVRESİNE UYGUN ŞEKİLDE MONTAJLANDI. BU PRİZLER, TAŞ MOTORU GİBİ ELEKTRİKSEL EKİPMANLARIN GÜVENLİ VE VERİMLİ ÇALIŞTIRILABİLMESİ AMACIYLA TEZGAHIN YAKIN ÇEVRESİNDEKİ KABLO TAVALARINA SABİTLENDİ. TÜM BAĞLANTI KABLOLARI DÜZENLİ BİÇİMDE İLGİLİ BUAT İÇERİSİNDE TOPLANDI. ENERJİ BAĞLANTISI BUAT ÜZERİNDEN SAĞLANARAK SİSTEM SORUNSUZ ŞEKİLDE DEVREYE ALINDI VE KULLANIMA HAZIR HALE GETİRİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 587,
+      "tezgah_id": 205,
+      "tarih": "06-05-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "BOR YAĞ MOTORU ÇALIŞMIYORDU. ÇALIŞMAMA SEBEBİ İSE MOTORUN PERVANESİNİN BULUNDUĞU AYNI ZAMANDA BOR YAĞININ GİRİŞ YAPTIĞI HAZNEYE DEMİR TALAŞ PARÇALARI DOLMASI. BU SIKIŞMA İLE MOTOR ZORLANIYOR VE SİGORTA ATTIRIYOR. PERVANENİN BULUNDUĞU YER TALAŞ'TAN ARINDIRILDI SİGORTA KURULUP KONTROLLER YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 588,
+      "tezgah_id": 2,
+      "tarih": "06-05-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MEHMET KILIÇ",
+      "aciklama": "TEZGAH ÖLÇÜ HATASI VERİYORDU. KONTROLLER SONUCUNDA ÖLÇÜ SENSÖRÜNÜN KIRIK OLDUĞUNU TESPİT ETTİK. ELİMİZDE AYNI SENSÖRDEN OLMADIĞI İÇİN SENSÖR SİPARİŞİ VERİLDİ. SİPARİŞ ÜZERİNE GELEN SENSÖR YERİNE MONTAJI YAPILDIKTAN SONRA TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 589,
+      "tezgah_id": 206,
+      "tarih": "06-05-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "TEZGAHIN HİDROLİK TANK ÜNİTESİNE AİT TÜM KABLO BAĞLANTILARI DOĞRUDAN KLEMENS PANOSUNA GİRİYORDU. BU BAĞLANTILAR SÖKÜLEREK 24 PİNLİ DİŞİ VE ERKEK OLMAK ÜZERE SOKET UYARLANIP DÜZENLİ BİÇİMDE BAĞLANTILAR YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 590,
+      "tezgah_id": 41,
+      "tarih": "07-05-2025",
+      "bakim_yapan": "MEHMET KILIÇ-ÖMER AKKURT-MUHAMMET KILIÇ",
+      "aciklama": "TAKIM DEĞİŞTİRME YARIDA KALMIŞ \"Y\" EKSENİ REFERANS KAYBETTİĞİ İÇİN EKSENLERİ HAREKET VERMİYOR. YARIM KALAN HAREKET TESPİT EDİLİP DEVREYİ TAMAMLAMASI İÇİN MANUEL TUR ATLATILDI. \"Y\" EKSEN REFERANSA GETİRİLİP TAKIM DEĞİŞTİRME İŞLEMİ YAPILDI ÇALIŞIYOR.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 591,
+      "tezgah_id": 14,
+      "tarih": "08-05-2025",
+      "bakim_yapan": "OZAN MERT TOPCU",
+      "aciklama": "TEZGAHTA BULUNAN SERVO MOTORUNUN FANI SES YAPIYORDU. KONTROLLER SONUCUNDA FAN'DA BALANS OLDUĞU VE KORUMA KAPAĞINA TEMAS ETTİĞİ TESPİT EDİLDİ. ESKİ FAN SÖKÜLÜP YENİ FANIN TAKILACAĞI BÖLGE TEMİZLENDİ. YENİ FAN MONTAJI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 592,
+      "tezgah_id": 207,
+      "tarih": "09-05-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MEHMET KILIÇ-MUHAMMET KILIÇ",
+      "aciklama": "DEVİR SENSÖRÜNÜN KABLOSU HASAR GÖRMÜŞ KABLO LEHİMLENİP İZOLE EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 593,
+      "tezgah_id": 136,
+      "tarih": "09-05-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "SİPARİŞ EDİLEN SENSÖR ELİMİZE ULAŞTI. SENSÖR YERİNE TAKILIP AYARLAMASI YAPILDI. TABLA HER EKSENDE TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 594,
+      "tezgah_id": 26,
+      "tarih": "10-05-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ-ÖMER AKKURT",
+      "aciklama": "KUMANDA KABLOSU DEFORME OLMUŞ. KABLOYU YENİLEMEK ADINA SÖKÜLÜP ATÖLYEYE ALINDI. BAĞLANTILAR KARIŞIK VE DÜZENSİZ OLDUĞU İÇİN TÜM VİNÇLERDE KULLANMAK ADINA ÇİZİLEN PROJEYE UYGUN BİR ŞEKİLDE ELEKTRİK BAĞLANTILARI YAPILDI. VİNÇ PANOSUNDANDA UFAK DEĞİŞİKLİKLER SONRASI TESTLER YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 595,
+      "tezgah_id": 112,
+      "tarih": "12-05-2025",
+      "bakim_yapan": "MEHMET KILIÇ-AHMET MERT ÖZER",
+      "aciklama": "TAKILI KALAN ATC KOLU DÜZELTİLDİ. HOME POZİSYONUNA GETİRİLDİ. MAGAZİNDE BULUNAN TAKIMLAR KARIŞMIŞ 9 NO'LU TAKIM HATA VERİYORDU. MAGAZİN TAKIMLARA GÖRE AYARLANDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 596,
+      "tezgah_id": 208,
+      "tarih": "13-05-2025",
+      "bakim_yapan": "OZAN MERT TOPCU-MUHAMMET KILIÇ",
+      "aciklama": "KAYNAKHANEDE BULUNAN TORNA TEZGAHI İLERİ VE GERİ HARAKETİNDE GERİ GELİYOR FAKAT İLERİ HAREKET ETMİYORDU. KONTROLLER SONUCUNDA HAREKETİ SAĞLAYAN MOTORUN HAREKETLİ BESLEME KABLOSUNDA KOPUKLUK TESPİT EDİLDİ. KOPAN KABLONUN ÖLÇÜSÜ ALINIP YENİ KABLO ÇEKİLDİ VE ELEKTRİK BAĞLANTISI YAPILDI",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 597,
+      "tezgah_id": 36,
+      "tarih": "14-05-2025",
+      "bakim_yapan": "MEHMET KILIÇ-MUHAMMET KILIÇ",
+      "aciklama": "\"X\" EKSEN CETVELİNDE TEMASSIZLIK VARDI KONTROLLER SONUCUNDA CETVELİN KABLOSUNDA TEMASSIZLIK TESPİT EDİLDİ. KABLO ONARILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 598,
+      "tezgah_id": 112,
+      "tarih": "15-05-2025",
+      "bakim_yapan": "MEHMET KILIÇ-OZAN MERT TOPCU",
+      "aciklama": "SPİNDLE SÜRÜCÜ FANI ARIZALI OLDUĞU TESPİT EDİLDİ. FAN DEĞİŞİMİ İÇİN SÜRÜCÜ SÖKÜLDÜ. FAN YENİSİ İLE DEĞİŞTİRİLİP SÜRÜCÜ YERİNE TAKILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 599,
+      "tezgah_id": 153,
+      "tarih": "15-05-2025",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "TAKIM DEĞİŞTİRME ESNASINDA KOL YARIDA KALIP TEZGAH ARIZAYA GEÇİYORDU. TEZGAH MANUEL OLARAK HOME POZİSYONUNA ALINDI. İŞLEM SIRASINDA TOOL CLAMP SWİTCH'İNİN ARIZALI OLDUĞU TESPİT EDİLDİ. SWİTCH AYARI YAPILDI.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 600,
+      "tezgah_id": 202,
+      "tarih": "21-05-2025",
+      "bakim_yapan": "MUHAMMET KILIÇ",
+      "aciklama": "AYNA MOTOR SÜRÜCÜSÜ ARIZALI OLDUĞU TESPİT EDİLDİ. ELİMİZDE BULUNAN YEDEK SÜRÜCÜ İLE DEĞİŞTİRİLDİ. PARAMETRE AYARLARI YAPILIP TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 601,
+      "tezgah_id": 9,
+      "tarih": "22-05-2025",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "ENCODER REFERANS NOKTASI KONTROL EDİLEREK DOĞRU SIFIR KONUMUNA YENİDEN AYARLANDI. NU İŞLEMİN ARDINDAN SİSTEM SIFIRLANARAK YÜKLEYİCİ KOLLARIN HAREKETLERİ TEST EDİLDİ.",
+      "durum": "Tamamlandı"
+    },
+    {
+      "id": 602,
+      "tezgah_id": 101,
+      "tarih": "16-07-2026",
+      "bakim_yapan": "AHMET MERT ÖZER",
+      "aciklama": "[PM] X ekseni absolute enkoder pili değiştirildi (Voltaj 3.6V düzeyine resetlendi).",
+      "durum": "Tamamlandı"
+    }
+  ]
+}
