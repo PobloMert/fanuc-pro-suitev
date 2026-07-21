@@ -5,14 +5,42 @@
 
 'use strict';
 
-// Diagnostic Error Tracker
+// Diagnostic Error Tracker & Crash Boundary
 window.onerror = function(message, source, lineno, colno, error) {
   const errText = `UI Error: ${message}\nSource: ${source}\nLine: ${lineno}:${colno}\nStack: ${error ? error.stack : 'No stack'}\n\n`;
   try {
-    window.electronAPI.writeFile('./data/ui_error_log.txt', errText);
+    if (window.electronAPI && window.electronAPI.writeFile) {
+      window.electronAPI.writeFile('./data/ui_error_log.txt', errText);
+    }
   } catch (e) {}
-  alert('Sistem Hatası: ' + message + '\nDetay için data/ui_error_log.txt dosyasını kontrol edin.');
+  console.error('Unhandled UI Error:', errText);
+  return true; // Prevent default error popup to keep app running smoothly
 };
+
+window.onunhandledrejection = function(event) {
+  const reason = event.reason ? (event.reason.stack || event.reason) : 'Unhandled Promise Rejection';
+  console.warn('Unhandled Rejection:', reason);
+};
+
+function safeJSONParse(str, fallback = null) {
+  if (!str) return fallback;
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    console.warn('safeJSONParse failed:', e);
+    return fallback;
+  }
+}
+
+function debounce(fn, delay = 200) {
+  let timer = null;
+  return function(...args) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
+}
 
 function escapeHTML(str) {
   if (str === null || str === undefined) return '';
@@ -21,8 +49,6 @@ function escapeHTML(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-
-
     .replace(/'/g, '&#039;');
 }
 
@@ -118,11 +144,45 @@ async function init() {
   // User avatar → switch user
   document.getElementById('user-avatar-btn').addEventListener('click', showLoginScreen);
 
+  // Initialize ripple click animations
+  initRippleEffect();
+
   organizeNavigation();
 
   // Navigation
   document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
     btn.addEventListener('click', () => navigate(btn.dataset.page));
+  });
+}
+
+// ── Ripple Click Effect ─────────────────────────────────────────
+function initRippleEffect() {
+  document.addEventListener('pointerdown', (e) => {
+    const target = e.target.closest('.btn, .btn-icon, .tb-btn, .login-user-btn, .tab-btn, .nav-item');
+    if (!target) return;
+
+    const rect = target.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple-wave';
+
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top - size / 2;
+
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+
+    if (target.classList.contains('btn-secondary') || target.classList.contains('btn-ghost') || target.classList.contains('tb-btn') || target.classList.contains('nav-item')) {
+      ripple.style.background = 'rgba(var(--accent-rgb), 0.3)';
+    }
+
+    target.appendChild(ripple);
+
+    setTimeout(() => {
+      ripple.remove();
+    }, 600);
   });
 }
 

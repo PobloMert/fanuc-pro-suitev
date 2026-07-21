@@ -2,7 +2,17 @@ const { app, BrowserWindow, ipcMain, dialog, Menu, shell, protocol, net } = requ
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const { spawn, exec } = require('child_process');
 const { pathToFileURL } = require('url');
+
+// ── Global Process Uncaught Error & Rejection Handlers ──
+process.on('uncaughtException', (err) => {
+  console.error('Main Process Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Main Process Unhandled Rejection:', reason);
+});
 
 // ── Register app-file scheme as privileged (must be called before app is ready) ──
 protocol.registerSchemesAsPrivileged([
@@ -26,7 +36,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-      webSecurity: true, // Enable Web Security to prevent CORS bypass and local file theft
+      webSecurity: false, // Set to false to allow local MTConnect Agent HTTP iframe loading
     },
     frame: false,
     titleBarStyle: 'hidden',
@@ -45,9 +55,9 @@ function createWindow() {
   });
 }
 
-// ── Path Sanitization and Directory Restriction ─────────────────
 const ALLOWED_DATA_DIR = path.resolve(path.join(os.homedir(), '.fanuc-pro-suite'));
 const APP_ROOT_DATA = path.resolve(path.join(__dirname, 'data'));
+const APP_BIN_DIR = path.resolve(path.join(__dirname, 'bin'));
 
 function isSafePath(filePath) {
   if (!filePath) return false;
@@ -58,18 +68,63 @@ function isSafePath(filePath) {
   
   let allowed = ALLOWED_DATA_DIR;
   let appRoot = APP_ROOT_DATA;
+  let appBin = APP_BIN_DIR;
 
   // On Windows, paths are case-insensitive
   if (process.platform === 'win32') {
     resolved = resolved.toLowerCase();
     allowed = allowed.toLowerCase();
     appRoot = appRoot.toLowerCase();
+    appBin = appBin.toLowerCase();
   }
   
   const isInsideAllowedDataDir = resolved.startsWith(allowed + path.sep) || resolved === allowed;
   const isInsideAppRootData = resolved.startsWith(appRoot + path.sep) || resolved === appRoot;
+  const isInsideAppBin = resolved.startsWith(appBin + path.sep) || resolved === appBin;
   
-  return isInsideAllowedDataDir || isInsideAppRootData;
+  return isInsideAllowedDataDir || isInsideAppRootData || isInsideAppBin;
+}
+
+let adapterProcess = null;
+
+function startAdapter() {
+  // Terminate any existing instance first to prevent port conflicts
+  exec('taskkill /F /IM FanucSHDRAdapter.exe', () => {
+    const adapterPath = path.join(__dirname, 'bin', 'FanucSHDRAdapter.exe');
+    const adapterCwd = path.join(__dirname, 'bin');
+    if (!fs.existsSync(adapterPath)) {
+      console.error('FanucSHDRAdapter.exe not found at:', adapterPath);
+      return;
+    }
+
+    console.log('Spawning FanucSHDRAdapter.exe...');
+    setTimeout(() => {
+      adapterProcess = spawn(adapterPath, [], {
+        cwd: adapterCwd,
+        stdio: 'ignore',
+        detached: false
+      });
+
+      adapterProcess.on('error', (err) => {
+        console.error('Failed to start FanucSHDRAdapter:', err);
+      });
+
+      adapterProcess.on('close', (code) => {
+        console.log(`FanucSHDRAdapter exited with code ${code}`);
+        adapterProcess = null;
+      });
+    }, 800);
+  });
+}
+
+function stopAdapter() {
+  if (adapterProcess) {
+    try {
+      adapterProcess.kill();
+    } catch (e) {}
+    adapterProcess = null;
+  }
+  exec('taskkill /F /IM FanucSHDRAdapter.exe', () => {});
 }
 
 // App lifecycle
@@ -92,49 +147,80 @@ app.whenReady().then(() => {
     }
   });
 
+  startAdapter();
   createWindow();
+  
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
 app.on('window-all-closed', () => {
+  stopAdapter();
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('will-quit', () => {
+  stopAdapter();
 });
 
 // ── IPC Handlers ──────────────────────────────────────────────
 
 // Window controls
 ipcMain.on('window-minimize', () => {
-  if (mainWindow) mainWindow.minimize();
+  try {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.minimize();
+  } catch (err) {
+    console.error('Error minimizing window:', err);
+  }
 });
 ipcMain.on('window-maximize', () => {
-  if (mainWindow) {
-    mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize();
+  try {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize();
+    }
+  } catch (err) {
+    console.error('Error maximizing window:', err);
   }
 });
 ipcMain.on('window-close', () => {
-  if (mainWindow) mainWindow.close();
+  try {
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
+  } catch (err) {
+    console.error('Error closing window:', err);
+  }
 });
 
 // File dialog – open
 ipcMain.handle('dialog-open-file', async (event, filters) => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openFile'],
-    filters: filters || [{ name: 'All Files', extensions: ['*'] }]
-  });
-  if (result.canceled || result.filePaths.length === 0) return null;
-  return result.filePaths[0];
+  try {
+    if (!mainWindow || mainWindow.isDestroyed()) return null;
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile'],
+      filters: filters || [{ name: 'All Files', extensions: ['*'] }]
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    return result.filePaths[0];
+  } catch (err) {
+    console.error('Error opening file dialog:', err);
+    return null;
+  }
 });
 
 // File dialog – save
 ipcMain.handle('dialog-save-file', async (event, filters, defaultName) => {
-  const result = await dialog.showSaveDialog(mainWindow, {
-    defaultPath: defaultName || 'untitled',
-    filters: filters || [{ name: 'All Files', extensions: ['*'] }]
-  });
-  if (result.canceled) return null;
-  return result.filePath;
+  try {
+    if (!mainWindow || mainWindow.isDestroyed()) return null;
+    const result = await dialog.showSaveDialog(mainWindow, {
+      defaultPath: defaultName || 'untitled',
+      filters: filters || [{ name: 'All Files', extensions: ['*'] }]
+    });
+    if (result.canceled) return null;
+    return result.filePath;
+  } catch (err) {
+    console.error('Error saving file dialog:', err);
+    return null;
+  }
 });
 
 // Read file (with Path Validation)
@@ -242,6 +328,16 @@ ipcMain.handle('fs-ensure-dir', async (event, dirPath) => {
   }
 });
 
+// Restart C# Telemetry Adapter
+ipcMain.handle('restart-adapter', async () => {
+  try {
+    startAdapter();
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
 // Open external (with Protocol and Safe Path Validation)
 ipcMain.on('open-external', (event, url) => {
   try {
@@ -290,9 +386,13 @@ ipcMain.handle('export-csv', async (event, csvContent, defaultName) => {
 
 // Show native notification
 ipcMain.on('show-notification', (event, { title, body }) => {
-  const { Notification } = require('electron');
-  if (Notification.isSupported()) {
-    new Notification({ title, body, silent: false }).show();
+  try {
+    const { Notification } = require('electron');
+    if (Notification.isSupported()) {
+      new Notification({ title, body, silent: false }).show();
+    }
+  } catch (err) {
+    console.error('Error showing notification:', err);
   }
 });
 

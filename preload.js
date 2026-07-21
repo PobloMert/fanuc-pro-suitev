@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   listDir:    (dirPath) => ipcRenderer.invoke('fs-list-dir', dirPath),
   ensureDir:  (dirPath) => ipcRenderer.invoke('fs-ensure-dir', dirPath),
   getAppDataDir: () => ipcRenderer.invoke('get-app-data-dir'),
+  restartAdapter: () => ipcRenderer.invoke('restart-adapter'),
 
   // Shell
   openExternal: (url) => ipcRenderer.send('open-external', url),

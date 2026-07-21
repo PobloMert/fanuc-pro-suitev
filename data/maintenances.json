@@ -4695,6 +4695,14 @@
       "bakim_yapan": "AHMET MERT ÖZER",
       "aciklama": "[PM] X ekseni absolute enkoder pili değiştirildi (Voltaj 3.6V düzeyine resetlendi).",
       "durum": "Tamamlandı"
+    },
+    {
+      "id": 603,
+      "tezgah_id": 163,
+      "tarih": "21-07-2026",
+      "bakim_yapan": "MEHMET KILIÇ",
+      "aciklama": "[PM] X ekseni absolute enkoder pili değiştirildi (Voltaj 3.6V düzeyine resetlendi).",
+      "durum": "Tamamlandı"
     }
   ]
 }
