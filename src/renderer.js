@@ -1195,7 +1195,7 @@ function renderDashboard() {
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
           </div>
           <div class="stat-data">
-            <div class="stat-value" style="color:#60a5fa">${State.machines.length}</div>
+            <div class="stat-value" id="dash-val-machines" style="color:#60a5fa">0</div>
             <div class="stat-label">Kayıtlı Tezgah</div>
           </div>
         </div>
@@ -1204,7 +1204,7 @@ function renderDashboard() {
             <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
           </div>
           <div class="stat-data">
-            <div class="stat-value" style="color:#a78bfa">${State.maintenances.length}</div>
+            <div class="stat-value" id="dash-val-maint" style="color:#a78bfa">0</div>
             <div class="stat-label">Toplam Bakım</div>
           </div>
         </div>
@@ -1213,7 +1213,7 @@ function renderDashboard() {
             <svg viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="10" rx="2" ry="2"/><line x1="18" y1="11" x2="22" y2="11"/><line x1="18" y1="13" x2="22" y2="13"/></svg>
           </div>
           <div class="stat-data">
-            <div class="stat-value" style="color:#fbbf24">${State.batteries.length}</div>
+            <div class="stat-value" id="dash-val-batteries" style="color:#fbbf24">0</div>
             <div class="stat-label">Pil Kaydı</div>
           </div>
         </div>
@@ -1222,7 +1222,7 @@ function renderDashboard() {
             <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
           </div>
           <div class="stat-data">
-            <div class="stat-value" style="color:#34d399">${State.library.length}</div>
+            <div class="stat-value" id="dash-val-lib" style="color:#34d399">0</div>
             <div class="stat-label">Teknik Kılavuz</div>
           </div>
         </div>
@@ -1231,7 +1231,7 @@ function renderDashboard() {
             <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"/><line x1="6" y1="6" x2="6" y2="18"/><line x1="18" y1="6" x2="18" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
           </div>
           <div class="stat-data">
-            <div class="stat-value" style="color:#22d3ee">${State.alarms.length}</div>
+            <div class="stat-value" id="dash-val-alarms" style="color:#22d3ee">0</div>
             <div class="stat-label">Alarm Kodu</div>
           </div>
         </div>
@@ -1240,7 +1240,7 @@ function renderDashboard() {
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
           </div>
           <div class="stat-data">
-            <div class="stat-value" style="color:#f87171">${State.parameters.length}</div>
+            <div class="stat-value" id="dash-val-params" style="color:#f87171">0</div>
             <div class="stat-label">CNC Parametre</div>
           </div>
         </div>
@@ -1250,7 +1250,7 @@ function renderDashboard() {
       <div class="kpi-grid">
         <div class="kpi-card" style="border-left:3px solid #7c3aed">
           <div class="kpi-label">Bu Ay Bakım</div>
-          <div class="kpi-value" style="color:#a78bfa">${thisMonthMaint.length}</div>
+          <div class="kpi-value" id="dash-val-month" style="color:#a78bfa">${thisMonthMaint.length}</div>
           <div class="kpi-sub">${thisMonthMaint.filter(m => m.type === 'Arıza').length} arıza / ${thisMonthMaint.filter(m => m.type !== 'Arıza').length} planlı</div>
           <div class="kpi-trend trend-${thisMonthMaint.length > 0 ? 'up' : 'neutral'}">
             ${thisMonthMaint.length > 0 ? '↑ Aktif ay' : '— Kayıt yok'}
@@ -1258,7 +1258,7 @@ function renderDashboard() {
         </div>
         <div class="kpi-card" style="border-left:3px solid ${criticalBatteries.length > 0 ? '#ef4444' : '#10b981'}">
           <div class="kpi-label">Kritik Pil</div>
-          <div class="kpi-value" style="color:${criticalBatteries.length > 0 ? '#f87171' : '#34d399'}">${criticalBatteries.length}</div>
+          <div class="kpi-value" id="dash-val-crit-bat" style="color:${criticalBatteries.length > 0 ? '#f87171' : '#34d399'}">${criticalBatteries.length}</div>
           <div class="kpi-sub">${criticalBatteries.length > 0 ? 'Değişim gerekiyor' : 'Tüm piller normal'}</div>
           <div class="kpi-trend ${criticalBatteries.length > 0 ? 'trend-down' : 'trend-up'}">
             ${criticalBatteries.length > 0 ? '⚠️ Dikkat gerekli' : '✓ Normal'}
@@ -1272,7 +1272,7 @@ function renderDashboard() {
         </div>
         <div class="kpi-card" style="border-left:3px solid ${State.notifications.length > 0 ? '#f59e0b' : '#10b981'}">
           <div class="kpi-label">Aktif Bildirim</div>
-          <div class="kpi-value" style="color:${State.notifications.length > 0 ? '#fbbf24' : '#34d399'}">${State.notifications.length}</div>
+          <div class="kpi-value" id="dash-val-notifs" style="color:${State.notifications.length > 0 ? '#fbbf24' : '#34d399'}">${State.notifications.length}</div>
           <div class="kpi-sub">${State.notifications.filter(n => n.level === 'red').length} kritik, ${State.notifications.filter(n => n.level === 'amber').length} uyarı</div>
           <div class="kpi-trend ${State.notifications.length > 0 ? 'trend-down' : 'trend-up'}">
             <button onclick="toggleNotifPanel()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:11px;padding:0">Bildirimleri Gör →</button>
@@ -1292,7 +1292,7 @@ function renderDashboard() {
                 style="filter: drop-shadow(0 0 5px ${healthGlowColor}); transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.5s ease" />
             </svg>
             <div style="position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center">
-              <span style="font-size:18px; font-weight:800; color:var(--text-primary)">%${avgHealth}</span>
+              <span id="gauge-val-health" style="font-size:18px; font-weight:800; color:var(--text-primary)">0%</span>
             </div>
           </div>
           <span class="tag ${healthClass} mt-3">✓ ${healthLabel}</span>
@@ -1371,6 +1371,19 @@ function renderDashboard() {
     }
     .alarm-row:hover { background:var(--bg-hover); }
   `);
+
+  setTimeout(() => {
+    animateCounter(page.querySelector('#dash-val-machines'), State.machines.length);
+    animateCounter(page.querySelector('#dash-val-maint'), State.maintenances.length);
+    animateCounter(page.querySelector('#dash-val-batteries'), State.batteries.length);
+    animateCounter(page.querySelector('#dash-val-lib'), State.library.length);
+    animateCounter(page.querySelector('#dash-val-alarms'), State.alarms.length);
+    animateCounter(page.querySelector('#dash-val-params'), State.parameters.length);
+    animateCounter(page.querySelector('#dash-val-month'), thisMonthMaint.length);
+    animateCounter(page.querySelector('#dash-val-crit-bat'), criticalBatteries.length);
+    animateCounter(page.querySelector('#dash-val-notifs'), State.notifications.length);
+    animateCounter(page.querySelector('#gauge-val-health'), avgHealth, 800, '', '%');
+  }, 40);
 
   return page;
 }
@@ -10355,6 +10368,38 @@ window.calculateNewLimits = function() {
 };
 
 // ── Hoisted Helper Functions ────────────────────────────────────
+function animateCounter(el, target, duration = 800, prefix = '', suffix = '') {
+  if (!el) return;
+  const start = 0;
+  const startTime = performance.now();
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+    const current = Math.floor(start + (target - start) * easeProgress);
+    el.textContent = `${prefix}${current.toLocaleString('tr-TR')}${suffix}`;
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      el.textContent = `${prefix}${target.toLocaleString('tr-TR')}${suffix}`;
+    }
+  }
+  requestAnimationFrame(update);
+}
+
+function showTableSkeleton(tbody, rows = 5, cols = 5) {
+  if (!tbody) return;
+  let html = '';
+  for (let r = 0; r < rows; r++) {
+    html += '<tr>';
+    for (let c = 0; c < cols; c++) {
+      html += `<td><span class="skeleton skeleton-text" style="width:${50 + ((r * 11 + c * 7) % 40)}%"></span></td>`;
+    }
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
 function getSortedMachines() {
   return [...State.machines].sort((a, b) => String(a.numarasi || '').localeCompare(String(b.numarasi || ''), 'tr', { numeric: true, sensitivity: 'base' }));
 }
