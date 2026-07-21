@@ -4393,8 +4393,8 @@ function renderBattery() {
     <div class="page-header">
       <div class="flex items-center justify-between">
         <div>
-          <h1>🔋 Pil & Sürücü Fan Takip Paneli</h1>
-          <p>Eksen absolute enkoder pil voltajları ve kart soğutma fanı çalışma saatleri takip sihirbazı</p>
+          <h1>🔋 Pil & Sürücü Fan Ömrü Takip Paneli (Lifecycle Calculator)</h1>
+          <p>FANUC Absolute Enkoder Pil Voltajları, Geri Sayım Sayacı ve Sürücü Fan Ömrü Takip Sihirbazı</p>
         </div>
         ${canEdit() ? `
         <div class="flex gap-2">
@@ -4409,9 +4409,37 @@ function renderBattery() {
         </div>
         ` : ''}
       </div>
+
+      <!-- Lifecycle Summary KPI Cards -->
+      <div class="stats-grid mt-3 mb-1" style="grid-template-columns: repeat(4, 1fr); gap:12px">
+        <div class="stat-card blue" style="padding:12px 16px">
+          <div class="stat-data">
+            <div class="stat-value" id="kpi-batt-avg-days" style="color:#60a5fa; font-size:22px">0 Gün</div>
+            <div class="stat-label">Ortalama Kalan Pil Ömrü</div>
+          </div>
+        </div>
+        <div class="stat-card amber" style="padding:12px 16px">
+          <div class="stat-data">
+            <div class="stat-value" id="kpi-batt-warning" style="color:#fbbf24; font-size:22px">0</div>
+            <div class="stat-label">Değişimi Yaklaşan (< 60 Gün)</div>
+          </div>
+        </div>
+        <div class="stat-card red" style="padding:12px 16px">
+          <div class="stat-data">
+            <div class="stat-value" id="kpi-batt-critical" style="color:#f87171; font-size:22px">0</div>
+            <div class="stat-label">Kritik / Süresi Dolan</div>
+          </div>
+        </div>
+        <div class="stat-card green" style="padding:12px 16px">
+          <div class="stat-data">
+            <div class="stat-value" id="kpi-fan-critical" style="color:#34d399; font-size:22px">0</div>
+            <div class="stat-label">Bakım Zamanı Gelen Fan</div>
+          </div>
+        </div>
+      </div>
       
       <!-- Tabs Selector -->
-      <div class="flex gap-2 mt-4" style="border-bottom: 1px solid var(--border); padding-bottom: 8px">
+      <div class="flex gap-2 mt-3" style="border-bottom: 1px solid var(--border); padding-bottom: 8px">
         <button class="btn btn-ghost" id="btn-tab-battery" onclick="switchBatteryTab('battery')" style="font-weight:700; color:var(--text-accent); border-bottom:2px solid var(--text-accent); border-radius:0">🔋 Enkoder Pilleri</button>
         <button class="btn btn-ghost" id="btn-tab-fan" onclick="switchBatteryTab('fan')" style="font-weight:700; border-radius:0">🌀 Sürücü & Kabin Fanları</button>
       </div>
