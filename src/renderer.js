@@ -7474,12 +7474,12 @@ function renderReliability() {
         </div>
       </div>
 
-      <div class="grid-2 mb-4" style="grid-template-columns: 1.2fr 0.8fr; gap:16px">
+      <div class="grid-2 mb-4" style="grid-template-columns: 1.2fr 0.8fr; gap:16px; align-items:stretch">
         
         <!-- Table -->
-        <div class="card" style="padding:16px">
+        <div class="card" style="padding:16px; display:flex; flex-direction:column; height:100%">
           <div class="card-title mb-3">📋 Tezgah Analiz Tablosu</div>
-          <div style="overflow-x:auto">
+          <div style="overflow-x:auto; flex:1">
             <table class="data-table" style="font-size:11.5px">
               <thead>
                 <tr>
@@ -7497,7 +7497,7 @@ function renderReliability() {
         </div>
 
         <!-- OEE Component Card -->
-        <div class="card" style="padding:18px; display:flex; flex-direction:column;">
+        <div class="card" style="padding:18px; display:flex; flex-direction:column; height:100%">
           <div style="margin-bottom:14px">
             <div class="card-title mb-1" style="display:flex; align-items:center; justify-content:space-between;">
               <span>📊 OEE Verimlilik Karşılaştırması (%)</span>
@@ -7507,7 +7507,7 @@ function renderReliability() {
               Kullanılabilirlik × Performans × Kalite formülüyle hesaplanan genel ekipman verimliliği
             </p>
           </div>
-          <div id="oee-bar-container" style="flex:1; overflow-y:auto; max-height:450px; display:flex; flex-direction:column; gap:10px; padding-right:4px;">
+          <div id="oee-bar-container" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px;">
             <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px">Hesaplanıyor...</div>
           </div>
         </div>
