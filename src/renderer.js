@@ -134,7 +134,7 @@ function organizeNavigation() {
     [...sidebar.querySelectorAll('.nav-item[data-page]')].map(item => [item.dataset.page, item])
   );
   const groups = [
-    { id: 'operations', label: 'Operasyon', pages: ['machines', 'maintenance', 'battery', 'reports', 'predictive', 'reliability', 'projects'] },
+    { id: 'operations', label: 'Operasyon', pages: ['cnc_dashboard', 'machines', 'maintenance', 'battery', 'reports', 'predictive', 'reliability', 'projects'] },
     { id: 'diagnostics', label: 'Teşhis ve Destek', pages: ['troubleshooter', 'io_link', 'drive_diagnostics', 'spindle_diagnostics', 'backup_wizard', 'backup_tracker', 'troubleshoot_wiki'] },
     { id: 'engineering', label: 'Mühendislik Araçları', pages: ['tuning', 'generator', 'gcode_checker', 'param_comparator', 'gear_ratio', 'backlash_helper', 'axis_limits_helper', 'rs232', 'rs232_cables', 'fssb_topology'] },
     { id: 'reference', label: 'Bilgi Merkezi', pages: ['library', 'alarms', 'parameters', 'keep_relays', 'macro', 'nc_codes', 'pmc_signals', 'custom_builder_library', 'cheat_sheets'] }
@@ -392,6 +392,7 @@ function navigate(page, extraData = null) {
 
   const pages = {
     dashboard:   renderDashboard,
+    cnc_dashboard: renderCncDashboard,
     library:     renderLibrary,
     projects:    renderProjects,
     machines:    renderMachines,
@@ -2647,6 +2648,34 @@ function renderSettings() {
         </div>
       </div>
 
+      <!-- Tezgah Ağ Ayarları -->
+      <div class="card mb-4">
+        <div class="card-title mb-4" style="font-size:14px">🖥️ Tezgah Ağ Ayarları (Canlı İzleme)</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Fanuc Tezgah 1 IP Adresi</label>
+            <input type="text" id="cnc-m1-ip" class="form-control" placeholder="192.168.30.20" value="Yükleniyor..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fanuc 1 FOCAS Portu</label>
+            <input type="number" id="cnc-m1-port" class="form-control" placeholder="8193" value="8193" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Fanuc Tezgah 2 IP Adresi</label>
+            <input type="text" id="cnc-m2-ip" class="form-control" placeholder="192.168.30.21" value="Yükleniyor..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fanuc 2 FOCAS Portu</label>
+            <input type="number" id="cnc-m2-port" class="form-control" placeholder="8193" value="8193" />
+          </div>
+        </div>
+        <div style="padding:10px; background:var(--accent-glow); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text-secondary); margin-top:4px">
+          💡 IP adreslerini güncelledikten sonra kaydet butonuna bastığınızda telemetri servisi otomatik olarak yeniden başlatılacaktır.
+        </div>
+      </div>
+
       <!-- App Settings -->
       <div class="card mb-4">
         <div class="card-title mb-4" style="font-size:14px">📁 Uygulama</div>
@@ -2734,12 +2763,61 @@ function renderSettings() {
     inp.type = inp.type === 'password' ? 'text' : 'password';
   });
 
+  // Load CNC Machine Network Settings from bin/adapter.config.json
+  window.electronAPI.readFile('bin/adapter.config.json').then(res => {
+    if (res.ok) {
+      try {
+        const configData = JSON.parse(res.data);
+        const m1 = configData.find(c => c.id === 'Fanuc');
+        const m2 = configData.find(c => c.id === 'Fanuc2');
+        if (m1) {
+          page.querySelector('#cnc-m1-ip').value = m1.ip || '192.168.30.20';
+          page.querySelector('#cnc-m1-port').value = m1.port || 8193;
+        }
+        if (m2) {
+          page.querySelector('#cnc-m2-ip').value = m2.ip || '192.168.30.21';
+          page.querySelector('#cnc-m2-port').value = m2.port || 8193;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      page.querySelector('#cnc-m1-ip').value = '192.168.30.20';
+      page.querySelector('#cnc-m2-ip').value = '192.168.30.21';
+    }
+  }).catch(() => {
+    page.querySelector('#cnc-m1-ip').value = '192.168.30.20';
+    page.querySelector('#cnc-m2-ip').value = '192.168.30.21';
+  });
+
   page.querySelector('#btn-save-settings').addEventListener('click', async () => {
     State.settings.aiProvider = page.querySelector('#ai-provider').value;
     State.settings.aiApiKey   = page.querySelector('#ai-api-key').value;
     State.settings.aiModel    = page.querySelector('#ai-model').value;
     await saveSettings();
-    showToast('Ayarlar kaydedildi!', 'success');
+
+    // Save CNC Machine Network Settings
+    try {
+      const m1_ip = page.querySelector('#cnc-m1-ip').value.trim();
+      const m1_port = parseInt(page.querySelector('#cnc-m1-port').value) || 8193;
+      const m2_ip = page.querySelector('#cnc-m2-ip').value.trim();
+      const m2_port = parseInt(page.querySelector('#cnc-m2-port').value) || 8193;
+
+      const configData = [
+        { id: "Fanuc", ip: m1_ip, port: m1_port, shdrPort: 7880, prefix: "f" },
+        { id: "Fanuc2", ip: m2_ip, port: m2_port, shdrPort: 7881, prefix: "f2" }
+      ];
+
+      const writeRes = await window.electronAPI.writeFile('bin/adapter.config.json', JSON.stringify(configData, null, 2));
+      if (writeRes && writeRes.ok) {
+        showToast('Ayarlar kaydedildi! Servis yeniden başlatılıyor...', 'success');
+        await window.electronAPI.restartAdapter();
+      } else {
+        throw new Error(writeRes?.error || 'Dosyaya yazılamadı');
+      }
+    } catch (err) {
+      showToast('Tezgah IP adresleri kaydedilemedi: ' + err.message, 'error');
+    }
   });
 
   return page;
@@ -3499,11 +3577,11 @@ function renderMachines() {
         </div>
         <select id="mach-dept-filter" style="width:160px">
           <option value="">Tüm Bölümler</option>
-          ${[...new Set(State.machines.map(m => m.bolum).filter(Boolean))].map(d => `<option>${d}</option>`).join('')}
+          ${[...new Set(State.machines.map(m => m.bolum).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr')).map(d => `<option>${d}</option>`).join('')}
         </select>
         <select id="mach-type-filter" style="width:160px">
           <option value="">Tüm Tipler</option>
-          ${[...new Set(State.machines.map(m => m.tip).filter(Boolean))].map(t => `<option>${t}</option>`).join('')}
+          ${[...new Set(State.machines.map(m => m.tip).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr')).map(t => `<option>${t}</option>`).join('')}
         </select>
       </div>
     </div>
@@ -3554,7 +3632,10 @@ function renderMachineTable(list, page) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted)">Tezgah bulunamadı</td></tr>`;
     return;
   }
-  tbody.innerHTML = list.map(m => {
+  const sortedList = [...list].sort((a, b) =>
+    String(a.numarasi || '').localeCompare(String(b.numarasi || ''), 'tr', { numeric: true, sensitivity: 'base' })
+  );
+  tbody.innerHTML = sortedList.map(m => {
     // find last maintenance
     const machMaint = State.maintenances.filter(ma => ma.tezgah_id === m.id);
     let lastMaintDate = '—';
@@ -10371,4 +10452,200 @@ function parseDateHelper(dateStr) {
   }
 
   return isNaN(d.getTime()) ? new Date(0) : d;
+}
+
+function renderCncDashboard() {
+  const page = createPage('cnc_dashboard');
+  page.style.height = '100%';
+  page.style.display = 'flex';
+  page.style.flexDirection = 'column';
+  page.style.padding = '0';
+
+  // Sort machines alphabetically by name (Turkish locale aware natural sort)
+  const sortedMachines = [...State.machines].sort((a, b) => {
+    return String(a.numarasi || '').localeCompare(String(b.numarasi || ''), 'tr-TR', { numeric: true, sensitivity: 'base' });
+  });
+
+  // Build dynamic dropdown option elements from sortedMachines
+  const machineOptions = sortedMachines.map(m => {
+    return `<option value="${m.id}">${escapeHTML(m.numarasi)} (${escapeHTML(m.tip || 'CNC')})</option>`;
+  }).join('');
+
+  page.innerHTML = `
+    <div style="background: var(--bg-surface); padding: 8px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label style="font-weight: 700; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">İzleme Yuvası:</label>
+        <select id="cnc-sel-slot" class="form-control" style="width: 145px; padding: 4px 8px; font-size: 12px; background: var(--bg-card2); border-color: var(--border);">
+          <option value="0">Slot 1 (Sol Panel)</option>
+          <option value="1">Slot 2 (Sağ Panel)</option>
+        </select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label style="font-weight: 700; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Tezgah:</label>
+        <select id="cnc-sel-machine" class="form-control" style="width: 180px; padding: 4px 8px; font-size: 12px; background: var(--bg-card2); border-color: var(--border);">
+          <option value="">-- Tezgah Seçin --</option>
+          ${machineOptions}
+        </select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label style="font-weight: 700; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">IP Adresi:</label>
+        <input type="text" id="cnc-sel-ip" class="form-control" placeholder="192.168.30.20" style="width: 130px; padding: 4px 8px; font-size: 12px; background: var(--bg-card2); border-color: var(--border);" />
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label style="font-weight: 700; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Port:</label>
+        <input type="number" id="cnc-sel-port" class="form-control" placeholder="8193" style="width: 75px; padding: 4px 8px; font-size: 12px; background: var(--bg-card2); border-color: var(--border);" value="8193" />
+      </div>
+      <button class="btn btn-primary btn-sm" id="btn-cnc-connect" style="padding: 5px 12px; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+        <svg viewBox="0 0 24 24" style="width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5;"><polyline points="16 16 20 20 24 16"/><path d="M18 20V10a4 4 0 00-8 0v4"/><path d="M12 10a4 4 0 00-8 0v10"/><polyline points="8 16 4 20 0 16"/></svg>
+        Bağlan ve İzle
+      </button>
+    </div>
+    <div style="flex: 1; position: relative; width: 100%; height: 100%;">
+      <iframe src="./dashboard/index.html" style="width: 100%; height: 100%; border: none; background: #171a1c;"></iframe>
+    </div>
+  `;
+
+  const selSlot = page.querySelector('#cnc-sel-slot');
+  const selMachine = page.querySelector('#cnc-sel-machine');
+  const txtIp = page.querySelector('#cnc-sel-ip');
+  const txtPort = page.querySelector('#cnc-sel-port');
+  const btnConnect = page.querySelector('#btn-cnc-connect');
+
+  // Load slot names from LocalStorage
+  State.cnc_slot1_name = localStorage.getItem('cnc_slot1_name') || 'Fanuc Tezgah 1';
+  State.cnc_slot2_name = localStorage.getItem('cnc_slot2_name') || 'Fanuc Tezgah 2';
+
+  // Read current IPs/ports from adapter config to update State.machines
+  window.electronAPI.readFile('bin/adapter.config.json').then(res => {
+    if (res.ok) {
+      try {
+        const configData = JSON.parse(res.data);
+        const m1 = configData[0];
+        const m2 = configData[1];
+        if (m1) {
+          const found = State.machines.find(m => m.numarasi === State.cnc_slot1_name);
+          if (found) {
+            found.ip = m1.ip;
+            found.port = m1.port;
+          }
+        }
+        if (m2) {
+          const found = State.machines.find(m => m.numarasi === State.cnc_slot2_name);
+          if (found) {
+            found.ip = m2.ip;
+            found.port = m2.port;
+          }
+        }
+        // Pre-fill fields with Slot 1 on startup if mapped
+        if (State.cnc_slot1_name) {
+          const match = State.machines.find(m => m.numarasi === State.cnc_slot1_name);
+          if (match) {
+            selMachine.value = match.id;
+            txtIp.value = match.ip || '';
+            txtPort.value = match.port || 8193;
+          }
+        }
+      } catch (e) {}
+    }
+  });
+
+  selMachine.addEventListener('change', () => {
+    const mId = parseInt(selMachine.value);
+    if (!isNaN(mId)) {
+      const machine = State.machines.find(m => m.id === mId);
+      if (machine) {
+        txtIp.value = machine.ip || '';
+        txtPort.value = machine.port || 8193;
+      }
+    } else {
+      txtIp.value = '';
+      txtPort.value = '8193';
+    }
+  });
+
+  selSlot.addEventListener('change', () => {
+    const slotIdx = parseInt(selSlot.value);
+    const targetName = slotIdx === 0 ? State.cnc_slot1_name : State.cnc_slot2_name;
+    if (targetName) {
+      const match = State.machines.find(m => m.numarasi === targetName);
+      if (match) {
+        selMachine.value = match.id;
+        txtIp.value = match.ip || '';
+        txtPort.value = match.port || 8193;
+        return;
+      }
+    }
+    selMachine.value = '';
+    txtIp.value = '';
+    txtPort.value = '8193';
+  });
+
+  btnConnect.addEventListener('click', async () => {
+    const slotIdx = parseInt(selSlot.value);
+    const mId = parseInt(selMachine.value);
+    const ip = txtIp.value.trim();
+    const port = parseInt(txtPort.value) || 8193;
+
+    if (isNaN(mId)) {
+      showToast('Lütfen listeden bir tezgah seçin.', 'error');
+      return;
+    }
+    if (!ip) {
+      showToast('Lütfen geçerli bir IP adresi girin.', 'error');
+      return;
+    }
+
+    const machine = State.machines.find(m => m.id === mId);
+    if (!machine) return;
+
+    machine.ip = ip;
+    machine.port = port;
+    await saveMachines();
+
+    if (slotIdx === 0) {
+      State.cnc_slot1_name = machine.numarasi;
+      localStorage.setItem('cnc_slot1_name', machine.numarasi);
+    } else {
+      State.cnc_slot2_name = machine.numarasi;
+      localStorage.setItem('cnc_slot2_name', machine.numarasi);
+    }
+
+    try {
+      let configData = [
+        { id: "Fanuc", ip: "192.168.30.20", port: 8193, shdrPort: 7880, prefix: "f" },
+        { id: "Fanuc2", ip: "192.168.30.21", port: 8193, shdrPort: 7881, prefix: "f2" }
+      ];
+
+      const readRes = await window.electronAPI.readFile('bin/adapter.config.json');
+      if (readRes.ok) {
+        try { configData = JSON.parse(readRes.data); } catch (e) {}
+      }
+
+      configData[slotIdx] = {
+        id: slotIdx === 0 ? "Fanuc" : "Fanuc2",
+        ip: ip,
+        port: port,
+        shdrPort: slotIdx === 0 ? 7880 : 7881,
+        prefix: slotIdx === 0 ? "f" : "f2"
+      };
+
+      const writeRes = await window.electronAPI.writeFile('bin/adapter.config.json', JSON.stringify(configData, null, 2));
+      if (writeRes && writeRes.ok) {
+        showToast(`${machine.numarasi} bağlantısı kuruluyor, lütfen bekleyin...`, 'success');
+        await window.electronAPI.restartAdapter();
+        
+        // Refresh iframe to reload app.js with updated State.cnc_slotX_name values
+        setTimeout(() => {
+          const iframe = page.querySelector('iframe');
+          if (iframe) iframe.src = iframe.src;
+        }, 800);
+      } else {
+        throw new Error(writeRes?.error || 'Konfigürasyon yazılamadı.');
+      }
+    } catch (err) {
+      showToast('Bağlantı kaydedilemedi: ' + err.message, 'error');
+    }
+  });
+
+  return page;
 }
