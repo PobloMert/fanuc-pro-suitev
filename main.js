@@ -36,19 +36,49 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-      webSecurity: false, // Set to false to allow local MTConnect Agent HTTP iframe loading
+      webSecurity: true, // Secure webSecurity enabled with net.fetch proxying
     },
+
     frame: false,
     titleBarStyle: 'hidden',
     backgroundColor: '#0d0f1a',
-    show: false
+    show: true
+  });
+
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    console.error('Failed to load HTML:', errorCode, errorDescription, validatedURL);
+  });
+  mainWindow.webContents.on('render-process-gone', (event, details) => {
+    console.error('Render process gone:', details);
   });
 
   mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.setAlwaysOnTop(true);
+  mainWindow.focus();
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setAlwaysOnTop(false);
+    }
+  }, 1500);
+
 
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.setAlwaysOnTop(true);
+      mainWindow.focus();
+      setTimeout(() => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.setAlwaysOnTop(false);
+        }
+      }, 1500);
+    }
   });
+
+
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -58,6 +88,7 @@ function createWindow() {
 const ALLOWED_DATA_DIR = path.resolve(path.join(os.homedir(), '.fanuc-pro-suite'));
 const APP_ROOT_DATA = path.resolve(path.join(__dirname, 'data'));
 const APP_BIN_DIR = path.resolve(path.join(__dirname, 'bin'));
+const USER_HOME_DIR = path.resolve(os.homedir());
 
 function isSafePath(filePath) {
   if (!filePath) return false;
@@ -69,6 +100,7 @@ function isSafePath(filePath) {
   let allowed = ALLOWED_DATA_DIR;
   let appRoot = APP_ROOT_DATA;
   let appBin = APP_BIN_DIR;
+  let userHome = USER_HOME_DIR;
 
   // On Windows, paths are case-insensitive
   if (process.platform === 'win32') {
@@ -76,48 +108,144 @@ function isSafePath(filePath) {
     allowed = allowed.toLowerCase();
     appRoot = appRoot.toLowerCase();
     appBin = appBin.toLowerCase();
+    userHome = userHome.toLowerCase();
   }
   
   const isInsideAllowedDataDir = resolved.startsWith(allowed + path.sep) || resolved === allowed;
   const isInsideAppRootData = resolved.startsWith(appRoot + path.sep) || resolved === appRoot;
   const isInsideAppBin = resolved.startsWith(appBin + path.sep) || resolved === appBin;
+  const isInsideUserHome = resolved.startsWith(userHome + path.sep) || resolved === userHome;
   
-  return isInsideAllowedDataDir || isInsideAppRootData || isInsideAppBin;
+  return isInsideAllowedDataDir || isInsideAppRootData || isInsideAppBin || isInsideUserHome;
 }
 
 let adapterProcess = null;
+let adapterStatus = {
+  state: 'stopped', // 'running', 'restarting', 'stopped', 'error', 'starting'
+  attempts: 0,
+  maxAttempts: 10,
+  lastError: null,
+  lastStartTime: null
+};
+let isIntentionalStop = false;
+let autoRestartTimer = null;
+let healthyDurationTimer = null;
 
-function startAdapter() {
+function notifyAdapterStatus() {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('adapter-status-changed', adapterStatus);
+  }
+}
+
+function updateAdapterState(newState, extra = {}) {
+  adapterStatus = { ...adapterStatus, state: newState, ...extra };
+  console.log(`[Adapter Status] State: ${newState}, Attempts: ${adapterStatus.attempts}/${adapterStatus.maxAttempts}`);
+  notifyAdapterStatus();
+}
+
+function startAdapter(manualReset = false) {
+  isIntentionalStop = false;
+  if (manualReset) {
+    adapterStatus.attempts = 0;
+    adapterStatus.lastError = null;
+  }
+
+  if (autoRestartTimer) {
+    clearTimeout(autoRestartTimer);
+    autoRestartTimer = null;
+  }
+
+  updateAdapterState('starting');
+
   // Terminate any existing instance first to prevent port conflicts
   exec('taskkill /F /IM FanucSHDRAdapter.exe', () => {
     const adapterPath = path.join(__dirname, 'bin', 'FanucSHDRAdapter.exe');
     const adapterCwd = path.join(__dirname, 'bin');
     if (!fs.existsSync(adapterPath)) {
-      console.error('FanucSHDRAdapter.exe not found at:', adapterPath);
+      const errStr = 'FanucSHDRAdapter.exe bulunamadı: ' + adapterPath;
+      console.error(errStr);
+      updateAdapterState('error', { lastError: errStr });
       return;
     }
 
     console.log('Spawning FanucSHDRAdapter.exe...');
     setTimeout(() => {
-      adapterProcess = spawn(adapterPath, [], {
-        cwd: adapterCwd,
-        stdio: 'ignore',
-        detached: false
-      });
+      try {
+        adapterProcess = spawn(adapterPath, [], {
+          cwd: adapterCwd,
+          stdio: 'ignore',
+          detached: false
+        });
 
-      adapterProcess.on('error', (err) => {
-        console.error('Failed to start FanucSHDRAdapter:', err);
-      });
+        adapterStatus.lastStartTime = Date.now();
+        updateAdapterState('running');
 
-      adapterProcess.on('close', (code) => {
-        console.log(`FanucSHDRAdapter exited with code ${code}`);
-        adapterProcess = null;
-      });
+        // Reset attempt counter after 30 seconds of stable execution
+        if (healthyDurationTimer) clearTimeout(healthyDurationTimer);
+        healthyDurationTimer = setTimeout(() => {
+          if (adapterStatus.state === 'running') {
+            adapterStatus.attempts = 0;
+            console.log('[Adapter Health] 30s saniye kararlı çalışma sağlandı. Yeniden deneme sayacı sıfırlandı.');
+          }
+        }, 30000);
+
+        adapterProcess.on('error', (err) => {
+          console.error('Failed to start FanucSHDRAdapter:', err);
+          handleAdapterCrash(err ? err.message : 'Spawn hatası');
+        });
+
+        adapterProcess.on('close', (code) => {
+          console.log(`FanucSHDRAdapter exited with code ${code}`);
+          adapterProcess = null;
+          if (!isIntentionalStop) {
+            handleAdapterCrash(`Proses kapandı (kod: ${code})`);
+          } else {
+            updateAdapterState('stopped');
+          }
+        });
+      } catch (err) {
+        console.error('Exception spawning adapter:', err);
+        handleAdapterCrash(err.message);
+      }
     }, 800);
   });
 }
 
+function handleAdapterCrash(errorMsg) {
+  if (healthyDurationTimer) {
+    clearTimeout(healthyDurationTimer);
+    healthyDurationTimer = null;
+  }
+
+  adapterStatus.lastError = errorMsg;
+  adapterStatus.attempts += 1;
+
+  if (adapterStatus.attempts > adapterStatus.maxAttempts) {
+    updateAdapterState('error', { lastError: `Maksimum yeniden deneme sınırına ulaşıldı (${adapterStatus.maxAttempts}).` });
+    console.error('[Adapter Error] Maksimum yeniden deneme sınırına ulaşıldı.');
+    return;
+  }
+
+  // Exponential backoff delay (1s, 2s, 4s, 8s, up to 30s max)
+  const delay = Math.min(30000, 1000 * Math.pow(2, adapterStatus.attempts - 1));
+  updateAdapterState('restarting', { nextRetryDelayMs: delay });
+
+  console.log(`[Adapter Auto-Restart] ${delay}ms sonra yeniden başlatılacak (Deneme ${adapterStatus.attempts}/${adapterStatus.maxAttempts})...`);
+  autoRestartTimer = setTimeout(() => {
+    startAdapter();
+  }, delay);
+}
+
 function stopAdapter() {
+  isIntentionalStop = true;
+  if (autoRestartTimer) {
+    clearTimeout(autoRestartTimer);
+    autoRestartTimer = null;
+  }
+  if (healthyDurationTimer) {
+    clearTimeout(healthyDurationTimer);
+    healthyDurationTimer = null;
+  }
   if (adapterProcess) {
     try {
       adapterProcess.kill();
@@ -125,7 +253,9 @@ function stopAdapter() {
     adapterProcess = null;
   }
   exec('taskkill /F /IM FanucSHDRAdapter.exe', () => {});
+  updateAdapterState('stopped');
 }
+
 
 // App lifecycle
 app.whenReady().then(() => {
@@ -150,10 +280,16 @@ app.whenReady().then(() => {
   startAdapter();
   createWindow();
   
+  // Trigger automatic daily snapshot backup
+  setTimeout(() => {
+    performAutoBackup();
+  }, 3000);
+  
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
+
 
 app.on('window-all-closed', () => {
   stopAdapter();
@@ -328,39 +464,94 @@ ipcMain.handle('fs-ensure-dir', async (event, dirPath) => {
   }
 });
 
-// Restart C# Telemetry Adapter
+// Telemetry Adapter Status & Control
+ipcMain.handle('get-adapter-status', () => {
+  return { ok: true, data: adapterStatus };
+});
+
 ipcMain.handle('restart-adapter', async () => {
   try {
-    startAdapter();
+    startAdapter(true);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };
   }
 });
 
+// REAL TCP Socket Connectivity Check
+ipcMain.handle('ping-tcp-port', async (event, { host, port, timeoutMs = 2500 }) => {
+  return new Promise((resolve) => {
+    const net = require('net');
+    const socket = new net.Socket();
+    let isSettled = false;
+
+    socket.setTimeout(timeoutMs);
+
+    socket.on('connect', () => {
+      if (!isSettled) {
+        isSettled = true;
+        socket.destroy();
+        resolve({ ok: true, connected: true });
+      }
+    });
+
+    socket.on('timeout', () => {
+      if (!isSettled) {
+        isSettled = true;
+        socket.destroy();
+        resolve({ ok: false, error: 'Bağlantı Zaman Aşımı (Timeout). Cihaz veya Port yanıt vermiyor.' });
+      }
+    });
+
+    socket.on('error', (err) => {
+      if (!isSettled) {
+        isSettled = true;
+        socket.destroy();
+        resolve({ ok: false, error: `Bağlantı Reddedildi (${err.message})` });
+      }
+    });
+
+    try {
+      socket.connect(port, host);
+    } catch (e) {
+      resolve({ ok: false, error: e.message });
+    }
+  });
+});
+
+
+
 // Open external (with Protocol and Safe Path Validation)
-ipcMain.on('open-external', (event, url) => {
+ipcMain.on('open-external', (event, targetPath) => {
   try {
-    const parsedUrl = new URL(url);
-    if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
-      shell.openExternal(url);
-    } else if (parsedUrl.protocol === 'app-file:') {
-      let filePath = decodeURIComponent(parsedUrl.pathname);
+    if (!targetPath) return;
+    if (typeof targetPath === 'string' && (targetPath.startsWith('http://') || targetPath.startsWith('https://'))) {
+      shell.openExternal(targetPath);
+      return;
+    }
+
+    let filePath = targetPath;
+    if (targetPath.startsWith('app-file://')) {
+      filePath = targetPath.replace('app-file://', '');
       if (process.platform === 'win32' && filePath.startsWith('/')) {
         filePath = filePath.slice(1);
       }
-      if (isSafePath(filePath)) {
-        shell.openPath(filePath);
-      } else {
-        console.warn(`Blocked open-external call for unsafe path: ${filePath}`);
+    }
+
+    filePath = path.resolve(decodeURIComponent(filePath));
+    if (isSafePath(filePath)) {
+      if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath, { recursive: true });
       }
+      shell.openPath(filePath);
     } else {
-      console.warn(`Blocked open-external call for protocol: ${parsedUrl.protocol}`);
+      console.warn(`Blocked open-external call for unsafe path: ${filePath}`);
     }
   } catch (err) {
-    console.error(`Invalid URL in open-external: ${url}`);
+    console.error(`Invalid URL or path in open-external: ${targetPath}`, err);
   }
 });
+
 
 // Export CSV
 ipcMain.handle('export-csv', async (event, csvContent, defaultName) => {
@@ -461,3 +652,145 @@ ipcMain.handle('print-to-pdf', async (event, htmlContent, defaultName) => {
     }
   }
 });
+
+// ── Auto-Backup Engine ──────────────────────────────────────────
+async function performAutoBackup() {
+  try {
+    const backupDir = path.join(os.homedir(), '.fanuc-pro-suite', 'backups');
+    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+    const filesToBackup = [
+      'alarms.json', 'parameters.json', 'machines.json', 'maintenances.json',
+      'batteries.json', 'fans.json', 'users.json', 'keep_relays.json',
+      'wiki.json', 'custom_alarms.json', 'custom_mcodes.json', 'custom_alarm_notes.json'
+    ];
+
+    const snapshot = {
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      data: {}
+    };
+
+    for (const file of filesToBackup) {
+      const p = path.join(__dirname, 'data', file);
+      if (fs.existsSync(p)) {
+        try {
+          snapshot.data[file] = fs.readFileSync(p, 'utf8');
+        } catch {}
+      }
+    }
+
+    const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const backupFile = path.join(backupDir, `backup_${dateStr}.json`);
+    fs.writeFileSync(backupFile, JSON.stringify(snapshot, null, 2), 'utf8');
+    console.log('[Auto-Backup] Snapshot created:', backupFile);
+
+    // Retain last 30 daily backup snapshots
+    const existing = fs.readdirSync(backupDir)
+      .filter(f => f.startsWith('backup_') && f.endsWith('.json'))
+      .map(f => ({ name: f, path: path.join(backupDir, f), time: fs.statSync(path.join(backupDir, f)).mtimeMs }))
+      .sort((a, b) => b.time - a.time);
+
+    if (existing.length > 30) {
+      existing.slice(30).forEach(old => {
+        try { fs.unlinkSync(old.path); } catch {}
+      });
+    }
+    return { ok: true, file: backupFile };
+  } catch (err) {
+    console.error('[Auto-Backup Error]:', err);
+    return { ok: false, error: err.message };
+  }
+}
+
+// IPC Handlers for Backup & Restore
+ipcMain.handle('get-backups-list', async () => {
+  try {
+    const backupDir = path.join(os.homedir(), '.fanuc-pro-suite', 'backups');
+    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+    const files = fs.readdirSync(backupDir)
+      .filter(f => f.startsWith('backup_') && f.endsWith('.json'))
+      .map(f => {
+        const full = path.join(backupDir, f);
+        const stat = fs.statSync(full);
+        return {
+          filename: f,
+          path: full,
+          sizeBytes: stat.size,
+          mtime: stat.mtime
+        };
+      })
+      .sort((a, b) => b.mtime - a.mtime);
+
+    return { ok: true, items: files };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
+ipcMain.handle('create-manual-backup', async () => {
+  return await performAutoBackup();
+});
+
+ipcMain.handle('restore-backup', async (event, backupFilePath) => {
+  try {
+    if (!fs.existsSync(backupFilePath)) return { ok: false, error: 'Yedek dosyası bulunamadı.' };
+    const content = fs.readFileSync(backupFilePath, 'utf8');
+    const snapshot = JSON.parse(content);
+    if (!snapshot || !snapshot.data) return { ok: false, error: 'Geçersiz yedek dosyası formatı.' };
+
+    for (const [fileName, fileData] of Object.entries(snapshot.data)) {
+      const targetPath = path.join(__dirname, 'data', fileName);
+      if (isSafePath(targetPath)) {
+        fs.writeFileSync(targetPath, fileData, 'utf8');
+      }
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
+// IPC Handler for Secure Fetch Proxy (webSecurity: true compliance)
+ipcMain.handle('fetch-proxy', async (event, url, options = {}) => {
+  try {
+    const response = await net.fetch(url, options);
+    const text = await response.text();
+    return { ok: true, status: response.status, data: text };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
+// IPC Handler for PDF Text Search
+ipcMain.handle('search-pdf-text', async (event, pdfPath, query) => {
+  try {
+    const resolved = path.isAbsolute(pdfPath) ? path.resolve(pdfPath) : path.resolve(path.join(__dirname, pdfPath));
+    if (!isSafePath(resolved) || !fs.existsSync(resolved)) {
+      return { ok: false, error: 'Dosya bulunamadı veya erişim engellendi.' };
+    }
+
+    const buf = fs.readFileSync(resolved);
+    const textContent = buf.toString('latin1');
+    const q = (query || '').toLowerCase();
+    
+    const matches = [];
+    const lowerText = textContent.toLowerCase();
+    let pos = 0;
+    let count = 0;
+    while ((pos = lowerText.indexOf(q, pos)) !== -1 && count < 10) {
+      const start = Math.max(0, pos - 40);
+      const end = Math.min(textContent.length, pos + query.length + 40);
+      const snippet = textContent.slice(start, end).replace(/[\r\n]+/g, ' ');
+      matches.push({ pos, snippet });
+      pos += query.length + 5;
+      count++;
+    }
+
+    return { ok: true, matches };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+

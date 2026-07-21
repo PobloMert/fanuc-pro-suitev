@@ -52,43 +52,46 @@ function escapeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
-const State = {
-  currentPage: 'dashboard',
-  appDataDir: null,
-  activeDiagnostic: null,
-  alarms: [],
-  parameters: [],
-  nc_codes: [],
-  pmc_signals: [],
-  library: [],
-  projects: [],
-  machines: [],
-  maintenances: [],
-  batteries: [],
-  keep_relays: [],
-  drive_alarms: [],
-  fans: [],
-  wiki: [],
-  backup_logs: [],
-  custom_mcodes: [],
-  custom_alarms: [],
-  custom_alarm_notes: {},
-  users: [],
-  notifications: [],
-  onlineSearchEnabled: false,
-  currentUser: null,
-  settings: {
-    aiProvider: 'offline',
-    aiApiKey: '',
-    aiModel: 'gpt-4o',
-    theme: 'dark',
-    pdfPaths: {}
-  }
-};
+if (typeof window !== 'undefined' && !window.State) {
+  window.State = {
+    currentPage: 'dashboard',
+    appDataDir: null,
+    activeDiagnostic: null,
+    alarms: [],
+    parameters: [],
+    nc_codes: [],
+    pmc_signals: [],
+    library: [],
+    projects: [],
+    machines: [],
+    maintenances: [],
+    batteries: [],
+    keep_relays: [],
+    drive_alarms: [],
+    fans: [],
+    wiki: [],
+    backup_logs: [],
+    custom_mcodes: [],
+    custom_alarms: [],
+    custom_alarm_notes: {},
+    users: [],
+    notifications: [],
+    onlineSearchEnabled: false,
+    currentUser: null,
+    settings: {
+      aiProvider: 'offline',
+      aiApiKey: '',
+      aiModel: 'gpt-4o',
+      theme: 'dark',
+      pdfPaths: {}
+    }
+  };
+}
+var State = window.State;
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await init();
-});
+
+// Main initialization is bootstrapped via src/js/app.js module
+
 
 async function init() {
   // Inject extra styles
@@ -436,7 +439,7 @@ async function saveSettings() {
 }
 
 // ── Navigation ─────────────────────────────────────────────────
-function navigate(page, extraData = null) {
+window.navigate = function navigate(page, extraData = null) {
   State.currentPage = page;
 
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -453,7 +456,9 @@ function navigate(page, extraData = null) {
   const pages = {
     dashboard:   renderDashboard,
     cnc_dashboard: renderCncDashboard,
+    cnc_screen_viewer: renderCncScreenViewer,
     library:     renderLibrary,
+
     projects:    renderProjects,
     machines:    renderMachines,
     maintenance: renderMaintenance,
@@ -497,7 +502,8 @@ function navigate(page, extraData = null) {
     content.appendChild(el);
     el.classList.add('animate-in');
   }
-}
+};
+
 
 // ════════════════════════════════════════════════════════════════
 //  THEME SWITCHER
@@ -1236,7 +1242,8 @@ function renderDashboard() {
       <div class="flex items-center justify-between">
         <div>
           <h1>Dashboard</h1>
-          <p>MTB Elektrik Bakım — ${escapeHTML(State.currentUser.name)} olarak giriş yapıldı · ${State.notifications.length} aktif bildirim</p>
+          <p>MTB Elektrik Bakım — ${escapeHTML(State.currentUser ? State.currentUser.name : 'Misafir')} olarak giriş yapıldı · ${State.notifications.length} aktif bildirim</p>
+
         </div>
         <div class="flex gap-2">
           <button class="btn btn-ghost btn-sm" onclick="checkNotifications(); navigate('dashboard')">
@@ -1496,8 +1503,37 @@ function renderLibrary() {
       </div>
     </div>
     <div class="page-body">
+      <!-- Offline Knowledge Packs Card -->
+      <div class="card mb-4" style="padding:16px; background:var(--bg-card2)">
+        <div class="card-title mb-3" style="display:flex; align-items:center; justify-content:space-between">
+          <span>📦 Çevrimdışı Kılavuz Paketleri (Offline Knowledge Packs)</span>
+          <span class="tag tag-blue" style="font-size:11px">İnternetsiz Fabrika Kullanımı</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+          ${(window.OFFLINE_PACKS || []).map(p => `
+            <div style="background:var(--bg-card); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border); display:flex; flex-direction:column; justify-content:space-between">
+              <div>
+                <div style="font-weight:700; font-size:12.5px; color:var(--text-accent); margin-bottom:4px">${escapeHTML(p.name)}</div>
+                <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px">${escapeHTML(p.desc)}</div>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; border-top:1px solid var(--border-light); padding-top:8px">
+                <span class="font-mono text-xs" style="color:var(--text-muted)">${p.size} · ${p.version}</span>
+                ${p.status === 'installed' ? `
+                  <span class="tag tag-green" style="font-size:11px">✅ Çevrimdışı Hazır</span>
+                ` : `
+                  <button class="btn btn-primary btn-sm" id="btn-pack-${p.id}" onclick="downloadOfflinePack('${p.id}')" style="font-size:11px; padding:3px 10px">
+                    📥 İndir & Arşivle
+                  </button>
+                `}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
       <div id="lib-grid" class="grid-2"></div>
     </div>
+
   `;
 
   renderLibraryGrid(State.library);
@@ -2604,11 +2640,31 @@ function renderSettings() {
           `).join('')}
         </div>
       </div>
+          <!-- Auto-Updater & Knowledge Packs Card -->
+          <div class="card mb-4">
+            <div class="card-title mb-3" style="font-size:14px; display:flex; align-items:center; justify-content:space-between">
+              <span>🔄 Sürüm & Kütüphane Güncelleme Paneli</span>
+              <span id="updater-status-badge" class="tag tag-green">🟢 Güncel (v2.5.0)</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px" id="updater-status-text">
+              Yazılımınız ve FANUC Alarm/Parametre Kütüphaneleriniz en son sürümde (v2.5.0).
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-primary btn-sm" onclick="checkForAppUpdates()">
+                🔍 Güncellemeleri Denetle
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="navigate('library')">
+                📦 Çevrimdışı Paketler
+              </button>
+            </div>
+          </div>
+
           <!-- User Management -->
+
       <div class="card mb-4">
         <div class="card-title mb-3" style="font-size:14px">👥 Kullanıcı Yönetimi</div>
         <div style="margin-bottom:12px; padding:10px; background:var(--bg-card2); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text-secondary)">
-          Aktif Kullanıcı: <strong style="color:var(--text-primary)">${State.currentUser.name}</strong> — ${getRoleLabel(State.currentUser.role)}
+          Aktif Kullanıcı: <strong style="color:var(--text-primary)">${State.currentUser ? escapeHTML(State.currentUser.name) : 'Misafir'}</strong> — ${getRoleLabel(State.currentUser ? State.currentUser.role : 'operator')}
         </div>
         <table class="data-table">
           <thead><tr><th>Kullanıcı</th><th>Rol</th><th>PIN</th><th>İşlem</th></tr></thead>
@@ -2624,9 +2680,10 @@ function renderSettings() {
                 <td>${escapeHTML(getRoleLabel(u.role))}</td>
                 <td><span class="font-mono" style="letter-spacing:4px; color:var(--text-muted)">••••</span></td>
                 <td>
-                  ${canDelete() ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})" ${u.id === State.currentUser.id ? 'disabled title="Kendi hesabınızı silemezsiniz"' : ''}>Sil</button>` : '—'}
+                  ${canDelete() ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})" ${(State.currentUser && u.id === State.currentUser.id) ? 'disabled title="Kendi hesabınızı silemezsiniz"' : ''}>Sil</button>` : '—'}
                 </td>
               </tr>
+
             `).join('')}
           </tbody>
         </table>
@@ -3001,8 +3058,9 @@ window.changeMyPin = async function() {
 };
 
 window.openDataDir = function() {
-  if (State.appDataDir) window.electronAPI.openExternal('app-file://' + State.appDataDir);
+  if (State.appDataDir) window.electronAPI.openExternal(State.appDataDir);
 };
+
 
 // ════════════════════════════════════════════════════════════════
 //  AI CHAT
@@ -3190,6 +3248,9 @@ window.sendAIMessage = async function() {
   appendMessage('user', msg);
   ChatHistory.push({ role: 'user', content: msg });
 
+  // Generate RAG Context from local FANUC database
+  const ragContext = typeof window.buildRAGContext === 'function' ? window.buildRAGContext(msg) : '';
+
   let searchLoadingId = null;
   if (State.onlineSearchEnabled) {
     searchLoadingId = appendSearchLoading(msg);
@@ -3201,25 +3262,30 @@ window.sendAIMessage = async function() {
 
   let response;
   try {
+    const apiMsg = ragContext ? `${msg}\n\n${ragContext}` : msg;
     if (State.settings.aiProvider !== 'offline' && State.settings.aiApiKey) {
-      const apiMsg = State.onlineSearchEnabled
-        ? `[Sistem Notu: Web araması aktif. Lütfen internetten aldığın en güncel teknik FANUC verilerini kullanarak cevap ver.] ${msg}`
-        : msg;
-      response = await callAIAPI(apiMsg, ChatHistory.slice(-10));
+      const finalMsg = State.onlineSearchEnabled
+        ? `[Sistem Notu: Web araması aktif. Lütfen internetten aldığın en güncel teknik FANUC verilerini kullanarak cevap ver.] ${apiMsg}`
+        : apiMsg;
+      response = await callAIAPI(finalMsg, ChatHistory.slice(-10));
     } else {
       const offlineAns = offlineAI(msg);
+      const combinedAns = ragContext ? `${offlineAns}\n\n---\n${ragContext}` : offlineAns;
       response = State.onlineSearchEnabled
-        ? `🌐 **Canlı Arama Sonuçları (Google/Official FANUC Cloud):**\n\nSorgunuz internet üzerinden arandı ve yerel veritabanı ile eşleştirildi:\n\n` + offlineAns
-        : offlineAns;
+        ? `🌐 **Canlı Arama Sonuçları (Google/Official FANUC Cloud):**\n\nSorgunuz internet üzerinden arandı ve yerel veritabanı ile eşleştirildi:\n\n` + combinedAns
+        : combinedAns;
     }
   } catch (e) {
-    response = `API hatası: ${e.message}\n\nOffline veritabanına geçiyorum:\n\n` + offlineAI(msg);
+    const offlineAns = offlineAI(msg);
+    const combinedAns = ragContext ? `${offlineAns}\n\n---\n${ragContext}` : offlineAns;
+    response = `API hatası: ${e.message}\n\nOffline veritabanına geçiyorum:\n\n` + combinedAns;
   }
 
   removeTyping(typingId);
   appendMessage('ai', response);
   ChatHistory.push({ role: 'assistant', content: response });
 };
+
 
 function appendSearchLoading(query) {
   const container = document.getElementById('ai-messages');
@@ -3975,7 +4041,7 @@ function buildMaintenanceReportHTML(filters = {}) {
         <div class="pdf-meta">
           <strong>Bakım Defteri Raporu</strong>
           Oluşturma: ${dateStr} ${timeStr}<br>
-          Hazırlayan: ${State.currentUser.name}
+          Hazırlayan: ${State.currentUser ? escapeHTML(State.currentUser.name) : 'Misafir'}
         </div>
       </div>
 
@@ -4034,7 +4100,8 @@ function buildMaintenanceReportHTML(filters = {}) {
       </table>
 
       <div class="signature-row">
-        <div class="signature-box">Hazırlayan: ${State.currentUser.name}<br><br></div>
+        <div class="signature-box">Hazırlayan: ${State.currentUser ? escapeHTML(State.currentUser.name) : 'Misafir'}<br><br></div>
+
         <div class="signature-box">Onaylayan:<br><br></div>
         <div class="signature-box">Tarih: ${dateStr}<br><br></div>
       </div>
@@ -4111,7 +4178,7 @@ function buildMachineCardHTML(machineId) {
         <div class="pdf-meta">
           <strong>Makine Kartı</strong>
           Oluşturma: ${dateStr} ${timeStr}<br>
-          Hazırlayan: ${State.currentUser.name}
+          Hazırlayan: ${State.currentUser ? escapeHTML(State.currentUser.name) : 'Misafir'}
         </div>
       </div>
 
@@ -4208,7 +4275,8 @@ function buildMachineCardHTML(machineId) {
       ` : ''}
 
       <div class="signature-row">
-        <div class="signature-box">Hazırlayan: ${State.currentUser.name}<br><br></div>
+        <div class="signature-box">Hazırlayan: ${State.currentUser ? escapeHTML(State.currentUser.name) : 'Misafir'}<br><br></div>
+
         <div class="signature-box">Onaylayan:<br><br></div>
         <div class="signature-box">Tarih: ${dateStr}<br><br></div>
       </div>
@@ -4697,7 +4765,8 @@ function renderBatteryTable(list, page) {
     const mach = State.machines.find(x => x.id === b.tezgah_id);
     const machName = mach ? mach.numarasi : `Tezgah #${b.tezgah_id}`;
     const stat = getBatteryStatus(b.tarih);
-    const remainingDays = stat.daysLeft;
+    const deg = window.calculateDegradation ? window.calculateDegradation(b, 'battery') : { percentRemaining: 100, daysRemaining: stat.daysLeft, color: 'var(--green)' };
+    const remainingDays = deg.daysRemaining;
 
     let volt = 3.6;
     if (remainingDays < 0) {
@@ -4708,7 +4777,7 @@ function renderBatteryTable(list, page) {
       volt = 3.2;
     }
 
-    const statusColor = remainingDays < 0 ? 'var(--red)' : remainingDays < 30 ? 'var(--amber)' : 'var(--green)';
+    const statusColor = deg.color;
 
     return `
       <tr>
@@ -4719,12 +4788,16 @@ function renderBatteryTable(list, page) {
         <td><span class="font-mono text-sm">${escapeHTML(b.tarih)}</span></td>
         <td><span>${escapeHTML(b.bakim_yapan)}</span></td>
         <td>
-          <span class="font-mono" style="font-weight:600; color:${statusColor}">${remainingDays} Gün</span>
-          <div style="width: 90px; background: var(--border-light); border-radius: 4px; overflow: hidden; height: 5px; margin-top: 4px">
-            <div style="width: ${Math.max(0, Math.min(100, (remainingDays / 365) * 100))}%; height: 100%; background: ${statusColor}"></div>
+          <div style="display:flex; align-items:center; gap:6px">
+            <span class="font-mono" style="font-weight:700; color:${deg.color}; font-size:12px">%${deg.percentRemaining}</span>
+            <span class="font-mono text-xs" style="color:var(--text-muted)">(${deg.daysRemaining} Gün)</span>
+          </div>
+          <div style="width: 110px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; height: 6px; margin-top: 4px">
+            <div style="width: ${deg.percentRemaining}%; height: 100%; background: ${deg.color}; transition: width 0.3s ease"></div>
           </div>
         </td>
         <td><span class="tag ${stat.class}">${escapeHTML(stat.label.split(' ')[0])}</span></td>
+
         <td>
           <div style="display:flex; gap:6px; align-items:center">
             ${canEdit() ? `
@@ -8527,7 +8600,13 @@ function renderTroubleshooter() {
       <p>Tezgahtaki belirtilere göre adım adım ilerleyen karar destek mekanizmasıyla arızanın kök nedenini bulun</p>
     </div>
     <div class="page-body">
-      <div class="card" style="padding:24px; max-width:800px; margin:0 auto; min-height:300px; display:flex; flex-direction:column; justify-content:space-between">
+      <!-- Animated Flowchart SVG -->
+      <div id="flowchart-svg-wrap">
+        ${window.renderInteractiveFlowchartSVG ? window.renderInteractiveFlowchartSVG('step1', {}) : ''}
+      </div>
+
+      <div class="card glass-card" style="padding:24px; max-width:800px; margin:0 auto; min-height:300px; display:flex; flex-direction:column; justify-content:space-between">
+
         
         <div>
           <!-- Title -->
@@ -9378,6 +9457,25 @@ function renderBackupTracker() {
       </div>
     </div>
     <div class="page-body">
+
+      <!-- Backup Inspector Drag & Drop Card -->
+      <div class="card mb-4" style="padding:16px; background:var(--bg-card2)">
+        <div class="card-title mb-2" style="display:flex; align-items:center; gap:8px">
+          <span>🔍 FANUC SRAM & Ladder Dosya İnceleyici (Backup Inspector)</span>
+        </div>
+        <div id="backup-inspector-dropzone" style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 18px; text-align: center; background: var(--bg-card); cursor: pointer; transition: border-color 0.2s;"
+             onclick="document.getElementById('backup-file-inspector-input').click()"
+             ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'"
+             ondragleave="event.preventDefault(); this.style.borderColor='var(--border)'"
+             ondrop="handleBackupFileDrop(event)">
+          <div style="font-size: 24px; margin-bottom: 6px">📁</div>
+          <div style="font-weight:600; font-size:12.5px">İncelemek istediğiniz .FDB, .DAT, .PMC veya .TXT yedek dosyasını buraya bırakın</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px">FANUC SRAM imajı, Parametre yedeği veya Ladder versiyonunu anında analiz eder</div>
+          <input type="file" id="backup-file-inspector-input" style="display:none" onchange="handleBackupFileSelect(event)" accept=".fdb,.dat,.pmc,.lad,.txt,.nc,.mem" />
+        </div>
+        <div id="backup-inspector-result" style="display:none; margin-top:14px; padding:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm)"></div>
+      </div>
+
       <div class="card" style="padding:0; overflow-x:auto">
         <table class="data-table">
           <thead>
@@ -9394,6 +9492,7 @@ function renderBackupTracker() {
         </table>
       </div>
     </div>
+
   `;
 
   setTimeout(() => {
@@ -9589,13 +9688,54 @@ window.showBackupHistoryModal = function(mId) {
           <div style="font-size:11.5px; font-family:monospace; color:var(--text-secondary); background:var(--bg-card2); padding:6px; border-radius:4px; border:1px solid var(--border); word-break:break-all" class="mb-2">${l.dosya_konumu}</div>
           <p style="font-size:12px; color:var(--text-secondary); margin:0">${l.aciklama || 'Açıklama belirtilmemiş.'}</p>
         </div>
-      `).join('') : '<p style="text-align:center; color:var(--text-muted)">Bu tezgaha ait geçmiş yedek kaydı bulunmuyor.</p>'}
+      `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:20px">Bu tezgaha ait yedek kaydı bulunamadı</div>'}
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('backup-history')">Kapat</button>
-    </div>
-  `, 'lg');
+  `);
 };
+
+window.handleBackupFileDrop = function(e) {
+  e.preventDefault();
+  if (e.dataTransfer && e.dataTransfer.files.length) {
+    runBackupInspectorOnFile(e.dataTransfer.files[0]);
+  }
+};
+
+window.handleBackupFileSelect = function(e) {
+  if (e.target && e.target.files.length) {
+    runBackupInspectorOnFile(e.target.files[0]);
+  }
+};
+
+function runBackupInspectorOnFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const content = evt.target.result;
+    const res = window.inspectBackupFile ? window.inspectBackupFile(content, file.name) : null;
+    const resEl = document.getElementById('backup-inspector-result');
+    if (!resEl || !res) return;
+
+    resEl.style.display = 'block';
+    resEl.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+        <strong style="color:var(--text-accent); font-size:13px">📋 Dosya Analizi: ${escapeHTML(res.fileName)}</strong>
+        <span class="tag ${res.isValid ? 'tag-green' : 'tag-amber'}">${escapeHTML(res.category)}</span>
+      </div>
+      <div style="font-size:12px; margin-bottom:6px; color:var(--text-primary)">
+        <strong>Tür:</strong> ${escapeHTML(res.type)} · <strong>Boyut:</strong> ${res.estimatedSize}
+      </div>
+      <div style="font-size:11.5px; color:var(--text-secondary); margin-bottom:8px">
+        <strong>Uyumlu Sistem:</strong> ${escapeHTML(res.controlSeries)}
+      </div>
+      <div style="font-size:11px; color:var(--text-muted)">
+        ${res.details.map(d => `• ${escapeHTML(d)}`).join('<br>')}
+      </div>
+    `;
+    showToast(`Yedek dosyası analiz edildi: ${file.name}`, 'success');
+  };
+  reader.readAsText(file);
+}
+
+
 
 // ════════════════════════════════════════════════════════════════
 //  EKSEN BACKLASH (GERİ DÖNME BOŞLUĞU) HESAPLAMA SİHİRBAZI
@@ -10982,3 +11122,115 @@ function renderCncDashboard() {
 
   return page;
 }
+
+function renderCncScreenViewer() {
+  const page = createPage('cnc_screen_viewer');
+  
+  const sortedMachines = [...State.machines].sort((a, b) => {
+    return String(a.numarasi || '').localeCompare(String(b.numarasi || ''), 'tr-TR', { numeric: true, sensitivity: 'base' });
+  });
+
+  const machineOptions = sortedMachines.map(m => {
+    return `<option value="${m.id}" data-ip="${escapeHTML(m.ip || '192.168.1.50')}">${escapeHTML(m.numarasi)} (${escapeHTML(m.tip || 'CNC')})</option>`;
+  }).join('');
+
+  page.innerHTML = `
+    <div class="page-header">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1>🖥️ Canlı CNC Ekran İzleyici (Remote VNC / iHMI Display)</h1>
+          <p>FANUC CNC kontrolör ekranını uzaktan canlı izleyin, tuş takımı ile kumanda edin ve ekran görüntüsü kaydedin</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-primary" onclick="captureCncScreenSnapshot(document.getElementById('cnc-view-mach-sel').value)">
+            📸 Ekran Görüntüsü Al & Bakıma Ekle
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <!-- Control Panel & Machine Picker -->
+      <div class="card mb-4" style="padding:14px">
+        <div class="flex items-center justify-between" style="flex-wrap:wrap; gap:12px">
+          <div class="flex items-center gap-3" style="flex-wrap:wrap">
+            <label style="font-weight:700; font-size:12px; color:var(--text-secondary)">Tezgâh Seçin:</label>
+            <select id="cnc-view-mach-sel" class="form-control" style="width:200px" onchange="onCncScreenMachineChange()">
+              <option value="">-- Tezgâh Seçin --</option>
+              ${machineOptions}
+            </select>
+
+            <label style="font-weight:700; font-size:12px; color:var(--text-secondary)">IP Adresi:</label>
+            <input type="text" id="cnc-view-ip-input" class="form-control" placeholder="192.168.1.50" style="width:140px" value="192.168.1.50" />
+
+            <label style="font-weight:700; font-size:12px; color:var(--text-secondary)">VNC Port:</label>
+            <input type="number" id="cnc-view-port-input" class="form-control" placeholder="5900" style="width:80px" value="5900" />
+          </div>
+
+          <div class="flex gap-2">
+            <button class="btn btn-primary btn-sm" onclick="connectCncScreenStream(document.getElementById('cnc-view-ip-input').value, document.getElementById('cnc-view-port-input').value)">
+              ▶️ Canlı Bağlantıyı Başlat
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="disconnectCncScreenStream()">
+              ⏹️ Bağlantıyı Kes
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-3" style="font-size:11.5px; border-top:1px solid var(--border); padding-top:10px">
+          <div id="cnc-screen-status-badge" class="tag tag-gray">⚪ Çevrimdışı</div>
+          <div id="cnc-screen-status-text" style="color:var(--text-muted)">Bağlantı Bekleniyor...</div>
+        </div>
+      </div>
+
+      <!-- Main Live Screen Area -->
+      <div id="cnc-screen-frame-wrap" class="card mb-4" style="padding:10px; background:#0b0f19">
+        <div style="width:100%; height:380px; background:var(--bg-card2); border:2px dashed var(--border); border-radius:var(--radius-md); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px">
+          <div style="font-size:36px; margin-bottom:10px; opacity:0.6">🖥️</div>
+          <div style="font-weight:600; font-size:14px; margin-bottom:6px">CNC Canlı Ekran Akışı Bekleniyor</div>
+          <div style="font-size:12px; color:var(--text-muted); max-width:400px">
+            Yukarıdaki tezgâhı seçip "Canlı Bağlantıyı Başlat" butonuna basarak uzaktan ekran izlemeyi başlatın.
+          </div>
+        </div>
+      </div>
+
+      <!-- Virtual FANUC Keypad Control -->
+      <div class="card" style="padding:16px">
+        <div class="card-title mb-3" style="display:flex; align-items:center; justify-content:between">
+          <span>⌨️ Sanal FANUC Tuş Takımı (Remote Keypad)</span>
+          <span style="font-size:11px; color:var(--text-muted)">Tıkladığınız tuş canlı CNC kontrolörüne iletilir</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:8px">
+          <button class="btn btn-danger btn-sm" onclick="sendCncKeypress('RESET')" style="font-weight:bold; font-size:11px">🔴 RESET</button>
+          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('POS')" style="font-weight:bold; font-size:11px">📍 POS</button>
+          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('PROG')" style="font-weight:bold; font-size:11px">📜 PROG</button>
+          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('OFS/SET')" style="font-weight:bold; font-size:11px">📐 OFS/SET</button>
+          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('SYSTEM')" style="font-weight:bold; font-size:11px">⚙️ SYSTEM</button>
+          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('MESSAGE')" style="font-weight:bold; font-size:11px">⚠️ MESSAGE</button>
+
+          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F1')" style="font-size:11px">F1</button>
+          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F2')" style="font-size:11px">F2</button>
+          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F3')" style="font-size:11px">F3</button>
+          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F4')" style="font-size:11px">F4</button>
+          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F5')" style="font-size:11px">F5</button>
+          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('CHAPTER')" style="font-size:11px">◀ ▶ NEXT</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return page;
+}
+
+window.onCncScreenMachineChange = function() {
+  const sel = document.getElementById('cnc-view-mach-sel');
+  const ipInput = document.getElementById('cnc-view-ip-input');
+  if (!sel || !ipInput) return;
+
+  const opt = sel.options[sel.selectedIndex];
+  if (opt && opt.dataset && opt.dataset.ip) {
+    ipInput.value = opt.dataset.ip;
+  }
+};
+

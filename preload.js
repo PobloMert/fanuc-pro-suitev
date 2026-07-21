@@ -17,6 +17,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   ensureDir:  (dirPath) => ipcRenderer.invoke('fs-ensure-dir', dirPath),
   getAppDataDir: () => ipcRenderer.invoke('get-app-data-dir'),
   restartAdapter: () => ipcRenderer.invoke('restart-adapter'),
+  getAdapterStatus: () => ipcRenderer.invoke('get-adapter-status'),
+  onAdapterStatusChanged: (callback) => ipcRenderer.on('adapter-status-changed', (event, status) => callback(status)),
+
+  // Backup & Restore Engine
+  getBackupsList: () => ipcRenderer.invoke('get-backups-list'),
+  createManualBackup: () => ipcRenderer.invoke('create-manual-backup'),
+  restoreBackup: (backupFilePath) => ipcRenderer.invoke('restore-backup', backupFilePath),
+
+  // Network & PDF Utilities
+  fetchProxy: (url, options) => ipcRenderer.invoke('fetch-proxy', url, options),
+  pingTcpPort: (host, port, timeoutMs) => ipcRenderer.invoke('ping-tcp-port', { host, port, timeoutMs }),
+  searchPDFText: (pdfPath, query) => ipcRenderer.invoke('search-pdf-text', pdfPath, query),
+
+
 
   // Shell
   openExternal: (url) => ipcRenderer.send('open-external', url),
