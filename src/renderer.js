@@ -7496,16 +7496,19 @@ function renderReliability() {
           </div>
         </div>
 
-        <!-- Canvas Chart -->
-        <div class="card" style="padding:16px; display:flex; flex-direction:column; justify-content:between">
-          <div>
-            <div class="card-title mb-2">📊 OEE Verimlilik Karşılaştırması (%)</div>
-            <p style="font-size:11px; color:var(--text-secondary); margin-bottom:12px">
-              Kullanılabilirlik x Performans x Kalite formülüyle hesaplanan genel ekipman verimliliği
+        <!-- OEE Component Card -->
+        <div class="card" style="padding:18px; display:flex; flex-direction:column;">
+          <div style="margin-bottom:14px">
+            <div class="card-title mb-1" style="display:flex; align-items:center; justify-content:space-between;">
+              <span>📊 OEE Verimlilik Karşılaştırması (%)</span>
+              <span class="tag tag-blue" style="font-size:10px; padding:2px 8px">Dinamik Hesaplama</span>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted)">
+              Kullanılabilirlik × Performans × Kalite formülüyle hesaplanan genel ekipman verimliliği
             </p>
           </div>
-          <div style="position:relative; width:100%; height:200px; display:flex; align-items:center; justify-content:center">
-            <canvas id="reliability-canvas" width="300" height="180" style="width:100%; height:100%"></canvas>
+          <div id="oee-bar-container" style="flex:1; overflow-y:auto; max-height:450px; display:flex; flex-direction:column; gap:10px; padding-right:4px;">
+            <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px">Hesaplanıyor...</div>
           </div>
         </div>
 
@@ -7592,7 +7595,7 @@ function calculateReliabilityMetrics(page) {
 
     return `
       <tr>
-        <td><strong>${d.name}</strong></td>
+        <td><strong>${escapeHTML(d.name)}</strong></td>
         <td style="text-align:center">${d.failures}</td>
         <td><span class="font-mono">${Math.round(d.mtbf)} Sa</span></td>
         <td><span class="font-mono">${d.mttr.toFixed(1)} Sa</span></td>
@@ -7611,37 +7614,40 @@ function calculateReliabilityMetrics(page) {
   avgMttrEl.innerText = `${avgMttr.toFixed(1)} Saat`;
   avgAvailEl.innerText = `${avgAvail.toFixed(1)}%`;
 
-  // Draw OEE chart on canvas
-  const canvas = page.querySelector('#reliability-canvas');
-  if (canvas) {
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Render Modern OEE Bar List Component
+  const oeeContainer = page.querySelector('#oee-bar-container');
+  if (oeeContainer) {
+    const sortedData = [...dataList].sort((a, b) => 
+      String(a.name || '').localeCompare(String(b.name || ''), 'tr', { numeric: true, sensitivity: 'base' })
+    );
 
-    // Draw horizontal bars
-    const barHeight = 20;
-    const gap = 14;
-    let startY = 20;
+    oeeContainer.innerHTML = sortedData.map(d => {
+      const oeeVal = d.oee.toFixed(1);
+      const isHigh = d.oee >= 85;
+      const isMid = d.oee >= 70 && d.oee < 85;
+      const barGradient = isHigh 
+        ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)' 
+        : (isMid ? 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)' : 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)');
+      const badgeClass = isHigh ? 'tag-green' : (isMid ? 'tag-amber' : 'tag-red');
+      const glowColor = isHigh ? 'rgba(16, 185, 129, 0.3)' : (isMid ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)');
 
-    dataList.forEach((d, idx) => {
-      ctx.fillStyle = 'var(--text-secondary)';
-      ctx.font = '10px sans-serif';
-      ctx.fillText(d.name, 10, startY + 14);
-
-      // Draw background bar
-      ctx.fillStyle = '#1f2937';
-      ctx.fillRect(100, startY, 180, barHeight);
-
-      // Draw progress bar
-      const fillW = (d.oee / 100) * 180;
-      ctx.fillStyle = d.oee > 85 ? '#10b981' : '#f59e0b';
-      ctx.fillRect(100, startY, fillW, barHeight);
-
-      // Label percentage
-      ctx.fillStyle = '#fff';
-      ctx.fillText(`${d.oee.toFixed(1)}%`, 105, startY + 14);
-
-      startY += barHeight + gap;
-    });
+      return `
+        <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 14px; transition:transform 0.2s ease, border-color 0.2s ease;" class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+            <span style="font-size:12.5px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px">
+              <span style="width:8px; height:8px; border-radius:50%; background:${isHigh ? '#10b981' : (isMid ? '#f59e0b' : '#ef4444')}; display:inline-block; box-shadow:0 0 6px ${glowColor}"></span>
+              ${escapeHTML(d.name)}
+            </span>
+            <span class="tag ${badgeClass}" style="font-family:var(--font-mono); font-size:11.5px; font-weight:700">
+              %${oeeVal}
+            </span>
+          </div>
+          <div style="position:relative; width:100%; height:8px; background:var(--bg-base); border-radius:4px; overflow:hidden">
+            <div style="width:${Math.min(Math.max(d.oee, 5), 100)}%; height:100%; background:${barGradient}; border-radius:4px; transition:width 0.8s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 8px ${glowColor}"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 }
 
