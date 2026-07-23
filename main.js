@@ -128,6 +128,7 @@ let adapterStatus = {
   lastStartTime: null
 };
 let isIntentionalStop = false;
+let isSpawning = false;
 let autoRestartTimer = null;
 let healthyDurationTimer = null;
 
@@ -150,14 +151,21 @@ function startAdapter(manualReset = false) {
     adapterStatus.lastError = null;
   }
 
+  // ── Guard: prevent concurrent spawn calls ──
+  if (isSpawning) {
+    console.log('[Adapter] startAdapter() ignored: a spawn is already in progress.');
+    return;
+  }
+
   if (autoRestartTimer) {
     clearTimeout(autoRestartTimer);
     autoRestartTimer = null;
   }
 
   updateAdapterState('starting');
+  isSpawning = true;
 
-  // Terminate any existing instance first to prevent port conflicts
+  // Kill any existing instance first, then wait 2s for OS to release TCP ports
   exec('taskkill /F /IM FanucSHDRAdapter.exe', () => {
     const adapterPath = path.join(__dirname, 'bin', 'FanucSHDRAdapter.exe');
     const adapterCwd = path.join(__dirname, 'bin');
@@ -165,20 +173,30 @@ function startAdapter(manualReset = false) {
       const errStr = 'FanucSHDRAdapter.exe bulunamadı: ' + adapterPath;
       console.error(errStr);
       updateAdapterState('error', { lastError: errStr });
+      isSpawning = false;
       return;
     }
 
     console.log('Spawning FanucSHDRAdapter.exe...');
+    // Wait 2000ms for OS to release ports 7880, 7881, 8090
     setTimeout(() => {
       try {
+        const adapterLogPath = path.join(adapterCwd, 'adapter_crash.log');
+        const logStream = fs.createWriteStream(adapterLogPath, { flags: 'a' });
+        logStream.write(`\n=== Adapter Start: ${new Date().toISOString()} ===\n`);
+
         adapterProcess = spawn(adapterPath, [], {
           cwd: adapterCwd,
-          stdio: 'ignore',
+          stdio: ['ignore', 'pipe', 'pipe'],
           detached: false
         });
 
+        adapterProcess.stdout.on('data', (d) => logStream.write(d));
+        adapterProcess.stderr.on('data', (d) => logStream.write('[STDERR] ' + d));
+
         adapterStatus.lastStartTime = Date.now();
         updateAdapterState('running');
+        isSpawning = false;
 
         // Reset attempt counter after 30 seconds of stable execution
         if (healthyDurationTimer) clearTimeout(healthyDurationTimer);
@@ -191,12 +209,14 @@ function startAdapter(manualReset = false) {
 
         adapterProcess.on('error', (err) => {
           console.error('Failed to start FanucSHDRAdapter:', err);
+          isSpawning = false;
           handleAdapterCrash(err ? err.message : 'Spawn hatası');
         });
 
         adapterProcess.on('close', (code) => {
           console.log(`FanucSHDRAdapter exited with code ${code}`);
           adapterProcess = null;
+          isSpawning = false;
           if (!isIntentionalStop) {
             handleAdapterCrash(`Proses kapandı (kod: ${code})`);
           } else {
@@ -205,9 +225,10 @@ function startAdapter(manualReset = false) {
         });
       } catch (err) {
         console.error('Exception spawning adapter:', err);
+        isSpawning = false;
         handleAdapterCrash(err.message);
       }
-    }, 800);
+    }, 2000);
   });
 }
 
