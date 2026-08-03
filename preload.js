@@ -47,6 +47,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Network & PDF Utilities
   fetchProxy: (url, options) => ipcRenderer.invoke('fetch-proxy', url, options),
+  checkForUpdates: () => ipcRenderer.invoke('update-check'),
   pingTcpPort: (host, port, timeoutMs) => ipcRenderer.invoke('ping-tcp-port', { host, port, timeoutMs }),
   searchPDFText: (pdfPath, query) => ipcRenderer.invoke('search-pdf-text', pdfPath, query),
 

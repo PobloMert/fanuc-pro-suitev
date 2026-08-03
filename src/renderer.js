@@ -2588,10 +2588,10 @@ function renderSettings() {
           <div class="card mb-4">
             <div class="card-title mb-3" style="font-size:14px; display:flex; align-items:center; justify-content:space-between">
               <span>🔄 Sürüm & Kütüphane Güncelleme Paneli</span>
-              <span id="updater-status-badge" class="tag tag-green">🟢 Güncel (v2.5.0)</span>
+              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.1.1)</span>
             </div>
             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px" id="updater-status-text">
-              Yazılımınız ve FANUC Alarm/Parametre Kütüphaneleriniz en son sürümde (v2.5.0).
+              Yüklü sürüm: v1.1.1. GitHub üzerinden güncelleme denetleyebilirsiniz.
             </div>
             <div class="flex gap-2">
               <button class="btn btn-primary btn-sm" onclick="checkForAppUpdates()">

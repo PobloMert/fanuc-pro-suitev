@@ -1111,6 +1111,51 @@ ipcMain.handle('fetch-proxy', async (event, url, options = {}) => {
   }
 });
 
+// Salt okunur güncelleme denetimi. Sabit uç nokta, renderer'ın bu işlevi
+// genel amaçlı bir ağ vekiline dönüştürmesini engeller.
+ipcMain.handle('update-check', async event => {
+  if (!mainWindow || event.sender !== mainWindow.webContents) throw new Error('Güvenilmeyen IPC kaynağı.');
+  const currentVersion = app.getVersion();
+  const releasesUrl = 'https://github.com/PobloMert/fanuc-pro-suitev/releases';
+  try {
+    const response = await net.fetch('https://api.github.com/repos/PobloMert/fanuc-pro-suitev/releases/latest', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'User-Agent': `FANUC-Pro-Suite/${currentVersion}`,
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
+    });
+    if (!response.ok) throw new Error(`GitHub HTTP ${response.status}`);
+    const raw = await response.text();
+    if (raw.length > 1024 * 1024) throw new Error('Sürüm yanıtı beklenenden büyük.');
+    const release = JSON.parse(raw);
+    const version = String(release.tag_name || '').replace(/^v/i, '');
+    if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) throw new Error('Geçersiz sürüm etiketi.');
+    const releaseUrl = String(release.html_url || '');
+    if (!releaseUrl.startsWith(`${releasesUrl}/tag/`)) throw new Error('Geçersiz sürüm bağlantısı.');
+    const setup = Array.isArray(release.assets)
+      ? release.assets.find(asset => /^FANUC-Pro-Suite-Read-Only-Setup-[\w.-]+\.exe$/i.test(String(asset.name || '')))
+      : null;
+    const downloadUrl = setup ? String(setup.browser_download_url || '') : '';
+    if (downloadUrl && !downloadUrl.startsWith('https://github.com/PobloMert/fanuc-pro-suitev/releases/download/')) {
+      throw new Error('Geçersiz indirme bağlantısı.');
+    }
+    return {
+      ok: true,
+      currentVersion,
+      latestVersion: version,
+      releaseName: String(release.name || release.tag_name || '').slice(0, 160),
+      releaseUrl,
+      downloadUrl: downloadUrl || releaseUrl,
+      publishedAt: release.published_at || null,
+      notes: String(release.body || '').slice(0, 4000)
+    };
+  } catch (err) {
+    return { ok: false, currentVersion, releasesUrl, error: err.message };
+  }
+});
+
 // IPC Handler for PDF Text Search
 ipcMain.handle('search-pdf-text', async (event, pdfPath, query) => {
   try {

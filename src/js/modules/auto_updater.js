@@ -4,7 +4,29 @@
 
 import { showToast, escapeHTML } from '../utils.js';
 
-export const CURRENT_APP_VERSION = '2.5.0';
+export const CURRENT_APP_VERSION = '1.1.1';
+
+function compareVersions(left, right) {
+  const a = String(left).split('-')[0].split('.').map(Number);
+  const b = String(right).split('-')[0].split('.').map(Number);
+  for (let i = 0; i < 3; i += 1) {
+    if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) - (b[i] || 0);
+  }
+  return 0;
+}
+
+function showUpdateBanner(info) {
+  if (document.getElementById('app-update-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'app-update-banner';
+  banner.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:10000;max-width:680px;width:calc(100% - 40px);padding:16px 18px;border:1px solid var(--yellow,#f5b942);border-radius:10px;background:var(--bg-card,#171b2a);box-shadow:0 12px 36px rgba(0,0,0,.45);color:var(--text-primary,#fff)';
+  banner.innerHTML = `<div style="font-weight:700;margin-bottom:6px">Yeni sürüm hazır: v${escapeHTML(info.latestVersion)}</div>
+    <div style="font-size:12px;color:var(--text-secondary,#bbb);margin-bottom:12px">Yüklü sürüm: v${escapeHTML(info.currentVersion)}. Güncelleme resmi GitHub Release sayfasından indirilecektir.</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" id="dismiss-app-update">Daha sonra</button><button class="btn btn-primary btn-sm" id="download-app-update">GitHub'dan indir</button></div>`;
+  document.body.appendChild(banner);
+  banner.querySelector('#dismiss-app-update').addEventListener('click', () => banner.remove());
+  banner.querySelector('#download-app-update').addEventListener('click', () => window.electronAPI.openExternal(info.downloadUrl));
+}
 
 export const OFFLINE_PACKS = [
   {
@@ -41,31 +63,51 @@ export const OFFLINE_PACKS = [
   }
 ];
 
-export async function checkForAppUpdates() {
+export async function checkForAppUpdates(options = {}) {
   const statusEl = document.getElementById('updater-status-text');
   const badgeEl = document.getElementById('updater-status-badge');
   const updateCard = document.getElementById('updater-action-card');
 
   if (statusEl) statusEl.textContent = 'Güncellemeler denetleniyor...';
-  showToast('Güncellemeler denetleniyor...', 'info');
+  if (!options.silent) showToast('Güncellemeler denetleniyor...', 'info');
+  const result = await window.electronAPI.checkForUpdates();
+  if (!result.ok) {
+    if (badgeEl) {
+      badgeEl.className = 'tag tag-amber';
+      badgeEl.textContent = `Denetlenemedi (v${result.currentVersion})`;
+    }
+    if (statusEl) statusEl.textContent = `Güncelleme sunucusuna ulaşılamadı: ${result.error}`;
+    if (!options.silent) showToast('Güncelleme denetlenemedi. İnternet bağlantısını kontrol edin.', 'warning');
+    return { hasUpdate: false, ...result };
+  }
 
-  await new Promise(r => setTimeout(r, 1200));
-
-  const hasUpdate = false; // Current version v2.5.0 is up-to-date
+  const hasUpdate = compareVersions(result.latestVersion, result.currentVersion) > 0;
+  if (hasUpdate) {
+    if (badgeEl) {
+      badgeEl.className = 'tag tag-amber';
+      badgeEl.textContent = `Yeni sürüm v${result.latestVersion}`;
+    }
+    if (statusEl) statusEl.textContent = `v${result.latestVersion} yayımlandı. İndirme yalnızca resmi GitHub Release bağlantısından yapılır.`;
+    if (updateCard) updateCard.style.display = '';
+    showUpdateBanner(result);
+    window.electronAPI.showNativeNotification('FANUC Pro Suite güncellemesi', `Yeni sürüm hazır: v${result.latestVersion}`);
+    if (!options.silent) showToast(`Yeni sürüm hazır: v${result.latestVersion}`, 'info');
+    return { hasUpdate, ...result };
+  }
 
   if (badgeEl) {
     badgeEl.className = 'tag tag-green';
-    badgeEl.textContent = '🟢 Sürümünüz Güncel (v' + CURRENT_APP_VERSION + ')';
+    badgeEl.textContent = 'Sürümünüz Güncel (v' + result.currentVersion + ')';
   }
   if (statusEl) {
-    statusEl.textContent = `Yazılımınız ve FANUC Alarm/Parametre Kütüphaneleriniz en son sürümde (v${CURRENT_APP_VERSION}).`;
+    statusEl.textContent = `Yazılımınız en son sürümde (v${result.currentVersion}).`;
   }
   if (updateCard) {
     updateCard.style.display = 'none';
   }
 
-  showToast(`Sürümünüz güncel (v${CURRENT_APP_VERSION}) ✓`, 'success');
-  return { hasUpdate, currentVersion: CURRENT_APP_VERSION };
+  if (!options.silent) showToast(`Sürümünüz güncel (v${result.currentVersion})`, 'success');
+  return { hasUpdate, ...result };
 }
 
 export async function downloadOfflinePack(packId) {
@@ -99,4 +141,5 @@ if (typeof window !== 'undefined') {
   window.downloadOfflinePack = downloadOfflinePack;
   window.OFFLINE_PACKS = OFFLINE_PACKS;
   window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
+  window.setTimeout(() => checkForAppUpdates({ silent: true }), 6000);
 }
