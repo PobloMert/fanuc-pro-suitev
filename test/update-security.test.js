@@ -18,3 +18,11 @@ test('updater never executes a downloaded installer', () => {
   assert.match(updater, /openExternal\(info\.downloadUrl\)/);
   assert.doesNotMatch(updater, /exec\(|spawn\(|installOnAppQuit|quitAndInstall/);
 });
+
+test('packaged adapter configuration is redirected to writable user data', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  assert.ok(pkg.build.asarUnpack.includes('bin/**/*'));
+  assert.match(main, /ADAPTER_CONFIG_FILE = path\.join\(ADAPTER_RUNTIME_DIR, 'adapter\.config\.json'\)/);
+  assert.match(main, /normalized === 'bin\/adapter\.config\.json'/);
+  assert.match(main, /const adapterCwd = ADAPTER_RUNTIME_DIR/);
+});

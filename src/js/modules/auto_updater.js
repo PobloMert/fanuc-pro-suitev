@@ -4,7 +4,7 @@
 
 import { showToast, escapeHTML } from '../utils.js';
 
-export const CURRENT_APP_VERSION = '1.1.1';
+export const CURRENT_APP_VERSION = '1.1.2';
 
 function compareVersions(left, right) {
   const a = String(left).split('-')[0].split('.').map(Number);
@@ -67,10 +67,12 @@ export async function checkForAppUpdates(options = {}) {
   const statusEl = document.getElementById('updater-status-text');
   const badgeEl = document.getElementById('updater-status-badge');
   const updateCard = document.getElementById('updater-action-card');
+  const checkedEl = document.getElementById('updater-last-checked');
 
   if (statusEl) statusEl.textContent = 'Güncellemeler denetleniyor...';
   if (!options.silent) showToast('Güncellemeler denetleniyor...', 'info');
   const result = await window.electronAPI.checkForUpdates();
+  if (checkedEl && !options.silent) checkedEl.textContent = `Son manuel kontrol: ${new Date().toLocaleString('tr-TR')}`;
   if (!result.ok) {
     if (badgeEl) {
       badgeEl.className = 'tag tag-amber';

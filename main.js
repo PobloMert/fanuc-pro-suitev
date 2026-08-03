@@ -96,7 +96,11 @@ function createWindow() {
 
 const ALLOWED_DATA_DIR = path.resolve(configuredDataDir);
 const APP_ROOT_DATA = path.resolve(path.join(__dirname, 'data'));
-const APP_BIN_DIR = path.resolve(path.join(__dirname, 'bin'));
+const APP_BIN_DIR = path.resolve(app.isPackaged
+  ? path.join(process.resourcesPath, 'app.asar.unpacked', 'bin')
+  : path.join(__dirname, 'bin'));
+const ADAPTER_RUNTIME_DIR = path.join(ALLOWED_DATA_DIR, 'adapter');
+const ADAPTER_CONFIG_FILE = path.join(ADAPTER_RUNTIME_DIR, 'adapter.config.json');
 const USERS_FILE = path.join(APP_ROOT_DATA, 'users.json');
 const SECRETS_FILE = path.join(ALLOWED_DATA_DIR, 'secrets.json');
 const sessions = new Map();
@@ -189,6 +193,25 @@ function verifyAdapterIntegrity(adapterDir) {
   }
 }
 
+function ensureAdapterRuntime() {
+  fs.mkdirSync(ADAPTER_RUNTIME_DIR, { recursive: true });
+  if (!fs.existsSync(APP_BIN_DIR)) throw new Error(`Paketlenmiş adaptör klasörü bulunamadı: ${APP_BIN_DIR}`);
+  for (const entry of fs.readdirSync(APP_BIN_DIR, { withFileTypes: true })) {
+    if (!entry.isFile() || entry.name === 'adapter.config.json' || entry.name === 'adapter_crash.log') continue;
+    fs.copyFileSync(path.join(APP_BIN_DIR, entry.name), path.join(ADAPTER_RUNTIME_DIR, entry.name));
+  }
+  if (!fs.existsSync(ADAPTER_CONFIG_FILE)) {
+    fs.copyFileSync(path.join(APP_BIN_DIR, 'adapter.config.json'), ADAPTER_CONFIG_FILE);
+  }
+  verifyAdapterIntegrity(ADAPTER_RUNTIME_DIR);
+}
+
+function resolveDataPath(filePath) {
+  const normalized = String(filePath || '').replace(/\\/g, '/').replace(/^\.\//, '').toLowerCase();
+  if (normalized === 'bin/adapter.config.json') return ADAPTER_CONFIG_FILE;
+  return path.isAbsolute(filePath) ? path.resolve(filePath) : path.resolve(path.join(__dirname, filePath));
+}
+
 function migrateLegacyAISecret() {
   const settingsPath = path.join(ALLOWED_DATA_DIR, 'settings.json');
   if (!safeStorage.isEncryptionAvailable() || !fs.existsSync(settingsPath)) return;
@@ -256,8 +279,15 @@ function startAdapter(manualReset = false) {
     return;
   }
   {
-    const adapterPath = path.join(__dirname, 'bin', 'FanucSHDRAdapter.exe');
-    const adapterCwd = path.join(__dirname, 'bin');
+    const adapterPath = path.join(ADAPTER_RUNTIME_DIR, 'FanucSHDRAdapter.exe');
+    const adapterCwd = ADAPTER_RUNTIME_DIR;
+    try {
+      ensureAdapterRuntime();
+    } catch (err) {
+      updateAdapterState('error', { lastError: err.message });
+      isSpawning = false;
+      return;
+    }
     if (!fs.existsSync(adapterPath)) {
       const errStr = 'FanucSHDRAdapter.exe bulunamadı: ' + adapterPath;
       console.error(errStr);
@@ -383,6 +413,7 @@ app.whenReady().then(() => {
   setInterval(() => { try { const deleted=dataStore.purgeTelemetry(30); if(deleted) logger.write('data','info','Telemetry retention completed',{deleted,rawDays:30}); } catch(err){ logger.write('data','error','Telemetry retention failed',{error:err.message}); } }, 24*60*60*1000).unref();
   logger.write('application', 'info', 'Application started', { version: app.getVersion(), dataStore: dataStore.status() });
   try { migrateLegacyAISecret(); } catch (err) { console.error('Secret migration failed:', err); }
+  try { ensureAdapterRuntime(); } catch (err) { console.error('Adapter runtime preparation failed:', err); }
   // Handle custom file protocol to securely serve local PDFs under webSecurity: true
   protocol.handle('app-file', (request) => {
     try {
@@ -666,7 +697,7 @@ ipcMain.handle('dialog-save-file', async (event, filters, defaultName) => {
 // Read file (with Path Validation)
 ipcMain.handle('fs-read-file', async (event, filePath, encoding) => {
   try {
-    const resolved = path.isAbsolute(filePath) ? path.resolve(filePath) : path.resolve(path.join(__dirname, filePath));
+    const resolved = resolveDataPath(filePath);
     if (!isSafePath(resolved)) {
       return { ok: false, error: 'Access Denied: Path is outside allowed directories.' };
     }
@@ -687,7 +718,7 @@ ipcMain.handle('fs-read-file', async (event, filePath, encoding) => {
 // Write file (with Path Validation & Atomic Writes)
 ipcMain.handle('fs-write-file', async (event, filePath, data, encoding) => {
   try {
-    const resolved = path.isAbsolute(filePath) ? path.resolve(filePath) : path.resolve(path.join(__dirname, filePath));
+    const resolved = resolveDataPath(filePath);
     if (!isSafePath(resolved)) {
       return { ok: false, error: 'Access Denied: Path is outside allowed directories.' };
     }

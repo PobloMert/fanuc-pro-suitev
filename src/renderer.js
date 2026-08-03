@@ -2588,14 +2588,18 @@ function renderSettings() {
           <div class="card mb-4">
             <div class="card-title mb-3" style="font-size:14px; display:flex; align-items:center; justify-content:space-between">
               <span>🔄 Sürüm & Kütüphane Güncelleme Paneli</span>
-              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.1.1)</span>
+              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.1.2)</span>
             </div>
             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px" id="updater-status-text">
-              Yüklü sürüm: v1.1.1. GitHub üzerinden güncelleme denetleyebilirsiniz.
+              Yüklü sürüm: v1.1.2. GitHub üzerinden istediğiniz zaman manuel güncelleme denetimi yapabilirsiniz.
             </div>
+            <div id="updater-last-checked" style="font-size:11px; color:var(--text-muted); margin-bottom:10px">Henüz manuel kontrol yapılmadı.</div>
             <div class="flex gap-2">
               <button class="btn btn-primary btn-sm" onclick="checkForAppUpdates()">
                 🔍 Güncellemeleri Denetle
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="window.electronAPI.openExternal('https://github.com/PobloMert/fanuc-pro-suitev/releases')">
+                GitHub Sürümleri
               </button>
               <button class="btn btn-secondary btn-sm" onclick="navigate('library')">
                 📦 Çevrimdışı Paketler
