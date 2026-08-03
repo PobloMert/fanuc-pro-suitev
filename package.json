@@ -11,6 +11,7 @@
     "test": "node --test",
     "check": "node scripts/check.js",
     "build:dir": "electron-builder --dir --win"
+    ,"build:setup": "electron-builder --win nsis"
   },
   "keywords": [
     "fanuc",
@@ -52,7 +53,11 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "FANUC Pro Suite - Read Only",
+      "artifactName": "FANUC-Pro-Suite-Read-Only-Setup-${version}.${ext}"
     }
   },
   "devDependencies": {
