@@ -18,6 +18,19 @@ window.onerror = function(msg, url, line, col, error) {
 
 const agentUrl = window.location.protocol === 'file:' ? 'http://127.0.0.1:5000/current' : '/current';
 
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+// The bundled adapter does not expose authenticated write endpoints. Keep all
+// CNC mutations disabled until server-side authorization and signed requests exist.
+function auditBlockedCncWrite(action, programNumber) {
+    const entry = { timestamp: new Date().toISOString(), action, machine: currentMachine, programNumber, result: 'blocked-read-only' };
+    const history = JSON.parse(localStorage.getItem('cnc_security_audit') || '[]');
+    history.push(entry);
+    localStorage.setItem('cnc_security_audit', JSON.stringify(history.slice(-200)));
+}
+
 // State Variables per Machine
 let currentMachine = 'Fanuc';
 let showingCncAlarms = false;
@@ -31,6 +44,12 @@ const machineState = {
 // DOM Elements
 const connectionBadge = document.getElementById('agent-connection');
 const connectionText = document.getElementById('connection-text');
+const telemetryHealth = document.getElementById('telemetry-health');
+const telemetryMode = document.getElementById('telemetry-mode');
+const telemetryAge = document.getElementById('telemetry-age');
+let lastSuccessfulTelemetry = 0;
+let isSimulationTelemetry = false;
+const observedAlarmKeys = new Set();
 const stateBadge = document.getElementById('machine-state-badge');
 const elExecution = document.getElementById('val-execution');
 const elMode = document.getElementById('val-mode');
@@ -279,7 +298,8 @@ function init() {
 
     // Start Polling
     pollAgent();
-    setInterval(pollAgent, 200);
+    setInterval(pollAgent, 1000);
+    setInterval(updateTelemetryHealth, 1000);
 
     // Refresh daily power-on display every 60 seconds in case data arrives late
     setInterval(() => {
@@ -521,6 +541,9 @@ async function pollAgent() {
         if (!response.ok) throw new Error('HTTP error');
         
         let xmlText = await response.text();
+        lastSuccessfulTelemetry = Date.now();
+        isSimulationTelemetry = response.headers.get('X-Fanuc-Simulation') === 'true' || /simulated="true"/i.test(xmlText);
+        updateTelemetryHealth();
         // Sanitize Turkish locale character corruption in MTConnect XML tag names
         xmlText = xmlText.replace(/ı/g, 'i').replace(/İ/g, 'I');
         
@@ -530,6 +553,11 @@ async function pollAgent() {
         if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
             throw new Error('XML parsing error');
         }
+        xmlDoc.querySelectorAll('Alarm').forEach(node=>{
+            const code=node.getAttribute('nativeCode')||node.getAttribute('code')||node.getAttribute('dataItemId')||'ALARM';
+            const key=`${currentMachine}:${code}:${node.textContent}`;
+            if(!observedAlarmKeys.has(key)){observedAlarmKeys.add(key);window.dispatchEvent(new CustomEvent('fanuc:alarm-event',{detail:{machine:currentMachine,code,message:node.textContent.trim(),occurredAt:new Date().toISOString(),simulated:isSimulationTelemetry}}));}
+        });
 
         connectionBadge.className = 'connection-status-badge con';
         connectionText.textContent = 'Agent Bağlantısı Aktif';
@@ -539,6 +567,9 @@ async function pollAgent() {
 
         // 2. Update the Details Panel for selected machine
         updateDetailsPanel(xmlDoc);
+        const now=Date.now();
+        const samples=machinesConfig.map((m,index)=>({machine:m.id,sampledAt:new Date().toISOString(),execution:machineState[m.id].currentExecution,program:document.getElementById(m.progId)?.textContent||'',partCount:Number(document.getElementById(m.partsId)?.textContent||0),spindleLoad:parseFloat(document.getElementById(`m${index+1}-load`)?.textContent)||0,dataAgeMs:now-lastSuccessfulTelemetry,simulated:isSimulationTelemetry}));
+        window.dispatchEvent(new CustomEvent('fanuc:telemetry-snapshot',{detail:samples}));
     } catch (error) {
         console.error('Fetch error:', error);
         connectionBadge.className = 'connection-status-badge err';
@@ -556,6 +587,15 @@ async function pollAgent() {
 
         setOfflineState();
     }
+}
+
+function updateTelemetryHealth() {
+    if (!telemetryHealth || !telemetryMode || !telemetryAge) return;
+    const ageMs = lastSuccessfulTelemetry ? Date.now() - lastSuccessfulTelemetry : Infinity;
+    telemetryHealth.classList.toggle('simulation', isSimulationTelemetry);
+    telemetryHealth.classList.toggle('stale', ageMs > 10000);
+    telemetryMode.textContent = isSimulationTelemetry ? 'SİMÜLASYON' : (ageMs > 10000 ? 'BAYAT VERİ' : 'CANLI');
+    telemetryAge.textContent = Number.isFinite(ageMs) ? `Son veri: ${Math.floor(ageMs / 1000)} sn önce` : 'Veri bekleniyor';
 }
 
 // Update Grid Overview Cards
@@ -1669,7 +1709,7 @@ async function loadProgramsList() {
                 html += `<tr>
                     <td style="color: var(--neon-cyan); font-weight: bold; font-family: monospace; cursor: pointer; text-decoration: underline;" onclick="viewProgramCode(${p.number})">O${p.number}</td>
                     <td>${p.length}</td>
-                    <td style="color: #9ca3af;">${p.comment}</td>
+                    <td style="color: #9ca3af;">${escapeHTML(p.comment)}</td>
                     <td style="text-align: center;">
                         <button class="clear-btn" onclick="activateProgram(${p.number})" style="padding: 2px 8px; font-size: 0.8em; color: #10b981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); margin-right: 5px;">Aktif Yap</button>
                         <button class="clear-btn" onclick="deleteProgram(${p.number})" style="padding: 2px 8px; font-size: 0.8em; color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1);">Sil</button>
@@ -1689,7 +1729,7 @@ async function loadProgramsList() {
         const data = await response.json();
         
         if (data.error) {
-            elProgramsTbody.innerHTML = `<tr><td colspan="4" class="empty-table-msg" style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Hata: ${data.error}</td></tr>`;
+            elProgramsTbody.innerHTML = `<tr><td colspan="4" class="empty-table-msg" style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Hata: ${escapeHTML(data.error)}</td></tr>`;
             return;
         }
 
@@ -1703,10 +1743,10 @@ async function loadProgramsList() {
             html += `<tr>
                 <td style="color: var(--neon-cyan); font-weight: bold; font-family: monospace; cursor: pointer; text-decoration: underline;" onclick="viewProgramCode(${p.number})">O${p.number}</td>
                 <td>${p.length}</td>
-                <td style="color: #9ca3af;">${p.comment}</td>
+                <td style="color: #9ca3af;">${escapeHTML(p.comment)}</td>
                 <td style="text-align: center;">
-                    <button class="clear-btn" onclick="activateProgram(${p.number})" style="padding: 2px 8px; font-size: 0.8em; color: #10b981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); margin-right: 5px;">Aktif Yap</button>
-                    <button class="clear-btn" onclick="deleteProgram(${p.number})" style="padding: 2px 8px; font-size: 0.8em; color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1);">Sil</button>
+                    <button class="clear-btn" disabled title="Güvenli salt-okunur mod etkin" style="padding: 2px 8px; font-size: 0.8em; opacity:.45; margin-right:5px;">Aktif Yap</button>
+                    <button class="clear-btn" disabled title="Güvenli salt-okunur mod etkin" style="padding: 2px 8px; font-size: 0.8em; opacity:.45;">Sil</button>
                 </td>
             </tr>`;
         });
@@ -1718,41 +1758,13 @@ async function loadProgramsList() {
 }
 
 window.activateProgram = async function(progNo) {
-    if (!confirm(`O${progNo} programını aktif/yürütülen yapmak istediğinizden emin misiniz?`)) return;
-    try {
-        const apiHost = window.location.hostname || "127.0.0.1";
-        const response = await fetch(`http://${apiHost}:8090/activateprogram?machine=${currentMachine}&number=${progNo}`);
-        const result = await response.json();
-        if (result.success) {
-            alert(`O${progNo} programı başarıyla aktif edildi.`);
-            loadProgramsList();
-            loadProgramExplorer();
-            loadOperationHistory();
-        } else {
-            alert(`Hata: ${result.error}`);
-        }
-    } catch (err) {
-        alert(`Program aktif edilemedi: ${err.message}`);
-    }
+    auditBlockedCncWrite('program.activate', progNo);
+    alert('Güvenli salt-okunur mod etkin. CNC programı değiştirilmedi.');
 };
 
 window.deleteProgram = async function(progNo) {
-    if (!confirm(`O${progNo} programını tezgâh hafızasından KALICI OLARAK silmek istediğinizden emin misiniz?`)) return;
-    try {
-        const apiHost = window.location.hostname || "127.0.0.1";
-        const response = await fetch(`http://${apiHost}:8090/deleteprogram?machine=${currentMachine}&number=${progNo}`);
-        const result = await response.json();
-        if (result.success) {
-            alert(`O${progNo} programı başarıyla silindi.`);
-            loadProgramsList();
-            loadProgramExplorer();
-            loadOperationHistory();
-        } else {
-            alert(`Hata: ${result.error}`);
-        }
-    } catch (err) {
-        alert(`Program silinemedi: ${err.message}`);
-    }
+    auditBlockedCncWrite('program.delete', progNo);
+    alert('Güvenli salt-okunur mod etkin. CNC programı silinmedi.');
 };
 
 // G-code Program Code Viewer Modal Trigger
@@ -2456,7 +2468,7 @@ function buildTreeHtml(nodes, level = 0) {
     nodes.forEach(node => {
         const icon = node.type === 'folder' ? '<i class="fa-solid fa-folder" style="color: var(--neon-orange); margin-right: 5px;"></i>' : '<i class="fa-solid fa-file-code" style="color: var(--neon-cyan); margin-right: 5px;"></i>';
         const sizeText = node.type === 'file' ? ` <span style="color: #6b7280; font-size: 0.85em;">(${node.size} B)</span>` : '';
-        const commentText = node.comment ? ` <span style="color: #9ca3af; font-size: 0.85em; font-style: italic;">- ${node.comment}</span>` : '';
+        const commentText = node.comment ? ` <span style="color: #9ca3af; font-size: 0.85em; font-style: italic;">- ${escapeHTML(node.comment)}</span>` : '';
         
         html += `
             <div style="padding-left: ${paddingLeft}px; margin-bottom: 4px; display: flex; align-items: center; flex-wrap: wrap;">

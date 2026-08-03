@@ -132,14 +132,11 @@ export async function loadData() {
 
 export async function loadUsers() {
   try {
-    const res = await window.electronAPI.readFile('./data/users.json');
+    const res = await window.electronAPI.listUsers();
     if (res.ok) {
-      State.users = safeParseJSON(res.data, 'users', []);
+      State.users = res.users || [];
     }
   } catch {}
-  if (!State.users.length) {
-    State.users = [{ id: 1, name: 'Admin', role: 'admin', pin: '1234', color: '#3b82f6', initials: 'AD' }];
-  }
 }
 
 export async function loadProjects() {
@@ -175,7 +172,8 @@ export async function loadSettings() {
 export async function saveSettings() {
   const settingsPath = State.appDataDir + '/settings.json';
   try {
-    const res = await window.electronAPI.writeFile(settingsPath, JSON.stringify(State.settings, null, 2));
+    const { aiApiKey, ...safeSettings } = State.settings;
+    const res = await window.electronAPI.writeFile(settingsPath, JSON.stringify(safeSettings, null, 2));
     if (!res || !res.ok) {
       showToast('Ayarlar kaydedilemedi: ' + (res?.error || 'Bilinmeyen hata'), 'error');
     }

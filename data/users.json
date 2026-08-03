@@ -1,7 +1,7 @@
 {
   "users": [
-    { "id": 1, "name": "Admin", "role": "admin", "pin": "1234", "color": "#3b82f6", "initials": "AD" },
-    { "id": 2, "name": "Bakım Teknisyeni", "role": "technician", "pin": "5678", "color": "#10b981", "initials": "BT" },
-    { "id": 3, "name": "Operatör", "role": "operator", "pin": "9999", "color": "#f59e0b", "initials": "OP" }
+    { "id": 1, "name": "Admin", "role": "admin", "pinSalt": "c4915b455d77ae1245ca6ac70795a8f6", "pinHash": "1c2a17c2462621ce606ea0cd0d867d8433ddd5aa6bc0b7466b78338512b11a2ffca587112fb298a74184fb0f721a843f6866ada8ea679a95db56cf693a305596", "color": "#3b82f6", "initials": "AD" },
+    { "id": 2, "name": "Bakım Teknisyeni", "role": "technician", "pinSalt": "829546fe78e837215865bee50e443d84", "pinHash": "d151a1173e68bc2b7b09689bfa4b69879c56d947d6692aab41e1a2f2036b097f0726babd1639dbfc520d2550c3f273047043019ebd273583141b00d93fafe1ee", "color": "#10b981", "initials": "BT" },
+    { "id": 3, "name": "Operatör", "role": "operator", "pinSalt": "06653412d56294ab7ec39e8ce6e0f88e", "pinHash": "a48bbd396eb992f59c30d25d65bb9c83cd1f5a800fc8925b21a4352dd726d5eb105313d548c664781be684bb77b28764ab4da898d2380ef3a778c3a960a8d4b2", "color": "#f59e0b", "initials": "OP" }
   ]
 }

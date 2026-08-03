@@ -1,11 +1,16 @@
 {
   "name": "fanuc-pro-suite",
-  "version": "1.0.0",
-  "description": "MTB Elektrik Bakım Yönetim Uygulaması",
+  "version": "1.1.0",
+  "description": "Kalıcı salt-okunur FANUC CNC izleme ve teşhis uygulaması",
   "main": "main.js",
   "scripts": {
-    "start": "electron . --no-sandbox --disable-gpu-disk-cache",
-    "dev": "electron . --dev --no-sandbox --disable-gpu-disk-cache"
+    "start": "electron . --disable-gpu-disk-cache",
+    "dev": "electron . --dev --disable-gpu-disk-cache",
+    "mock-adapter": "node scripts/mock-adapter.js",
+    "smoke": "powershell -ExecutionPolicy Bypass -File scripts/smoke.ps1",
+    "test": "node --test",
+    "check": "node scripts/check.js",
+    "build:dir": "electron-builder --dir --win"
   },
   "keywords": [
     "fanuc",
@@ -13,8 +18,52 @@
     "pmc"
   ],
   "author": "MTB Breakers",
-  "license": "ISC",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "build": {
+    "appId": "com.mtbbreakers.fanucprosuite",
+    "productName": "FANUC Pro Suite - Read Only",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "data/**/*",
+      "assets/**/*",
+      "bin/**/*",
+      "lib/**/*",
+      "package.json",
+      "LICENSE",
+      "SECURITY.md",
+      "READ_ONLY_POLICY.md"
+    ],
+    "extraMetadata": {
+      "main": "main.js"
+    },
+    "win": {
+      "icon": "assets/app-icon.ico",
+      "target": [
+        "nsis"
+      ],
+      "verifyUpdateCodeSignature": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    }
+  },
   "devDependencies": {
-    "electron": "^43.0.0"
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/outfit": "^5.3.0",
+    "@fortawesome/fontawesome-free": "^7.3.1",
+    "dompurify": "^3.4.12"
   }
 }

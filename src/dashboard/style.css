@@ -1143,4 +1143,17 @@ body {
     display: flex !important;
 }
 
+.telemetry-health { display:flex; flex-direction:column; gap:2px; padding:6px 10px; border:1px solid #374151; border-radius:7px; font-size:11px; color:#9ca3af; }
+.telemetry-health strong { color:#10b981; letter-spacing:.08em; }
+.telemetry-health.stale { border-color:#ef4444; color:#fca5a5; }
+.telemetry-health.stale strong { color:#ef4444; }
+.telemetry-health.simulation { border-color:#f59e0b; background:rgba(245,158,11,.12); }
+.telemetry-health.simulation strong { color:#f59e0b; }
+.observability-panel{margin:12px 0;padding:12px;border:1px solid #374151;border-radius:10px;background:rgba(17,24,39,.7)}
+.obs-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.obs-head button{margin-left:6px}
+.obs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.obs-card{padding:9px;border-radius:7px;background:#111827;border-left:3px solid #10b981;font-size:12px}.obs-card.bad{border-color:#ef4444}.obs-card.warn{border-color:#f59e0b}.obs-card small{display:block;color:#9ca3af;margin-top:3px}
+.obs-analytics{display:grid;grid-template-columns:2fr 2fr 1fr;gap:10px;margin-top:10px;font-size:12px}.obs-analytics>div{padding:9px;background:rgba(0,0,0,.2);border-radius:7px}.obs-analytics strong{color:#67e8f9}
+body.kiosk .dashboard-header,body.kiosk footer,body.kiosk .selected-machine-bar{display:none!important}body.kiosk .dashboard-container{max-width:none;width:100%;padding:8px}body.kiosk{overflow:auto}
+@media(max-width:900px){.obs-grid,.obs-analytics{grid-template-columns:1fr 1fr}}@media(max-width:600px){.obs-grid,.obs-analytics{grid-template-columns:1fr}}
+
 

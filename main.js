@@ -1,9 +1,15 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell, protocol, net } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell, protocol, net, safeStorage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { spawn, exec } = require('child_process');
+const { spawn } = require('child_process');
+const crypto = require('crypto');
 const { pathToFileURL } = require('url');
+const { DataStore } = require('./lib/data-store');
+const { StructuredLogger } = require('./lib/structured-logger');
+const { can } = require('./lib/permissions');
+
+if (process.env.FANUC_SMOKE_TEST === '1') app.disableHardwareAcceleration();
 
 // ── Global Process Uncaught Error & Rejection Handlers ──
 process.on('uncaughtException', (err) => {
@@ -20,10 +26,13 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 // ── Redirect userData to local drive (avoids OneDrive cache permission errors) ──
-app.setPath('userData', path.join(os.homedir(), '.fanuc-pro-suite', 'electron-data'));
+const configuredDataDir = process.env.FANUC_DATA_DIR ? path.resolve(process.env.FANUC_DATA_DIR) : path.join(os.homedir(), '.fanuc-pro-suite');
+app.setPath('userData', path.join(configuredDataDir, 'electron-data'));
 app.setPath('temp',     path.join(os.tmpdir(), 'fanuc-pro-suite'));
 
 let mainWindow;
+let dataStore;
+let logger;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -31,7 +40,7 @@ function createWindow() {
     height: 900,
     minWidth: 1100,
     minHeight: 700,
-    // icon: path.join(__dirname, 'assets', 'icon.png'),
+    icon: path.join(__dirname, 'assets', 'app-icon.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -85,10 +94,13 @@ function createWindow() {
   });
 }
 
-const ALLOWED_DATA_DIR = path.resolve(path.join(os.homedir(), '.fanuc-pro-suite'));
+const ALLOWED_DATA_DIR = path.resolve(configuredDataDir);
 const APP_ROOT_DATA = path.resolve(path.join(__dirname, 'data'));
 const APP_BIN_DIR = path.resolve(path.join(__dirname, 'bin'));
-const USER_HOME_DIR = path.resolve(os.homedir());
+const USERS_FILE = path.join(APP_ROOT_DATA, 'users.json');
+const SECRETS_FILE = path.join(ALLOWED_DATA_DIR, 'secrets.json');
+const sessions = new Map();
+const grantedPaths = new Set();
 
 function isSafePath(filePath) {
   if (!filePath) return false;
@@ -100,7 +112,6 @@ function isSafePath(filePath) {
   let allowed = ALLOWED_DATA_DIR;
   let appRoot = APP_ROOT_DATA;
   let appBin = APP_BIN_DIR;
-  let userHome = USER_HOME_DIR;
 
   // On Windows, paths are case-insensitive
   if (process.platform === 'win32') {
@@ -108,15 +119,86 @@ function isSafePath(filePath) {
     allowed = allowed.toLowerCase();
     appRoot = appRoot.toLowerCase();
     appBin = appBin.toLowerCase();
-    userHome = userHome.toLowerCase();
   }
   
   const isInsideAllowedDataDir = resolved.startsWith(allowed + path.sep) || resolved === allowed;
   const isInsideAppRootData = resolved.startsWith(appRoot + path.sep) || resolved === appRoot;
   const isInsideAppBin = resolved.startsWith(appBin + path.sep) || resolved === appBin;
-  const isInsideUserHome = resolved.startsWith(userHome + path.sep) || resolved === userHome;
-  
-  return isInsideAllowedDataDir || isInsideAppRootData || isInsideAppBin || isInsideUserHome;
+  const isExplicitlyGranted = grantedPaths.has(resolved);
+  return isInsideAllowedDataDir || isInsideAppRootData || isInsideAppBin || isExplicitlyGranted;
+}
+
+function hashPin(pin, salt = crypto.randomBytes(16).toString('hex')) {
+  return { pinSalt: salt, pinHash: crypto.scryptSync(String(pin), salt, 64).toString('hex') };
+}
+
+function verifyPin(pin, user) {
+  if (!user.pinHash || !user.pinSalt) return false;
+  const actual = Buffer.from(hashPin(pin, user.pinSalt).pinHash, 'hex');
+  const expected = Buffer.from(user.pinHash, 'hex');
+  return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+}
+
+function publicUser(user) {
+  const { pin, pinHash, pinSalt, ...safe } = user;
+  return safe;
+}
+
+function loadUsersSecure() {
+  const parsed = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+  let changed = false;
+  parsed.users = (parsed.users || []).map(user => {
+    if (user.pin && !user.pinHash) {
+      changed = true;
+      const { pin, ...rest } = user;
+      return { ...rest, ...hashPin(pin) };
+    }
+    return user;
+  });
+  if (changed) fs.writeFileSync(USERS_FILE, JSON.stringify(parsed, null, 2), 'utf8');
+  return parsed.users;
+}
+
+function requireSession(event, roles = []) {
+  const session = sessions.get(event.sender.id);
+  if (!session) throw new Error('Oturum gerekli.');
+  if (roles.length && !roles.includes(session.user.role)) throw new Error('Bu işlem için yetkiniz yok.');
+  return session;
+}
+
+function requirePermission(event, permission) {
+  const session = requireSession(event);
+  if (!can(session.user.role, permission)) throw new Error('Bu işlem için yetkiniz yok.');
+  return session;
+}
+
+function writeAudit(action, user, details = {}) {
+  const dir = path.join(ALLOWED_DATA_DIR, 'audit');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.appendFileSync(path.join(dir, 'security.jsonl'), JSON.stringify({ timestamp: new Date().toISOString(), action, userId: user?.id || null, userName: user?.name || 'system', details }) + '\n');
+}
+
+function verifyAdapterIntegrity(adapterDir) {
+  const manifestPath = path.join(adapterDir, 'adapter.integrity.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  for (const [fileName, expected] of Object.entries(manifest)) {
+    const actual = crypto.createHash('sha256').update(fs.readFileSync(path.join(adapterDir, fileName))).digest('hex');
+    if (!crypto.timingSafeEqual(Buffer.from(actual, 'hex'), Buffer.from(expected, 'hex'))) {
+      throw new Error(`Adaptör bütünlük kontrolü başarısız: ${fileName}`);
+    }
+  }
+}
+
+function migrateLegacyAISecret() {
+  const settingsPath = path.join(ALLOWED_DATA_DIR, 'settings.json');
+  if (!safeStorage.isEncryptionAvailable() || !fs.existsSync(settingsPath)) return;
+  const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+  if (!settings.aiApiKey) return;
+  fs.mkdirSync(ALLOWED_DATA_DIR, { recursive: true });
+  fs.writeFileSync(SECRETS_FILE, JSON.stringify({ aiApiKey: safeStorage.encryptString(String(settings.aiApiKey)).toString('base64') }), 'utf8');
+  delete settings.aiApiKey;
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+  writeAudit('secret.migrated', null);
 }
 
 let adapterProcess = null;
@@ -141,6 +223,7 @@ function notifyAdapterStatus() {
 function updateAdapterState(newState, extra = {}) {
   adapterStatus = { ...adapterStatus, state: newState, ...extra };
   console.log(`[Adapter Status] State: ${newState}, Attempts: ${adapterStatus.attempts}/${adapterStatus.maxAttempts}`);
+  if (logger) logger.write('adapter', newState === 'error' ? 'error' : 'info', 'Adapter state changed', adapterStatus);
   notifyAdapterStatus();
 }
 
@@ -165,14 +248,28 @@ function startAdapter(manualReset = false) {
   updateAdapterState('starting');
   isSpawning = true;
 
-  // Kill any existing instance first, then wait 2s for OS to release TCP ports
-  exec('taskkill /F /IM FanucSHDRAdapter.exe', () => {
+  // Never terminate adapters owned by another application. Only this child PID is managed.
+  if (adapterProcess && !adapterProcess.killed) {
+    console.log('[Adapter] Existing managed process is still running; restart ignored.');
+    isSpawning = false;
+    updateAdapterState('running');
+    return;
+  }
+  {
     const adapterPath = path.join(__dirname, 'bin', 'FanucSHDRAdapter.exe');
     const adapterCwd = path.join(__dirname, 'bin');
     if (!fs.existsSync(adapterPath)) {
       const errStr = 'FanucSHDRAdapter.exe bulunamadı: ' + adapterPath;
       console.error(errStr);
       updateAdapterState('error', { lastError: errStr });
+      isSpawning = false;
+      return;
+    }
+
+    try {
+      verifyAdapterIntegrity(adapterCwd);
+    } catch (err) {
+      updateAdapterState('error', { lastError: err.message });
       isSpawning = false;
       return;
     }
@@ -229,7 +326,7 @@ function startAdapter(manualReset = false) {
         handleAdapterCrash(err.message);
       }
     }, 2000);
-  });
+  }
 }
 
 function handleAdapterCrash(errorMsg) {
@@ -273,13 +370,19 @@ function stopAdapter() {
     } catch (e) {}
     adapterProcess = null;
   }
-  exec('taskkill /F /IM FanucSHDRAdapter.exe', () => {});
   updateAdapterState('stopped');
 }
 
 
 // App lifecycle
 app.whenReady().then(() => {
+  logger = new StructuredLogger(path.join(ALLOWED_DATA_DIR, 'logs'));
+  dataStore = new DataStore(path.join(ALLOWED_DATA_DIR, 'fanuc-pro-suite.db'), APP_ROOT_DATA);
+  dataStore.migrateJsonDirectory();
+  dataStore.purgeTelemetry(30);
+  setInterval(() => { try { const deleted=dataStore.purgeTelemetry(30); if(deleted) logger.write('data','info','Telemetry retention completed',{deleted,rawDays:30}); } catch(err){ logger.write('data','error','Telemetry retention failed',{error:err.message}); } }, 24*60*60*1000).unref();
+  logger.write('application', 'info', 'Application started', { version: app.getVersion(), dataStore: dataStore.status() });
+  try { migrateLegacyAISecret(); } catch (err) { console.error('Secret migration failed:', err); }
   // Handle custom file protocol to securely serve local PDFs under webSecurity: true
   protocol.handle('app-file', (request) => {
     try {
@@ -298,8 +401,9 @@ app.whenReady().then(() => {
     }
   });
 
-  startAdapter();
+  if (process.env.FANUC_SIMULATION !== '1') startAdapter();
   createWindow();
+  if (process.env.FANUC_SMOKE_TEST === '1') setTimeout(() => app.quit(), 5000);
   
   // Trigger automatic daily snapshot backup
   setTimeout(() => {
@@ -319,9 +423,184 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', () => {
   stopAdapter();
+  if (dataStore) dataStore.close();
 });
 
 // ── IPC Handlers ──────────────────────────────────────────────
+
+ipcMain.handle('auth-list-users', () => {
+  try { return { ok: true, users: loadUsersSecure().map(publicUser) }; }
+  catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('auth-login', (event, userId, pin) => {
+  try {
+    const user = loadUsersSecure().find(item => item.id === userId);
+    if (!user || !verifyPin(pin, user)) return { ok: false, error: 'Hatalı kullanıcı veya PIN.' };
+    const session = { user: publicUser(user), createdAt: Date.now() };
+    sessions.set(event.sender.id, session);
+    event.sender.once('destroyed', () => sessions.delete(event.sender.id));
+    writeAudit('auth.login', session.user);
+    return { ok: true, user: session.user };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('auth-logout', event => {
+  const session = sessions.get(event.sender.id);
+  if (session) writeAudit('auth.logout', session.user);
+  sessions.delete(event.sender.id);
+  return { ok: true };
+});
+
+ipcMain.handle('data-store-status', event => {
+  try { requireSession(event); return { ok: true, data: dataStore.status() }; }
+  catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('records-list', (event, collection) => {
+  try { requirePermission(event, 'records.read'); return { ok: true, items: dataStore.listRecords(String(collection)) }; }
+  catch (err) { return { ok: false, error: err.message }; }
+});
+ipcMain.handle('records-upsert', (event, collection, id, record) => {
+  try { const session=requirePermission(event,'records.write'); dataStore.upsertRecord(String(collection),id,record); writeAudit('record.upsert',session.user,{collection,id}); return {ok:true}; }
+  catch(err){ return {ok:false,error:err.message}; }
+});
+ipcMain.handle('records-delete', (event, collection, id) => {
+  try { const session=requirePermission(event,'records.delete'); const deleted=dataStore.deleteRecord(String(collection),id); writeAudit('record.delete',session.user,{collection,id}); return {ok:true,deleted}; }
+  catch(err){ return {ok:false,error:err.message}; }
+});
+
+ipcMain.handle('telemetry-record', (event, samples) => {
+  try { requirePermission(event,'telemetry.read'); (Array.isArray(samples)?samples:[]).slice(0,20).forEach(s=>dataStore.insertTelemetry(s)); return {ok:true}; }
+  catch(err){return {ok:false,error:err.message};}
+});
+ipcMain.handle('telemetry-query', (event, machine, since, limit) => {
+  try { requirePermission(event,'telemetry.read'); return {ok:true,items:dataStore.queryTelemetry(machine,since,limit)}; }
+  catch(err){return {ok:false,error:err.message};}
+});
+ipcMain.handle('telemetry-summary', (event, since) => {
+  try { requirePermission(event,'telemetry.read'); return {ok:true,items:dataStore.telemetrySummary(since),alarms:dataStore.alarmAnalytics(since)}; }
+  catch(err){return {ok:false,error:err.message};}
+});
+ipcMain.handle('alarm-record', (event, alarm) => {
+  try { requirePermission(event,'telemetry.read'); dataStore.recordAlarm(alarm); return {ok:true}; }
+  catch(err){return {ok:false,error:err.message};}
+});
+ipcMain.handle('retention-run', event => {
+  try { const session=requirePermission(event,'records.delete'); const deleted=dataStore.purgeTelemetry(30); writeAudit('retention.run',session.user,{deleted}); return {ok:true,deleted}; }
+  catch(err){return {ok:false,error:err.message};}
+});
+
+ipcMain.handle('backup-health', event => {
+  try {
+    requirePermission(event,'records.read');
+    const dir=path.join(ALLOWED_DATA_DIR,'backups');
+    const files=fs.existsSync(dir)?fs.readdirSync(dir).filter(f=>f.endsWith('.json')).map(f=>path.join(dir,f)):[];
+    if(!files.length)return {ok:true,data:{status:'missing',message:'Henüz yedek yok'}};
+    const latest=files.sort((a,b)=>fs.statSync(b).mtimeMs-fs.statSync(a).mtimeMs)[0];
+    const raw=fs.readFileSync(latest,'utf8'); JSON.parse(raw);
+    return {ok:true,data:{status:'healthy',file:path.basename(latest),ageMs:Date.now()-fs.statSync(latest).mtimeMs,sha256:crypto.createHash('sha256').update(raw).digest('hex')}};
+  } catch(err){return {ok:true,data:{status:'invalid',message:err.message}};}
+});
+
+ipcMain.handle('auth-add-user', (event, input) => {
+  try {
+    const actor = requireSession(event, ['admin']);
+    if (!input?.name || !/^\d{4,6}$/.test(input.pin || '')) throw new Error('Geçerli ad ve 4-6 haneli PIN gerekli.');
+    if (!['admin', 'technician', 'operator'].includes(input.role)) throw new Error('Geçersiz rol.');
+    const users = loadUsersSecure();
+    const user = { id: Date.now(), name: String(input.name).slice(0, 80), role: input.role, initials: String(input.initials || '').slice(0, 2), color: input.color || '#3b82f6', ...hashPin(input.pin) };
+    users.push(user);
+    fs.writeFileSync(USERS_FILE, JSON.stringify({ users }, null, 2), 'utf8');
+    writeAudit('user.create', actor.user, { targetUserId: user.id, role: user.role });
+    return { ok: true, user: publicUser(user) };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('auth-delete-user', (event, userId) => {
+  try {
+    const actor = requireSession(event, ['admin']);
+    if (actor.user.id === userId) throw new Error('Kendi hesabınızı silemezsiniz.');
+    const users = loadUsersSecure();
+    const updated = users.filter(user => user.id !== userId);
+    if (updated.length === users.length) throw new Error('Kullanıcı bulunamadı.');
+    fs.writeFileSync(USERS_FILE, JSON.stringify({ users: updated }, null, 2), 'utf8');
+    writeAudit('user.delete', actor.user, { targetUserId: userId });
+    return { ok: true };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('auth-change-pin', (event, oldPin, newPin) => {
+  try {
+    const session = requireSession(event);
+    if (!/^\d{4,6}$/.test(newPin || '')) throw new Error('Yeni PIN 4-6 haneli olmalı.');
+    const users = loadUsersSecure();
+    const index = users.findIndex(user => user.id === session.user.id);
+    if (index < 0 || !verifyPin(oldPin, users[index])) throw new Error('Mevcut PIN hatalı.');
+    Object.assign(users[index], hashPin(newPin));
+    fs.writeFileSync(USERS_FILE, JSON.stringify({ users }, null, 2), 'utf8');
+    writeAudit('user.pin_change', session.user);
+    return { ok: true };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('secret-get', event => {
+  try {
+    requireSession(event, ['admin']);
+    if (!safeStorage.isEncryptionAvailable() || !fs.existsSync(SECRETS_FILE)) return { ok: true, value: '' };
+    const stored = JSON.parse(fs.readFileSync(SECRETS_FILE, 'utf8'));
+    return { ok: true, value: safeStorage.decryptString(Buffer.from(stored.aiApiKey, 'base64')) };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('secret-set', (event, value) => {
+  try {
+    requireSession(event, ['admin']);
+    if (!safeStorage.isEncryptionAvailable()) throw new Error('Windows güvenli depolama kullanılamıyor.');
+    fs.mkdirSync(ALLOWED_DATA_DIR, { recursive: true });
+    fs.writeFileSync(SECRETS_FILE, JSON.stringify({ aiApiKey: safeStorage.encryptString(String(value || '')).toString('base64') }), 'utf8');
+    return { ok: true };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('ai-complete', async (event, request) => {
+  try {
+    const session = requireSession(event, ['admin', 'technician']);
+    if (!safeStorage.isEncryptionAvailable() || !fs.existsSync(SECRETS_FILE)) throw new Error('AI API anahtarı yapılandırılmamış.');
+    const encrypted = JSON.parse(fs.readFileSync(SECRETS_FILE, 'utf8')).aiApiKey;
+    const apiKey = safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
+    const provider = request?.provider;
+    const history = Array.isArray(request?.history) ? request.history.slice(-8) : [];
+    const userMessage = String(request?.userMessage || '').slice(0, 12000);
+    const systemPrompt = 'Sen FANUC CNC konusunda teknik asistansın. Türkçe yanıt ver. CNC üzerinde doğrudan işlem yaptığını iddia etme; kritik adımlarda teknisyen doğrulaması iste.';
+    let response;
+    if (provider === 'openai') {
+      response = await net.fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model: request.model || 'gpt-4o', messages: [{ role: 'system', content: systemPrompt }, ...history, { role: 'user', content: userMessage }], max_tokens: 1500, temperature: 0.4 })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(`OpenAI API hatası: ${response.status}`);
+      writeAudit('ai.request', session.user, { provider, model: request.model || 'gpt-4o' });
+      return { ok: true, content: data.choices?.[0]?.message?.content || '', confidence: 'advisory', requiresTechnicianVerification: true };
+    }
+    if (provider === 'gemini') {
+      const model = String(request.model || 'gemini-pro').replace(/[^a-zA-Z0-9._-]/g, '');
+      response = await net.fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userMessage}` }] }] })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(`Gemini API hatası: ${response.status}`);
+      writeAudit('ai.request', session.user, { provider, model });
+      return { ok: true, content: data.candidates?.[0]?.content?.parts?.[0]?.text || '', confidence: 'advisory', requiresTechnicianVerification: true };
+    }
+    throw new Error('Desteklenmeyen AI sağlayıcısı.');
+  } catch (err) {
+    if (logger) logger.write('security', 'warning', 'AI request rejected', { error: err.message });
+    return { ok: false, error: err.message };
+  }
+});
 
 // Window controls
 ipcMain.on('window-minimize', () => {
@@ -357,7 +636,9 @@ ipcMain.handle('dialog-open-file', async (event, filters) => {
       filters: filters || [{ name: 'All Files', extensions: ['*'] }]
     });
     if (result.canceled || result.filePaths.length === 0) return null;
-    return result.filePaths[0];
+    const selected = path.resolve(result.filePaths[0]);
+    grantedPaths.add(process.platform === 'win32' ? selected.toLowerCase() : selected);
+    return selected;
   } catch (err) {
     console.error('Error opening file dialog:', err);
     return null;
@@ -373,7 +654,9 @@ ipcMain.handle('dialog-save-file', async (event, filters, defaultName) => {
       filters: filters || [{ name: 'All Files', extensions: ['*'] }]
     });
     if (result.canceled) return null;
-    return result.filePath;
+    const selected = path.resolve(result.filePath);
+    grantedPaths.add(process.platform === 'win32' ? selected.toLowerCase() : selected);
+    return selected;
   } catch (err) {
     console.error('Error saving file dialog:', err);
     return null;
@@ -386,6 +669,9 @@ ipcMain.handle('fs-read-file', async (event, filePath, encoding) => {
     const resolved = path.isAbsolute(filePath) ? path.resolve(filePath) : path.resolve(path.join(__dirname, filePath));
     if (!isSafePath(resolved)) {
       return { ok: false, error: 'Access Denied: Path is outside allowed directories.' };
+    }
+    if (resolved.toLowerCase() === USERS_FILE.toLowerCase()) {
+      return { ok: false, error: 'Kullanıcı verileri yalnızca güvenli kimlik API\'siyle değiştirilebilir.' };
     }
     if (encoding === 'binary') {
       const buf = fs.readFileSync(resolved);
@@ -404,6 +690,23 @@ ipcMain.handle('fs-write-file', async (event, filePath, data, encoding) => {
     const resolved = path.isAbsolute(filePath) ? path.resolve(filePath) : path.resolve(path.join(__dirname, filePath));
     if (!isSafePath(resolved)) {
       return { ok: false, error: 'Access Denied: Path is outside allowed directories.' };
+    }
+    if (dataStore && path.dirname(resolved).toLowerCase() === APP_ROOT_DATA.toLowerCase() && path.extname(resolved).toLowerCase() === '.json') {
+      const stored = dataStore.readDocument(path.basename(resolved));
+      if (stored !== null) return { ok: true, data: stored };
+    }
+    if (resolved.toLowerCase() === USERS_FILE.toLowerCase()) {
+      return { ok: false, error: 'Kullanıcı verileri yalnızca güvenli kimlik API\'siyle değiştirilebilir.' };
+    }
+    const isUiLog = path.basename(resolved).toLowerCase() === 'ui_error_log.txt';
+    if (!isUiLog) requireSession(event, ['admin', 'technician']);
+    if (resolved.toLowerCase().startsWith((APP_BIN_DIR + path.sep).toLowerCase())) {
+      requireSession(event, ['admin']);
+    }
+    if (dataStore && path.dirname(resolved).toLowerCase() === APP_ROOT_DATA.toLowerCase() && path.extname(resolved).toLowerCase() === '.json') {
+      dataStore.writeDocument(path.basename(resolved), String(data));
+      logger.write('data', 'info', 'Document updated', { name: path.basename(resolved) });
+      return { ok: true };
     }
     
     // Ensure the target directory exists
@@ -474,6 +777,7 @@ ipcMain.handle('fs-list-dir', async (event, dirPath) => {
 // Ensure dir (with Path Validation)
 ipcMain.handle('fs-ensure-dir', async (event, dirPath) => {
   try {
+    requireSession(event, ['admin', 'technician']);
     const resolved = path.isAbsolute(dirPath) ? path.resolve(dirPath) : path.resolve(path.join(__dirname, dirPath));
     if (!isSafePath(resolved)) {
       return { ok: false, error: 'Access Denied: Path is outside allowed directories.' };
@@ -490,9 +794,11 @@ ipcMain.handle('get-adapter-status', () => {
   return { ok: true, data: adapterStatus };
 });
 
-ipcMain.handle('restart-adapter', async () => {
+ipcMain.handle('restart-adapter', async (event) => {
   try {
-    startAdapter(true);
+    requireSession(event, ['admin', 'technician']);
+    stopAdapter();
+    setTimeout(() => startAdapter(true), 2000);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };
@@ -501,6 +807,12 @@ ipcMain.handle('restart-adapter', async () => {
 
 // REAL TCP Socket Connectivity Check
 ipcMain.handle('ping-tcp-port', async (event, { host, port, timeoutMs = 2500 }) => {
+  requireSession(event, ['admin', 'technician']);
+  const normalizedHost = String(host || '').trim();
+  const isPrivateHost = normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || /^10\./.test(normalizedHost) || /^192\.168\./.test(normalizedHost) || /^172\.(1[6-9]|2\d|3[01])\./.test(normalizedHost);
+  if (!isPrivateHost || !Number.isInteger(Number(port)) || Number(port) < 1 || Number(port) > 65535) {
+    return { ok: false, error: 'Yalnızca özel ağdaki geçerli CNC hedeflerine izin verilir.' };
+  }
   return new Promise((resolve) => {
     const net = require('net');
     const socket = new net.Socket();
@@ -546,7 +858,7 @@ ipcMain.handle('ping-tcp-port', async (event, { host, port, timeoutMs = 2500 }) 
 ipcMain.on('open-external', (event, targetPath) => {
   try {
     if (!targetPath) return;
-    if (typeof targetPath === 'string' && (targetPath.startsWith('http://') || targetPath.startsWith('https://'))) {
+    if (typeof targetPath === 'string' && targetPath.startsWith('https://')) {
       shell.openExternal(targetPath);
       return;
     }
@@ -750,23 +1062,33 @@ ipcMain.handle('get-backups-list', async () => {
   }
 });
 
-ipcMain.handle('create-manual-backup', async () => {
-  return await performAutoBackup();
+ipcMain.handle('create-manual-backup', async (event) => {
+  try {
+    const session = requireSession(event, ['admin', 'technician']);
+    const result = await performAutoBackup();
+    if (result.ok) writeAudit('backup.create', session.user, { file: path.basename(result.file) });
+    return result;
+  } catch (err) { return { ok: false, error: err.message }; }
 });
 
 ipcMain.handle('restore-backup', async (event, backupFilePath) => {
   try {
-    if (!fs.existsSync(backupFilePath)) return { ok: false, error: 'Yedek dosyası bulunamadı.' };
-    const content = fs.readFileSync(backupFilePath, 'utf8');
+    const session = requireSession(event, ['admin']);
+    const resolvedBackup = path.resolve(backupFilePath);
+    const backupDir = path.resolve(path.join(ALLOWED_DATA_DIR, 'backups'));
+    if (!(resolvedBackup.startsWith(backupDir + path.sep)) || !fs.existsSync(resolvedBackup)) return { ok: false, error: 'Yedek dosyası bulunamadı veya izin verilen klasörde değil.' };
+    const content = fs.readFileSync(resolvedBackup, 'utf8');
     const snapshot = JSON.parse(content);
     if (!snapshot || !snapshot.data) return { ok: false, error: 'Geçersiz yedek dosyası formatı.' };
 
     for (const [fileName, fileData] of Object.entries(snapshot.data)) {
+      if (path.basename(fileName) !== fileName || !fileName.endsWith('.json')) throw new Error(`Geçersiz yedek girdisi: ${fileName}`);
       const targetPath = path.join(__dirname, 'data', fileName);
       if (isSafePath(targetPath)) {
         fs.writeFileSync(targetPath, fileData, 'utf8');
       }
     }
+    writeAudit('backup.restore', session.user, { backup: path.basename(resolvedBackup) });
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };
@@ -776,6 +1098,11 @@ ipcMain.handle('restore-backup', async (event, backupFilePath) => {
 // IPC Handler for Secure Fetch Proxy (webSecurity: true compliance)
 ipcMain.handle('fetch-proxy', async (event, url, options = {}) => {
   try {
+    const parsed = new URL(url);
+    const allowedHosts = new Set(['api.openai.com', 'generativelanguage.googleapis.com']);
+    if (parsed.protocol !== 'https:' || !allowedHosts.has(parsed.hostname)) {
+      throw new Error('Ağ hedefi izin listesinde değil.');
+    }
     const response = await net.fetch(url, options);
     const text = await response.text();
     return { ok: true, status: response.status, data: text };

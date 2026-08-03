@@ -1,6 +1,6 @@
 # ⚙️ FANUC Pro Suite — CNC Telemetri, Elektrik Bakım & IIoT Endüstriyel Yönetim Sistemi
 
-[![Electron Version](https://img.shields.io/badge/Electron-v28.0.0-blue.svg?style=for-the-badge&logo=electron)](https://www.electronjs.org/)
+[![Electron Version](https://img.shields.io/badge/Electron-v43.0.0-blue.svg?style=for-the-badge&logo=electron)](https://www.electronjs.org/)
 [![Node Version](https://img.shields.io/badge/Node.js-v18%2B-brightgreen.svg?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![FANUC Protocol](https://img.shields.io/badge/FANUC-FOCAS2%20%2F%20MTConnect-yellow.svg?style=for-the-badge&logo=csharp)](https://github.com/PobloMert/fanuc-pro-suitev)
 [![License](https://img.shields.io/badge/License-MIT-orange.svg?style=for-the-badge)](LICENSE)

@@ -64,13 +64,14 @@ export function loginBack() {
   _loginSelectedUser = null;
 }
 
-export function loginSubmitPin() {
+export async function loginSubmitPin() {
   const pinInput = document.getElementById('login-pin-input');
   const pin = pinInput ? pinInput.value : '';
   if (!_loginSelectedUser) return;
 
-  if (pin === _loginSelectedUser.pin) {
-    State.currentUser = _loginSelectedUser;
+  const result = await window.electronAPI.login(_loginSelectedUser.id, pin);
+  if (result.ok) {
+    State.currentUser = result.user;
     const overlay = document.getElementById('login-overlay');
     if (overlay) overlay.classList.add('hidden');
     updateUserAvatar();

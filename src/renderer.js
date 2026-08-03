@@ -89,6 +89,32 @@ if (typeof window !== 'undefined' && !window.State) {
 }
 var State = window.State;
 
+// Read-only dashboard bridge: telemetry may be persisted/exported, never sent to CNC.
+window.addEventListener('message', async (event) => {
+  const message = event.data;
+  if (!message || typeof message !== 'object' || !String(message.type || '').startsWith('fanuc:')) return;
+  try {
+    if (message.type === 'fanuc:telemetry') await window.electronAPI.recordTelemetry(message.samples || []);
+    if (message.type === 'fanuc:alarm') {
+      await window.electronAPI.recordAlarm(message.alarm);
+      window.electronAPI.showNativeNotification('FANUC Alarm', `${message.alarm.machine}: ${message.alarm.code} ${message.alarm.message || ''}`);
+    }
+    if (message.type === 'fanuc:summary-request') {
+      const since = message.since || new Date(Date.now() - 86400000).toISOString();
+      const [summary, backup] = await Promise.all([window.electronAPI.telemetrySummary(since), window.electronAPI.getBackupHealth()]);
+      event.source?.postMessage({ type: 'fanuc:summary-response', requestId: message.requestId, summary, backup }, '*');
+    }
+    if (message.type === 'fanuc:export') {
+      const result = await window.electronAPI.queryTelemetry(message.machine, message.since, 10000);
+      if (result?.ok) {
+        const header = 'sampled_at,machine,execution,program,part_count,spindle_load,data_age_ms,quality,simulated';
+        const rows = result.items.map(r => [r.sampled_at,r.machine,r.execution,r.program,r.part_count,r.spindle_load,r.data_age_ms,r.quality,r.simulated].map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(','));
+        await window.electronAPI.exportCSV([header,...rows].join('\n'), `telemetry_${message.machine}.csv`);
+      }
+    }
+  } catch (error) { console.warn('Dashboard bridge error:', error); }
+});
+
 
 // Main initialization is bootstrapped via src/js/app.js module
 
@@ -386,14 +412,11 @@ async function loadData() {
 
 async function loadUsers() {
   try {
-    const res = await window.electronAPI.readFile('./data/users.json');
+    const res = await window.electronAPI.listUsers();
     if (res.ok) {
-      State.users = safeParseJSON(res.data, 'users', []);
+      State.users = res.users || [];
     }
   } catch {}
-  if (!State.users.length) {
-    State.users = [{ id: 1, name: 'Admin', role: 'admin', pin: '1234', color: '#3b82f6', initials: 'AD' }];
-  }
 }
 
 async function loadProjects() {
@@ -429,7 +452,8 @@ async function loadSettings() {
 async function saveSettings() {
   const settingsPath = State.appDataDir + '/settings.json';
   try {
-    const res = await window.electronAPI.writeFile(settingsPath, JSON.stringify(State.settings, null, 2));
+    const { aiApiKey, ...safeSettings } = State.settings;
+    const res = await window.electronAPI.writeFile(settingsPath, JSON.stringify(safeSettings, null, 2));
     if (!res || !res.ok) {
       showToast('Ayarlar kaydedilemedi: ' + (res?.error || 'Bilinmeyen hata'), 'error');
     }
@@ -518,89 +542,9 @@ function applyTheme(theme) {
 // ════════════════════════════════════════════════════════════════
 //  LOGIN / USER MANAGEMENT
 // ════════════════════════════════════════════════════════════════
-let _loginSelectedUser = null;
-
-function showLoginScreen() {
-  const overlay = document.getElementById('login-overlay');
-  overlay.classList.remove('hidden');
-  const list = document.getElementById('login-user-list');
-  const pinWrap = document.getElementById('login-pin-wrap');
-  pinWrap.style.display = 'none';
-  _loginSelectedUser = null;
-
-  list.innerHTML = State.users.map(u => `
-    <button class="login-user-btn" onclick="loginSelectUser(${u.id})">
-      <div class="login-user-avatar" style="background:${u.color}">${escapeHTML(u.initials)}</div>
-      <div>
-        <div class="login-user-name">${escapeHTML(u.name)}</div>
-        <div class="login-user-role">${escapeHTML(getRoleLabel(u.role))}</div>
-      </div>
-    </button>
-  `).join('');
-}
-
 function getRoleLabel(role) {
   const map = { admin: '🔑 Yönetici', technician: '🔧 Bakım Teknisyeni', operator: '👤 Operatör' };
   return map[role] || role;
-}
-
-window.loginSelectUser = function(userId) {
-  _loginSelectedUser = State.users.find(u => u.id === userId);
-  if (!_loginSelectedUser) return;
-  const pinWrap = document.getElementById('login-pin-wrap');
-  const label = document.getElementById('login-pin-label');
-  label.textContent = `${_loginSelectedUser.name} — PIN giriniz`;
-  document.getElementById('login-pin-input').value = '';
-  document.getElementById('login-pin-error').textContent = '';
-  pinWrap.style.display = 'flex';
-  document.getElementById('login-user-list').style.display = 'none';
-  setTimeout(() => document.getElementById('login-pin-input').focus(), 80);
-
-  document.getElementById('login-pin-input').onkeydown = (e) => {
-    if (e.key === 'Enter') loginSubmitPin();
-  };
-};
-
-window.loginBack = function() {
-  document.getElementById('login-pin-wrap').style.display = 'none';
-  document.getElementById('login-user-list').style.display = 'flex';
-  _loginSelectedUser = null;
-};
-
-window.loginSubmitPin = function() {
-  const pin = document.getElementById('login-pin-input').value;
-  if (!_loginSelectedUser) return;
-  if (pin === _loginSelectedUser.pin) {
-    State.currentUser = _loginSelectedUser;
-    document.getElementById('login-overlay').classList.add('hidden');
-    updateUserAvatar();
-    checkNotifications();
-    navigate('dashboard');
-  } else {
-    document.getElementById('login-pin-error').textContent = '❌ Hatalı PIN. Tekrar deneyiniz.';
-    document.getElementById('login-pin-input').value = '';
-    document.getElementById('login-pin-input').focus();
-  }
-};
-
-// Allow clicking outside login card to submit (double-click escape for no-pin case)
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !document.getElementById('login-overlay').classList.contains('hidden')) {
-    loginSubmitPin();
-  }
-});
-
-function updateUserAvatar() {
-  const u = State.currentUser;
-  if (!u) {
-    document.getElementById('user-avatar-circle').style.background = 'var(--bg-card2)';
-    document.getElementById('user-avatar-circle').textContent = '??';
-    document.getElementById('user-avatar-name').textContent = 'Misafir';
-    return;
-  }
-  document.getElementById('user-avatar-circle').style.background = u.color;
-  document.getElementById('user-avatar-circle').textContent = u.initials;
-  document.getElementById('user-avatar-name').textContent = u.name;
 }
 
 // Role-based permission check
@@ -2759,7 +2703,7 @@ function renderSettings() {
         <div class="form-group" id="api-key-group" style="${State.settings.aiProvider==='offline'?'display:none':''}">
           <label class="form-label">API Anahtarı</label>
           <div class="flex gap-2" style="max-width:420px">
-            <input type="password" class="form-control" id="ai-api-key" placeholder="sk-..." value="${State.settings.aiApiKey || ''}" />
+            <input type="password" class="form-control" id="ai-api-key" placeholder="Windows güvenli deposunda saklanır" value="" />
             <button class="btn btn-secondary btn-sm" id="btn-toggle-key">Göster</button>
           </div>
         </div>
@@ -2920,10 +2864,25 @@ function renderSettings() {
     page.querySelector('#cnc-m2-ip').value = '192.168.30.21';
   });
 
+  if (State.currentUser?.role === 'admin') {
+    window.electronAPI.getAISecret().then(res => {
+      if (res?.ok) {
+        State.settings.aiApiKey = res.value || '';
+        const input = page.querySelector('#ai-api-key');
+        if (input) input.value = State.settings.aiApiKey;
+      }
+    });
+  }
+
   page.querySelector('#btn-save-settings').addEventListener('click', async () => {
     State.settings.aiProvider = page.querySelector('#ai-provider').value;
     State.settings.aiApiKey   = page.querySelector('#ai-api-key').value;
     State.settings.aiModel    = page.querySelector('#ai-model').value;
+    const secretResult = await window.electronAPI.setAISecret(State.settings.aiApiKey);
+    if (!secretResult?.ok && State.currentUser?.role === 'admin') {
+      showToast('API anahtarı güvenli depoya kaydedilemedi: ' + secretResult.error, 'error');
+      return;
+    }
     await saveSettings();
 
     // Save CNC Machine Network Settings
@@ -2967,12 +2926,12 @@ window.addNewUser = async function() {
     return;
   }
   const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
-  const newUser = { id: Date.now(), name, role, pin, initials: initials || name.slice(0,2).toUpperCase(), color: colors[State.users.length % colors.length] };
+  const newUser = { name, role, pin, initials: initials || name.slice(0,2).toUpperCase(), color: colors[State.users.length % colors.length] };
   
   try {
-    const res = await window.electronAPI.writeFile('./data/users.json', JSON.stringify({ users: [...State.users, newUser] }, null, 2));
+    const res = await window.electronAPI.addUser(newUser);
     if (res && res.ok) {
-      State.users.push(newUser);
+      State.users.push(res.user);
       showToast('Kullanıcı eklendi ✓', 'success');
       navigate('settings');
     } else {
@@ -2987,11 +2946,10 @@ window.addNewUser = async function() {
 window.deleteUser = async function(userId) {
   if (!canDelete()) { showToast('Silme yetkiniz yok', 'error'); return; }
   if (userId === State.currentUser.id) { showToast('Kendi hesabınızı silemezsiniz', 'error'); return; }
-  const updatedUsers = State.users.filter(u => u.id !== userId);
   try {
-    const res = await window.electronAPI.writeFile('./data/users.json', JSON.stringify({ users: updatedUsers }, null, 2));
+    const res = await window.electronAPI.deleteUser(userId);
     if (res && res.ok) {
-      State.users = updatedUsers;
+      State.users = State.users.filter(u => u.id !== userId);
       showToast('Kullanıcı silindi', 'success');
       navigate('settings');
     } else {
@@ -3016,11 +2974,6 @@ window.changeMyPin = async function() {
     return;
   }
 
-  if (oldPin !== State.currentUser.pin) {
-    showToast('Mevcut PIN şifresi hatalı.', 'error');
-    return;
-  }
-
   if (newPin.length < 4 || newPin.length > 6 || !/^\d+$/.test(newPin)) {
     showToast('Yeni PIN sadece rakamlardan oluşmalı ve 4-6 hane uzunluğunda olmalıdır.', 'error');
     return;
@@ -3031,18 +2984,8 @@ window.changeMyPin = async function() {
     return;
   }
 
-  // Update State.users and State.currentUser
-  const userIndex = State.users.findIndex(u => u.id === State.currentUser.id);
-  if (userIndex === -1) {
-    showToast('Kullanıcı bulunamadı.', 'error');
-    return;
-  }
-
-  State.users[userIndex].pin = newPin;
-  State.currentUser.pin = newPin;
-
   try {
-    const res = await window.electronAPI.writeFile('./data/users.json', JSON.stringify({ users: State.users }, null, 2));
+    const res = await window.electronAPI.changePin(oldPin, newPin);
     if (res && res.ok) {
       showToast('PIN şifreniz başarıyla güncellendi!', 'success');
       document.getElementById('change-pin-old').value = '';
@@ -3263,7 +3206,7 @@ window.sendAIMessage = async function() {
   let response;
   try {
     const apiMsg = ragContext ? `${msg}\n\n${ragContext}` : msg;
-    if (State.settings.aiProvider !== 'offline' && State.settings.aiApiKey) {
+    if (State.settings.aiProvider !== 'offline') {
       const finalMsg = State.onlineSearchEnabled
         ? `[Sistem Notu: Web araması aktif. Lütfen internetten aldığın en güncel teknik FANUC verilerini kullanarak cevap ver.] ${apiMsg}`
         : apiMsg;
@@ -3271,9 +3214,7 @@ window.sendAIMessage = async function() {
     } else {
       const offlineAns = offlineAI(msg);
       const combinedAns = ragContext ? `${offlineAns}\n\n---\n${ragContext}` : offlineAns;
-      response = State.onlineSearchEnabled
-        ? `🌐 **Canlı Arama Sonuçları (Google/Official FANUC Cloud):**\n\nSorgunuz internet üzerinden arandı ve yerel veritabanı ile eşleştirildi:\n\n` + combinedAns
-        : combinedAns;
+      response = combinedAns;
     }
   } catch (e) {
     const offlineAns = offlineAI(msg);
@@ -3319,7 +3260,6 @@ function appendSearchLoading(query) {
 
 async function callAIAPI(userMsg, history) {
   const provider = State.settings.aiProvider;
-  const apiKey = State.settings.aiApiKey;
   const model = State.settings.aiModel || 'gpt-4o';
 
   const systemPrompt = `Sen FANUC CNC tezgahları konusunda uzman bir teknik asistansın. 
@@ -3327,36 +3267,10 @@ FANUC 0i-F, 30i-B, 31i-B, 32i-B serileri, PMC/Ladder programlama, servo sistemle
 spindle kontrolü, alarm giderme ve parametre ayarları konusunda derin bilgiye sahipsin.
 Türkçe yanıt ver. Teknik ve pratik bilgiler sun.`;
 
-  if (provider === 'openai') {
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...history.slice(-8),
-      { role: 'user', content: userMsg }
-    ];
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({ model, messages, max_tokens: 1500, temperature: 0.7 })
-    });
-    if (!res.ok) throw new Error(`OpenAI API hatası: ${res.status}`);
-    const data = await res.json();
-    return data.choices[0].message.content;
-  }
-
-  if (provider === 'gemini') {
-    const geminiModel = model.includes('gemini') ? model : 'gemini-pro';
-    const contents = [
-      ...history.slice(-6).map(h => ({ role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text: h.content }] })),
-      { role: 'user', parts: [{ text: systemPrompt + '\n\nKullanıcı: ' + userMsg }] }
-    ];
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents })
-    });
-    if (!res.ok) throw new Error(`Gemini API hatası: ${res.status}`);
-    const data = await res.json();
-    return data.candidates[0].content.parts[0].text;
+  if (provider === 'openai' || provider === 'gemini') {
+    const result = await window.electronAPI.completeAI({ provider, model, userMessage: userMsg, history });
+    if (!result?.ok) throw new Error(result?.error || 'AI servisi yanıt vermedi.');
+    return `${result.content}\n\n⚠️ Bu yanıt teknik tavsiye niteliğindedir; CNC üzerinde uygulamadan önce yetkili teknisyen doğrulaması gerekir.`;
   }
 
   return offlineAI(userMsg);

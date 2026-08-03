@@ -2,7 +2,7 @@
  * MTB Elektrik Bakım — Central State Management
  */
 
-export const State = {
+export const State = (typeof window !== 'undefined' && window.State) || {
   currentPage: 'dashboard',
   appDataDir: null,
   activeDiagnostic: null,

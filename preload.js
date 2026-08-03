@@ -1,6 +1,26 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  // Authentication (PIN values never enter renderer state or JSON storage)
+  listUsers: () => ipcRenderer.invoke('auth-list-users'),
+  login: (userId, pin) => ipcRenderer.invoke('auth-login', userId, pin),
+  logout: () => ipcRenderer.invoke('auth-logout'),
+  addUser: (user) => ipcRenderer.invoke('auth-add-user', user),
+  deleteUser: (userId) => ipcRenderer.invoke('auth-delete-user', userId),
+  changePin: (oldPin, newPin) => ipcRenderer.invoke('auth-change-pin', oldPin, newPin),
+  getAISecret: () => ipcRenderer.invoke('secret-get'),
+  setAISecret: (value) => ipcRenderer.invoke('secret-set', value),
+  getDataStoreStatus: () => ipcRenderer.invoke('data-store-status'),
+  listRecords: (collection) => ipcRenderer.invoke('records-list', collection),
+  upsertRecord: (collection, id, record) => ipcRenderer.invoke('records-upsert', collection, id, record),
+  deleteRecord: (collection, id) => ipcRenderer.invoke('records-delete', collection, id),
+  recordTelemetry: (samples) => ipcRenderer.invoke('telemetry-record', samples),
+  queryTelemetry: (machine, since, limit) => ipcRenderer.invoke('telemetry-query', machine, since, limit),
+  telemetrySummary: (since) => ipcRenderer.invoke('telemetry-summary', since),
+  recordAlarm: (alarm) => ipcRenderer.invoke('alarm-record', alarm),
+  runRetention: () => ipcRenderer.invoke('retention-run'),
+  getBackupHealth: () => ipcRenderer.invoke('backup-health'),
+  completeAI: (request) => ipcRenderer.invoke('ai-complete', request),
   // Window controls
   minimize: () => ipcRenderer.send('window-minimize'),
   maximize: () => ipcRenderer.send('window-maximize'),
