@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   changePin: (oldPin, newPin) => ipcRenderer.invoke('auth-change-pin', oldPin, newPin),
   getAISecret: () => ipcRenderer.invoke('secret-get'),
   setAISecret: (value) => ipcRenderer.invoke('secret-set', value),
+  getKnowledgePreferences: () => ipcRenderer.invoke('knowledge-preferences-get'),
+  setKnowledgePreferences: (input) => ipcRenderer.invoke('knowledge-preferences-set', input),
   getDataStoreStatus: () => ipcRenderer.invoke('data-store-status'),
   listRecords: (collection) => ipcRenderer.invoke('records-list', collection),
   upsertRecord: (collection, id, record) => ipcRenderer.invoke('records-upsert', collection, id, record),
@@ -28,6 +30,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Dialogs
   openFileDialog: (filters) => ipcRenderer.invoke('dialog-open-file', filters),
+  openDirectoryDialog: () => ipcRenderer.invoke('dialog-open-directory'),
   saveFileDialog: (filters, defaultName) => ipcRenderer.invoke('dialog-save-file', filters, defaultName),
 
   // File system
@@ -48,6 +51,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Network & PDF Utilities
   fetchProxy: (url, options) => ipcRenderer.invoke('fetch-proxy', url, options),
   checkForUpdates: () => ipcRenderer.invoke('update-check'),
+  applyStoragePolicy: (policy) => ipcRenderer.invoke('storage-policy-apply', policy),
   pingTcpPort: (host, port, timeoutMs) => ipcRenderer.invoke('ping-tcp-port', { host, port, timeoutMs }),
   searchPDFText: (pdfPath, query) => ipcRenderer.invoke('search-pdf-text', pdfPath, query),
 

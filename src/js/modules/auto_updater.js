@@ -4,7 +4,7 @@
 
 import { showToast, escapeHTML } from '../utils.js';
 
-export const CURRENT_APP_VERSION = '1.1.2';
+export const CURRENT_APP_VERSION = '1.2.0';
 
 function compareVersions(left, right) {
   const a = String(left).split('-')[0].split('.').map(Number);
@@ -32,7 +32,7 @@ export const OFFLINE_PACKS = [
   {
     id: 'pack-fanuc-0if',
     name: 'FANUC 0i-F / 0i-F Plus Kılavuz Paketi',
-    desc: 'NC Parametreleri, B-64604EN Bakım Kılavuzu ve Alarm Kataloğu (PDF)',
+    desc: 'Uygulamaya gömülü 0i-F alarm, parametre ve kılavuz meta veri kataloğu',
     size: '14.2 MB',
     status: 'installed',
     version: 'v2026.1'
@@ -40,7 +40,7 @@ export const OFFLINE_PACKS = [
   {
     id: 'pack-fanuc-31ib',
     name: 'FANUC 30i / 31i / 32i Model B Sistem Kılavuzu',
-    desc: '31i-B Donanım Konfigürasyonu, Dual Check Safety (DCS) ve PMC Adres Haritası (PDF)',
+    desc: 'Uygulamaya gömülü 30i/31i/32i alarm, PMC ve kılavuz meta veri kataloğu',
     size: '22.8 MB',
     status: 'installed',
     version: 'v2026.1'
@@ -50,7 +50,7 @@ export const OFFLINE_PACKS = [
     name: 'αi & βi Series Servo / Spindle Sürücü Rehberi',
     desc: 'Amplifikatör LED Arıza Kodları, Güç Kablosu Şemaları ve SPM/PSM Teşhisi (PDF)',
     size: '18.5 MB',
-    status: 'available',
+    status: 'installed',
     version: 'v2026.2'
   },
   {
@@ -58,7 +58,7 @@ export const OFFLINE_PACKS = [
     name: 'FANUC PMC Ladder-III Quick Ref & PMC Signal Spec',
     desc: 'G-Bit, F-Bit, X/Y I/O Sinyal Tablosu ve PMC Function Blocks Kılavuzu',
     size: '9.4 MB',
-    status: 'available',
+    status: 'installed',
     version: 'v2026.2'
   }
 ];

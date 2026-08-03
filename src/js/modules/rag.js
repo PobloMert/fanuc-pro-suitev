@@ -104,6 +104,25 @@ export function buildRAGContext(query) {
   return `\n[YEREL VERİTABANI KONTROLÜ — RAG BAĞLAMI]:\nAşağıdaki teknik veriler fabrika yerel FANUC veritabanından başarıyla çekilmiştir. Yanıtınızı verirken öncelikle bu resmi teknik verilere dayandırarak adım adım açık ve net yönlendirmeler sunun:\n\n${contextParts.join('\n')}\n`;
 }
 
+export function buildRAGResult(query) {
+  const context = buildRAGContext(query);
+  const q = String(query || '').toLowerCase();
+  const sources = [];
+  State.alarms.filter(a => q.includes(String(a.code || '').toLowerCase())).slice(0, 3)
+    .forEach(a => sources.push({ type: 'Alarm kataloğu', id: a.code, title: a.title }));
+  const numbers = q.match(/\b\d{4}\b/g) || [];
+  State.parameters.filter(p => numbers.includes(String(p.no || p.number || ''))).slice(0, 3)
+    .forEach(p => sources.push({ type: 'Parametre veritabanı', id: String(p.no || p.number), title: p.name }));
+  State.pmc_signals.filter(s => q.includes(String(s.address || '').toLowerCase()) || q.includes(String(s.symbol || '').toLowerCase())).slice(0, 3)
+    .forEach(s => sources.push({ type: 'PMC sinyal kataloğu', id: s.address, title: s.symbol }));
+  State.nc_codes.filter(n => q.includes(String(n.code || '').toLowerCase())).slice(0, 2)
+    .forEach(n => sources.push({ type: 'NC kod kataloğu', id: n.code, title: n.name }));
+  State.keep_relays.filter(k => q.includes(String(k.id || '').toLowerCase())).slice(0, 2)
+    .forEach(k => sources.push({ type: 'Keep relay kataloğu', id: k.id, title: k.name }));
+  return { context, sources };
+}
+
 if (typeof window !== 'undefined') {
   window.buildRAGContext = buildRAGContext;
+  window.buildRAGResult = buildRAGResult;
 }

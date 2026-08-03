@@ -83,7 +83,18 @@ if (typeof window !== 'undefined' && !window.State) {
       aiApiKey: '',
       aiModel: 'gpt-4o',
       theme: 'dark',
-      pdfPaths: {}
+      pdfPaths: {},
+      internetEnabled: true,
+      retentionDays: 30,
+      diskLimitMB: 2048,
+      backupDirectory: '',
+      textScale: 100,
+      highContrast: false,
+      colorBlindMode: false,
+      connectionProfiles: [],
+      knowledgeFavorites: [],
+      knowledgeRecent: [],
+      knowledgeNotes: {}
     }
   };
 }
@@ -445,7 +456,18 @@ async function loadSettings() {
     try {
       Object.assign(State.settings, JSON.parse(res.data));
       if (!State.settings.pdfPaths) State.settings.pdfPaths = {};
+      if (!Array.isArray(State.settings.connectionProfiles)) State.settings.connectionProfiles = [];
+      if (!Array.isArray(State.settings.knowledgeFavorites)) State.settings.knowledgeFavorites = [];
+      if (!Array.isArray(State.settings.knowledgeRecent)) State.settings.knowledgeRecent = [];
+      if (!State.settings.knowledgeNotes) State.settings.knowledgeNotes = {};
+      applyAccessibilitySettings();
     } catch {}
+  }
+  const knowledge = await window.electronAPI.getKnowledgePreferences();
+  if (knowledge?.ok) {
+    State.settings.knowledgeFavorites = knowledge.data.favorites || [];
+    State.settings.knowledgeRecent = knowledge.data.recent || [];
+    State.settings.knowledgeNotes = knowledge.data.notes || {};
   }
 }
 
@@ -461,6 +483,102 @@ async function saveSettings() {
     showToast('Ayarlar kaydedilirken hata oluştu: ' + err.message, 'error');
   }
 }
+
+async function saveKnowledgePreferences() {
+  const result = await window.electronAPI.setKnowledgePreferences({
+    favorites: State.settings.knowledgeFavorites || [],
+    recent: State.settings.knowledgeRecent || [],
+    notes: State.settings.knowledgeNotes || {}
+  });
+  if (!result?.ok) showToast(`Bilgi Merkezi tercihleri kaydedilemedi: ${result?.error}`, 'error');
+  return result;
+}
+
+function applyAccessibilitySettings() {
+  const scale = Math.max(85, Math.min(140, Number(State.settings.textScale) || 100));
+  document.documentElement.style.fontSize = `${scale}%`;
+  document.body.classList.toggle('high-contrast-mode', !!State.settings.highContrast);
+  document.body.classList.toggle('color-blind-mode', !!State.settings.colorBlindMode);
+}
+
+window.chooseBackupDirectory = async function() {
+  const selected = await window.electronAPI.openDirectoryDialog();
+  if (!selected) return;
+  State.settings.backupDirectory = selected;
+  const el = document.getElementById('backup-directory-value');
+  if (el) el.textContent = selected;
+};
+
+window.exportSafeConfiguration = async function() {
+  const safe = { ...State.settings, aiApiKey: undefined, knowledgeRecent: State.settings.knowledgeRecent.slice(0, 20) };
+  delete safe.aiApiKey;
+  const target = await window.electronAPI.saveFileDialog([{ name: 'FANUC yapılandırması', extensions: ['json'] }], 'fanuc-pro-suite-settings.json');
+  if (!target) return;
+  const result = await window.electronAPI.writeFile(target, JSON.stringify({ schemaVersion: 1, settings: safe }, null, 2));
+  showToast(result?.ok ? 'Yapılandırma dışa aktarıldı.' : `Dışa aktarma başarısız: ${result?.error}`, result?.ok ? 'success' : 'error');
+};
+
+window.importSafeConfiguration = async function() {
+  const source = await window.electronAPI.openFileDialog([{ name: 'FANUC yapılandırması', extensions: ['json'] }]);
+  if (!source) return;
+  const result = await window.electronAPI.readFile(source);
+  try {
+    const parsed = JSON.parse(result.data);
+    if (parsed.schemaVersion !== 1 || !parsed.settings) throw new Error('Desteklenmeyen yapılandırma biçimi.');
+    const { aiApiKey, ...safe } = parsed.settings;
+    Object.assign(State.settings, safe);
+    await saveSettings();
+    applyAccessibilitySettings();
+    showToast('Yapılandırma içe aktarıldı. API anahtarları değiştirilmedi.', 'success');
+    navigate('settings');
+  } catch (err) { showToast(`İçe aktarma başarısız: ${err.message}`, 'error'); }
+};
+
+window.resetSafeSettings = async function() {
+  if (!confirm('Görünüm, ağ erişimi ve depolama tercihleri varsayılana döndürülsün mü? CNC bağlantıları ve kayıtlar silinmez.')) return;
+  Object.assign(State.settings, { internetEnabled: true, retentionDays: 30, diskLimitMB: 2048, backupDirectory: '', textScale: 100, highContrast: false, colorBlindMode: false, theme: 'dark' });
+  await saveSettings();
+  applyTheme('dark');
+  applyAccessibilitySettings();
+  showToast('Güvenli varsayılan ayarlar uygulandı.', 'success');
+  navigate('settings');
+};
+
+window.saveConnectionProfile = async function() {
+  const name = document.getElementById('profile-name')?.value.trim();
+  if (!name) return showToast('Profil adı gerekli.', 'warning');
+  const profile = {
+    name,
+    machines: [1, 2].map(n => ({
+      ip: document.getElementById(`cnc-m${n}-ip`)?.value.trim() || '',
+      port: Number(document.getElementById(`cnc-m${n}-port`)?.value) || 8193
+    }))
+  };
+  State.settings.connectionProfiles = (State.settings.connectionProfiles || []).filter(p => p.name !== name);
+  State.settings.connectionProfiles.push(profile);
+  await saveSettings();
+  showToast('Bağlantı profili kaydedildi.', 'success');
+  navigate('settings');
+};
+
+window.applyConnectionProfile = function(index) {
+  const profile = State.settings.connectionProfiles?.[index];
+  if (!profile) return;
+  profile.machines.forEach((machine, i) => {
+    const n = i + 1;
+    const ip = document.getElementById(`cnc-m${n}-ip`);
+    const port = document.getElementById(`cnc-m${n}-port`);
+    if (ip) ip.value = machine.ip;
+    if (port) port.value = machine.port;
+  });
+  showToast('Profil forma uygulandı; kalıcı olması için Ayarları Kaydet düğmesine basın.', 'info');
+};
+
+window.deleteConnectionProfile = async function(index) {
+  State.settings.connectionProfiles.splice(index, 1);
+  await saveSettings();
+  navigate('settings');
+};
 
 // ── Navigation ─────────────────────────────────────────────────
 window.navigate = function navigate(page, extraData = null) {
@@ -1444,6 +1562,7 @@ function renderLibrary() {
           <option>31i-B</option>
           <option>Genel</option>
         </select>
+        <select id="lib-view-filter" style="width:150px"><option value="all">Tüm Belgeler</option><option value="favorites">Favoriler</option><option value="recent">Son Görüntülenenler</option></select>
       </div>
     </div>
     <div class="page-body">
@@ -1475,6 +1594,7 @@ function renderLibrary() {
         </div>
       </div>
 
+      <div class="card mb-4"><div class="card-title mb-2">🔎 Birleşik Yerel Bilgi Araması</div><div style="font-size:11px;color:var(--text-secondary)">Kılavuz başlıkları, açıklamalar, bölümler ve alarm kataloğu çevrimdışı tam metin indeksinde birlikte aranır.</div><div id="knowledge-search-results" style="margin-top:10px"></div></div>
       <div id="lib-grid" class="grid-2"></div>
     </div>
 
@@ -1485,18 +1605,27 @@ function renderLibrary() {
   page.querySelector('#lib-search').addEventListener('input', filterLibrary);
   page.querySelector('#lib-cat-filter').addEventListener('change', filterLibrary);
   page.querySelector('#lib-series-filter').addEventListener('change', filterLibrary);
+  page.querySelector('#lib-view-filter').addEventListener('change', filterLibrary);
   page.querySelector('#btn-import-book').addEventListener('click', importBook);
 
   function filterLibrary() {
     const q = page.querySelector('#lib-search').value.toLowerCase();
     const cat = page.querySelector('#lib-cat-filter').value;
     const series = page.querySelector('#lib-series-filter').value;
+    const view = page.querySelector('#lib-view-filter').value;
+    const favorites = State.settings.knowledgeFavorites || [];
+    const recent = State.settings.knowledgeRecent || [];
     const filtered = State.library.filter(b =>
-      (!q || b.title.toLowerCase().includes(q) || b.description.toLowerCase().includes(q)) &&
+      (!q || [b.id,b.title,b.description,...(b.chapters||[])].join(' ').toLowerCase().includes(q)) &&
       (!cat || b.category === cat) &&
-      (!series || b.series.includes(series))
+      (!series || b.series.includes(series)) &&
+      (view === 'all' || (view === 'favorites' && favorites.includes(b.id)) || (view === 'recent' && recent.includes(b.id)))
     );
     renderLibraryGrid(filtered);
+    const results = page.querySelector('#knowledge-search-results');
+    if (!q) { results.innerHTML = '<span style="font-size:11px;color:var(--text-muted)">Alarm kodu veya teknik terim yazın.</span>'; return; }
+    const alarmHits = State.alarms.filter(a => [a.code,a.title,a.description,...(a.causes||[]),...(a.solutions||[])].join(' ').toLowerCase().includes(q)).slice(0, 8);
+    results.innerHTML = alarmHits.length ? alarmHits.map(a => `<button class="btn btn-ghost btn-sm" style="margin:3px" onclick="openAlarmFromKnowledge('${escapeHTML(a.code)}')">${escapeHTML(a.code)} — ${escapeHTML(a.title)}</button>`).join('') : '<span style="font-size:11px;color:var(--text-muted)">Alarm kataloğunda eşleşme yok.</span>';
   }
 
   function renderLibraryGrid(books) {
@@ -1514,9 +1643,11 @@ function renderLibrary() {
             <div class="card-sub">${escapeHTML(b.series)} · ${b.pages} sayfa</div>
           </div>
           <span class="tag ${bookCatTag(b.category)}">${escapeHTML(b.category)}</span>
+          <button class="btn btn-ghost btn-sm btn-icon" title="Favori" onclick="event.stopPropagation(); toggleKnowledgeFavorite('${b.id}')">${(State.settings.knowledgeFavorites||[]).includes(b.id)?'★':'☆'}</button>
         </div>
         <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5; margin-bottom:12px">${escapeHTML(b.description)}</p>
         <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px">
+          <strong>Sürüm:</strong> ${escapeHTML(b.version || 'Yerel 2026.1')} · <strong>Kaynak:</strong> ${escapeHTML(b.id)}<br>
           <strong style="color:var(--text-secondary)">Bölümler:</strong><br>
           ${b.chapters.slice(0, 3).map(escapeHTML).join(' · ')}${b.chapters.length > 3 ? ` · +${b.chapters.length-3} daha` : ''}
         </div>
@@ -1532,6 +1663,8 @@ function renderLibrary() {
           <button class="btn btn-ghost btn-sm btn-icon" title="PDF Aç" onclick="openBookPDF('${b.id}')">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
           </button>
+          <button class="btn btn-ghost btn-sm" onclick="openKnowledgeNote('${b.id}')">Yerel Not</button>
+          <button class="btn btn-ghost btn-sm" onclick="openBookPDFPage('${b.id}')">Sayfaya Git</button>
         </div>
       </div>
     `).join('');
@@ -1552,6 +1685,8 @@ function bookCatTag(cat) {
 window.openBook = function(id) {
   const book = State.library.find(b => b.id === id);
   if (!book) return;
+  State.settings.knowledgeRecent = [id, ...(State.settings.knowledgeRecent || []).filter(x => x !== id)].slice(0, 20);
+  saveKnowledgePreferences();
   showModal('book-detail', `
     <div class="modal-header">
       <span class="modal-title">${escapeHTML(book.title)}</span>
@@ -1585,16 +1720,16 @@ window.openBook = function(id) {
 
 window.openChapters = window.openBook;
 
-window.openBookPDF = async function(id) {
+window.openBookPDF = async function(id, pageNumber = null) {
   const book = State.library.find(b => b.id === id);
   if (!book) return;
   if (book.webUrl) {
-    navigate('pdf_viewer', { bookId: id, filePath: book.webUrl, title: book.title });
+    navigate('pdf_viewer', { bookId: id, filePath: book.webUrl, title: book.title, pageNumber });
     return;
   }
   const savedPath = State.settings.pdfPaths[id];
   if (savedPath) {
-    navigate('pdf_viewer', { bookId: id, filePath: savedPath, title: book.title });
+    navigate('pdf_viewer', { bookId: id, filePath: savedPath, title: book.title, pageNumber });
   } else {
     const filters = [{ name: 'PDF Dosyası', extensions: ['pdf'] }];
     const filePath = await window.electronAPI.openFileDialog(filters);
@@ -1602,7 +1737,7 @@ window.openBookPDF = async function(id) {
       State.settings.pdfPaths[id] = filePath;
       await saveSettings();
       showToast('PDF kılavuzu başarıyla ilişkilendirildi.', 'success');
-      navigate('pdf_viewer', { bookId: id, filePath, title: book.title });
+      navigate('pdf_viewer', { bookId: id, filePath, title: book.title, pageNumber });
     } else {
       showToast('Kılavuz için PDF dosyası seçilmedi.', 'info');
     }
@@ -1651,9 +1786,10 @@ function renderPdfViewer(extraData) {
     return page;
   }
 
-  const { bookId, filePath, title } = extraData;
+  const { bookId, filePath, title, pageNumber } = extraData;
   const isWeb = filePath.startsWith('http://') || filePath.startsWith('https://');
-  const fileUrl = isWeb ? filePath : 'app-file:///' + filePath.replace(/\\/g, '/');
+  const baseFileUrl = isWeb ? filePath : 'app-file:///' + filePath.replace(/\\/g, '/');
+  const fileUrl = pageNumber ? `${baseFileUrl}#page=${pageNumber}` : baseFileUrl;
 
   page.innerHTML = `
     <div class="page-header" style="padding: 12px 28px; display:flex; align-items:center; justify-content:space-between; height: 56px;">
@@ -2588,10 +2724,10 @@ function renderSettings() {
           <div class="card mb-4">
             <div class="card-title mb-3" style="font-size:14px; display:flex; align-items:center; justify-content:space-between">
               <span>🔄 Sürüm & Kütüphane Güncelleme Paneli</span>
-              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.1.2)</span>
+              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.2.0)</span>
             </div>
             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px" id="updater-status-text">
-              Yüklü sürüm: v1.1.2. GitHub üzerinden istediğiniz zaman manuel güncelleme denetimi yapabilirsiniz.
+              Yüklü sürüm: v1.2.0. GitHub üzerinden istediğiniz zaman manuel güncelleme denetimi yapabilirsiniz.
             </div>
             <div id="updater-last-checked" style="font-size:11px; color:var(--text-muted); margin-bottom:10px">Henüz manuel kontrol yapılmadı.</div>
             <div class="flex gap-2">
@@ -2754,9 +2890,51 @@ function renderSettings() {
         </div>
       </div>
 
+      <!-- Privacy, Storage & Accessibility -->
+      <div class="card mb-4">
+        <div class="card-title mb-3" style="font-size:14px">🛡️ Gizlilik, Depolama ve Erişilebilirlik</div>
+        <label class="flex items-center gap-2 mb-3" style="font-size:12px">
+          <input type="checkbox" id="internet-enabled" ${State.settings.internetEnabled !== false ? 'checked' : ''} />
+          İnternet erişimine izin ver (kapalıyken AI bulut ve güncelleme denetimi devre dışıdır)
+        </label>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Telemetri saklama süresi</label><input class="form-control" id="retention-days" type="number" min="1" max="3650" value="${Number(State.settings.retentionDays)||30}" /><small>gün</small></div>
+          <div class="form-group"><label class="form-label">Veri tabanı yumuşak sınırı</label><input class="form-control" id="disk-limit-mb" type="number" min="250" max="102400" value="${Number(State.settings.diskLimitMB)||2048}" /><small>MB</small></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Yedek klasörü</label>
+          <div id="backup-directory-value" class="font-mono text-xs" style="padding:8px;background:var(--bg-card2);border-radius:6px;word-break:break-all">${escapeHTML(State.settings.backupDirectory || (State.appDataDir + '/backups'))}</div>
+          <button class="btn btn-ghost btn-sm mt-2" onclick="chooseBackupDirectory()">Klasör Seç</button>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Yazı büyüklüğü</label><input id="text-scale" type="range" min="85" max="140" value="${Number(State.settings.textScale)||100}" /><span id="text-scale-value">%${Number(State.settings.textScale)||100}</span></div>
+          <label class="flex items-center gap-2"><input type="checkbox" id="high-contrast" ${State.settings.highContrast?'checked':''}/> Yüksek kontrast</label>
+          <label class="flex items-center gap-2"><input type="checkbox" id="color-blind-mode" ${State.settings.colorBlindMode?'checked':''}/> Renk körlüğü paleti</label>
+        </div>
+        <div class="flex gap-2" style="flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="exportSafeConfiguration()">Yapılandırmayı Dışa Aktar</button>
+          <button class="btn btn-secondary btn-sm" onclick="importSafeConfiguration()">Yapılandırmayı İçe Aktar</button>
+          <button class="btn btn-ghost btn-sm" onclick="resetSafeSettings()">Güvenli Varsayılana Dön</button>
+        </div>
+      </div>
+
+      <!-- Connection Profiles -->
+      <div class="card mb-4">
+        <div class="card-title mb-3" style="font-size:14px">🔌 Bağlantı Profilleri</div>
+        <div class="flex gap-2">
+          <input class="form-control" id="profile-name" placeholder="Profil adı (örn. Atölye A)" />
+          <button class="btn btn-secondary btn-sm" onclick="saveConnectionProfile()">Mevcut IP'leri Kaydet</button>
+        </div>
+        <div id="connection-profile-list" style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+          ${(State.settings.connectionProfiles||[]).map((p,i)=>`<div class="flex justify-between items-center" style="padding:8px;background:var(--bg-card2);border-radius:6px"><span>${escapeHTML(p.name)}</span><div class="flex gap-2"><button class="btn btn-ghost btn-sm" onclick="applyConnectionProfile(${i})">Uygula</button><button class="btn btn-danger btn-sm" onclick="deleteConnectionProfile(${i})">Sil</button></div></div>`).join('') || '<span class="text-xs" style="color:var(--text-muted)">Kayıtlı profil yok.</span>'}
+        </div>
+      </div>
+
       <!-- App Settings -->
       <div class="card mb-4">
         <div class="card-title mb-4" style="font-size:14px">📁 Uygulama</div>
+        <div class="flex gap-2 mb-3"><span class="tag tag-blue">Sürüm v${escapeHTML(window.CURRENT_APP_VERSION || '1.2.0')}</span><span class="tag tag-red">KALICI SALT OKUNUR</span></div>
+        <p style="font-size:11px;color:var(--text-secondary)">Uygulama CNC programı etkinleştiremez, silemez veya yükleyemez; CNC parametresi yazamaz. İzleme ve yerel analiz amacıyla tasarlanmıştır.</p>
         <div class="form-group">
           <label class="form-label">Veri Dizini</label>
           <div class="font-mono text-sm" style="padding:8px; background:var(--bg-card2); border-radius:var(--radius-sm); color:var(--text-secondary); word-break:break-all">
@@ -2816,6 +2994,8 @@ function renderSettings() {
     .theme-opt-btn:hover { border-color:var(--accent); background:var(--bg-hover); }
     .theme-opt-btn.active { border-color:var(--accent); background:var(--accent-glow); }
     .theme-opt-btn strong { font-size:12px; }
+    body.high-contrast-mode { --border:#ffffff; --text-secondary:#f3f4f6; --text-muted:#d1d5db; }
+    body.color-blind-mode { --accent:#3b82f6; --green:#0072b2; --red:#d55e00; --amber:#e69f00; }
   `);
 
   // Theme selection
@@ -2867,6 +3047,11 @@ function renderSettings() {
     page.querySelector('#cnc-m1-ip').value = '192.168.30.20';
     page.querySelector('#cnc-m2-ip').value = '192.168.30.21';
   });
+  const scaleInput = page.querySelector('#text-scale');
+  scaleInput.addEventListener('input', () => {
+    page.querySelector('#text-scale-value').textContent = `%${scaleInput.value}`;
+    document.documentElement.style.fontSize = `${scaleInput.value}%`;
+  });
 
   if (State.currentUser?.role === 'admin') {
     window.electronAPI.getAISecret().then(res => {
@@ -2882,12 +3067,23 @@ function renderSettings() {
     State.settings.aiProvider = page.querySelector('#ai-provider').value;
     State.settings.aiApiKey   = page.querySelector('#ai-api-key').value;
     State.settings.aiModel    = page.querySelector('#ai-model').value;
+    State.settings.internetEnabled = page.querySelector('#internet-enabled').checked;
+    State.settings.retentionDays = Math.max(1, Math.min(3650, Number(page.querySelector('#retention-days').value) || 30));
+    State.settings.diskLimitMB = Math.max(250, Math.min(102400, Number(page.querySelector('#disk-limit-mb').value) || 2048));
+    State.settings.textScale = Number(page.querySelector('#text-scale').value) || 100;
+    State.settings.highContrast = page.querySelector('#high-contrast').checked;
+    State.settings.colorBlindMode = page.querySelector('#color-blind-mode').checked;
+    if (!State.settings.internetEnabled) State.settings.aiProvider = 'offline';
     const secretResult = await window.electronAPI.setAISecret(State.settings.aiApiKey);
     if (!secretResult?.ok && State.currentUser?.role === 'admin') {
       showToast('API anahtarı güvenli depoya kaydedilemedi: ' + secretResult.error, 'error');
       return;
     }
     await saveSettings();
+    applyAccessibilitySettings();
+    const storageResult = await window.electronAPI.applyStoragePolicy({ retentionDays: State.settings.retentionDays, diskLimitMB: State.settings.diskLimitMB });
+    if (!storageResult?.ok) showToast(`Depolama ilkesi uygulanamadı: ${storageResult?.error}`, 'warning');
+    else if (storageResult.overLimit) showToast('Veri tabanı sınırın üzerinde. Telemetri bir güne indirildi; kalıcı kayıtlar güvenlik nedeniyle silinmedi.', 'warning');
 
     // Save CNC Machine Network Settings
     try {
@@ -3014,6 +3210,73 @@ window.openDataDir = function() {
 // ════════════════════════════════════════════════════════════════
 const ChatHistory = [];
 
+function maskSensitiveForCloud(text) {
+  let safe = String(text || '')
+    .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[IP MASKELENDİ]')
+    .replace(/[A-Z]:\\[^\s]+/gi, '[DOSYA YOLU MASKELENDİ]')
+    .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[E-POSTA MASKELENDİ]')
+    .replace(/\b(?:sk-[A-Za-z0-9_-]{12,}|AIza[A-Za-z0-9_-]{20,})\b/g, '[API ANAHTARI MASKELENDİ]');
+  (State.machines || []).forEach(machine => {
+    const name = String(machine.numarasi || machine.name || '').trim();
+    if (name.length > 2) safe = safe.split(name).join('[MAKİNE MASKELENDİ]');
+  });
+  if (State.currentUser?.name) safe = safe.split(State.currentUser.name).join('[KULLANICI MASKELENDİ]');
+  return safe;
+}
+
+function buildActiveMachineContext() {
+  const diagnostic = State.activeDiagnostic
+    ? `Aktif teşhis: ${State.activeDiagnostic.type} ${State.activeDiagnostic.code || ''}`
+    : 'Aktif teşhis yok';
+  const machines = (State.machines || []).slice(0, 4).map(m => `${m.numarasi || m.name || 'Makine'}; model=${m.model || m.kontrol || 'bilinmiyor'}; durum=${m.status || 'bilinmiyor'}`);
+  return `[YEREL MAKİNE VE ALARM BAĞLAMI]\n${diagnostic}\n${machines.join('\n')}`;
+}
+
+window.exportAIConversationReport = async function() {
+  if (!ChatHistory.length) return showToast('Raporlanacak görüşme yok.', 'warning');
+  const rows = ChatHistory.map(item => `<section style="margin:14px 0;padding:12px;border:1px solid #ddd"><strong>${item.role === 'user' ? 'Kullanıcı' : 'AI Asistan'}</strong><pre style="white-space:pre-wrap;font-family:Arial">${escapeHTML(item.content)}</pre></section>`).join('');
+  const html = `<html><meta charset="utf-8"><body style="font-family:Arial;padding:30px"><h1>FANUC Pro Suite — Teknik AI Görüşme Raporu</h1><p>Oluşturma: ${new Date().toLocaleString('tr-TR')}</p><p><strong>Salt okunur:</strong> Bu rapor CNC üzerinde işlem yapıldığını göstermez. İçerik yalnızca öneridir ve yetkili teknisyen tarafından doğrulanmalıdır.</p>${rows}</body></html>`;
+  const result = await window.electronAPI.printToPDF(html, `ai-teknik-rapor-${new Date().toISOString().slice(0,10)}.pdf`);
+  showToast(result?.ok ? 'Teknik görüşme raporu oluşturuldu.' : `Rapor oluşturulamadı: ${result?.error}`, result?.ok ? 'success' : 'error');
+};
+
+window.openBookPDFPage = function(id) {
+  const raw = prompt('Gitmek istediğiniz PDF sayfa numarası:');
+  if (raw === null) return;
+  const pageNumber = Number(raw);
+  if (!Number.isInteger(pageNumber) || pageNumber < 1) return showToast('Geçerli bir sayfa numarası girin.', 'warning');
+  openBookPDF(id, pageNumber);
+};
+
+window.toggleKnowledgeFavorite = async function(id) {
+  const items = State.settings.knowledgeFavorites || [];
+  State.settings.knowledgeFavorites = items.includes(id) ? items.filter(x => x !== id) : [...items, id];
+  await saveKnowledgePreferences();
+  navigate('library');
+};
+
+window.openAlarmFromKnowledge = function(code) {
+  const alarm = State.alarms.find(a => a.code === code);
+  if (!alarm) return;
+  State.activeDiagnostic = { type: 'alarm', code: alarm.code, data: alarm };
+  navigate('ai');
+};
+
+window.openKnowledgeNote = function(id) {
+  const book = State.library.find(b => b.id === id);
+  if (!book) return;
+  const note = State.settings.knowledgeNotes?.[id] || '';
+  showModal('knowledge-note', `<div class="modal-header"><span class="modal-title">Yerel Teknik Not — ${escapeHTML(book.title)}</span><button class="modal-close" onclick="closeModal('knowledge-note')">✕</button></div><p style="font-size:11px;color:var(--text-secondary)">Bu not yalnızca bu bilgisayarda saklanır ve CNC'ye gönderilmez.</p><textarea id="knowledge-note-text" class="form-control" rows="10">${escapeHTML(note)}</textarea><div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('knowledge-note')">İptal</button><button class="btn btn-primary" onclick="saveKnowledgeNote('${id}')">Kaydet</button></div>`);
+};
+
+window.saveKnowledgeNote = async function(id) {
+  State.settings.knowledgeNotes = State.settings.knowledgeNotes || {};
+  State.settings.knowledgeNotes[id] = document.getElementById('knowledge-note-text')?.value || '';
+  await saveKnowledgePreferences();
+  closeModal('knowledge-note');
+  showToast('Yerel teknik not kaydedildi.', 'success');
+};
+
 function renderAI() {
   const page = createPage('ai');
   
@@ -3105,10 +3368,9 @@ function renderAI() {
           <div>
             <h1 style="font-size:14px; margin:0">🤖 AI Asistan Sohbeti</h1>
           </div>
-          <span class="tag tag-${State.settings.aiProvider==='offline'?'gray':'green'}" style="margin:0">
-            ${State.settings.aiProvider === 'offline' ? '🔒 Offline' : '🟢 ' + State.settings.aiProvider.toUpperCase()}
-          </span>
+          <div class="flex gap-2"><span class="tag tag-red">KALICI SALT OKUNUR — CNC'YE KOMUT GÖNDEREMEZ</span><span class="tag tag-${State.settings.aiProvider==='offline'?'gray':'green'}" style="margin:0">${State.settings.aiProvider === 'offline' ? '🔒 Tamamen çevrimdışı' : '🟢 ' + State.settings.aiProvider.toUpperCase()}</span><button class="btn btn-ghost btn-sm" onclick="exportAIConversationReport()">Teknik Rapor</button></div>
         </div>
+        <div style="padding:8px 16px;background:rgba(245,158,11,.08);border-bottom:1px solid rgba(245,158,11,.25);font-size:11px">⚠️ Bu asistan yalnızca öneri verir. Kaynak gösterilmeyen bilgi kesin teşhis kabul edilmez; yetkili teknisyen doğrulaması gerekir.</div>
         
         <div class="ai-messages" id="ai-messages" style="flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:16px">
           <!-- Messages will go here -->
@@ -3133,7 +3395,7 @@ function renderAI() {
           </div>
           <div class="flex items-center justify-between" style="margin-top:6px; padding:0 4px">
             <label class="flex items-center gap-2" style="font-size:11.5px; color:var(--text-secondary); cursor:pointer">
-              <input type="checkbox" id="ai-web-search-chk" ${State.onlineSearchEnabled ? 'checked' : ''} style="accent-color:var(--accent)" />
+              <input type="checkbox" id="ai-web-search-chk" ${State.onlineSearchEnabled && State.settings.internetEnabled !== false ? 'checked' : ''} ${State.settings.internetEnabled === false ? 'disabled' : ''} style="accent-color:var(--accent)" />
               🌐 Canlı Web Araması (Online Search)
             </label>
             <div class="ai-api-notice" style="margin:0">
@@ -3196,7 +3458,12 @@ window.sendAIMessage = async function() {
   ChatHistory.push({ role: 'user', content: msg });
 
   // Generate RAG Context from local FANUC database
-  const ragContext = typeof window.buildRAGContext === 'function' ? window.buildRAGContext(msg) : '';
+  const ragResult = typeof window.buildRAGResult === 'function' ? window.buildRAGResult(msg) : { context: '', sources: [] };
+  const ragContext = ragResult.context || '';
+  const machineContext = buildActiveMachineContext();
+  const citations = ragResult.sources.length
+    ? `\n\n---\n**Yerel kaynaklar:**\n${ragResult.sources.map(s => `- [Kaynak: ${s.type} ${s.id}] ${s.title || ''}`).join('\n')}`
+    : '\n\n---\n**Kaynak durumu:** Bu soru için doğrulanmış yerel kaynak eşleşmesi bulunamadı; yanıt kesin teşhis olarak kullanılamaz.';
 
   let searchLoadingId = null;
   if (State.onlineSearchEnabled) {
@@ -3209,22 +3476,25 @@ window.sendAIMessage = async function() {
 
   let response;
   try {
-    const apiMsg = ragContext ? `${msg}\n\n${ragContext}` : msg;
+    const apiMsg = `${msg}\n\n${machineContext}\n\n${ragContext || '[YEREL KAYNAK EŞLEŞMESİ YOK — kesin teknik iddia üretme]'}`;
     if (State.settings.aiProvider !== 'offline') {
       const finalMsg = State.onlineSearchEnabled
         ? `[Sistem Notu: Web araması aktif. Lütfen internetten aldığın en güncel teknik FANUC verilerini kullanarak cevap ver.] ${apiMsg}`
         : apiMsg;
-      response = await callAIAPI(finalMsg, ChatHistory.slice(-10));
+      const safeHistory = ChatHistory.slice(-10).map(item => ({ ...item, content: maskSensitiveForCloud(item.content) }));
+      response = await callAIAPI(maskSensitiveForCloud(finalMsg), safeHistory);
     } else {
-      const offlineAns = offlineAI(msg);
-      const combinedAns = ragContext ? `${offlineAns}\n\n---\n${ragContext}` : offlineAns;
-      response = combinedAns;
+      response = ragResult.sources.length
+        ? offlineAI(msg)
+        : 'Doğrulanmış yerel kaynak eşleşmesi bulunamadı. Alarm kodunu, parametre numarasını, PMC adresini veya ilgili kılavuz kimliğini belirterek tekrar sorun.';
     }
   } catch (e) {
     const offlineAns = offlineAI(msg);
     const combinedAns = ragContext ? `${offlineAns}\n\n---\n${ragContext}` : offlineAns;
-    response = `API hatası: ${e.message}\n\nOffline veritabanına geçiyorum:\n\n` + combinedAns;
+    response = `API hatası: ${e.message}\n\nOffline veritabanına geçildi:\n\n` + (ragResult.sources.length ? offlineAns : 'Doğrulanmış yerel kaynak bulunamadı.');
   }
+
+  response += citations + '\n\n⚠️ Bu yalnızca öneridir; yetkili teknisyen doğrulaması gerekir. Uygulama CNC’ye komut gönderemez.';
 
   removeTyping(typingId);
   appendMessage('ai', response);
@@ -6521,6 +6791,10 @@ window.selectCheatSheetTab = function(tab) {
 };
 
 window.startDatabaseSync = function() {
+  if (State.settings.internetEnabled === false) {
+    showToast('İnternet erişimi Ayarlar bölümünden kapatılmış.', 'warning');
+    return;
+  }
   showModal('sync-progress', `
     <div class="modal-header">
       <span class="modal-title">Bulut Veri Senkronizasyonu</span>

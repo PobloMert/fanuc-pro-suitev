@@ -103,8 +103,30 @@ const ADAPTER_RUNTIME_DIR = path.join(ALLOWED_DATA_DIR, 'adapter');
 const ADAPTER_CONFIG_FILE = path.join(ADAPTER_RUNTIME_DIR, 'adapter.config.json');
 const USERS_FILE = path.join(APP_ROOT_DATA, 'users.json');
 const SECRETS_FILE = path.join(ALLOWED_DATA_DIR, 'secrets.json');
+const KNOWLEDGE_PREFS_FILE = path.join(ALLOWED_DATA_DIR, 'knowledge-preferences.json');
 const sessions = new Map();
 const grantedPaths = new Set();
+
+function isInternetEnabled() {
+  try {
+    const settingsPath = path.join(ALLOWED_DATA_DIR, 'settings.json');
+    if (!fs.existsSync(settingsPath)) return true;
+    return JSON.parse(fs.readFileSync(settingsPath, 'utf8')).internetEnabled !== false;
+  } catch { return true; }
+}
+
+function getConfiguredBackupDir() {
+  const fallback = path.join(ALLOWED_DATA_DIR, 'backups');
+  try {
+    const settingsPath = path.join(ALLOWED_DATA_DIR, 'settings.json');
+    if (!fs.existsSync(settingsPath)) return fallback;
+    const selected = String(JSON.parse(fs.readFileSync(settingsPath, 'utf8')).backupDirectory || '').trim();
+    if (!selected || !path.isAbsolute(selected)) return fallback;
+    const resolved = path.resolve(selected);
+    const relative = path.relative(path.resolve(os.homedir()), resolved);
+    return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? resolved : fallback;
+  } catch { return fallback; }
+}
 
 function isSafePath(filePath) {
   if (!filePath) return false;
@@ -409,8 +431,9 @@ app.whenReady().then(() => {
   logger = new StructuredLogger(path.join(ALLOWED_DATA_DIR, 'logs'));
   dataStore = new DataStore(path.join(ALLOWED_DATA_DIR, 'fanuc-pro-suite.db'), APP_ROOT_DATA);
   dataStore.migrateJsonDirectory();
-  dataStore.purgeTelemetry(30);
-  setInterval(() => { try { const deleted=dataStore.purgeTelemetry(30); if(deleted) logger.write('data','info','Telemetry retention completed',{deleted,rawDays:30}); } catch(err){ logger.write('data','error','Telemetry retention failed',{error:err.message}); } }, 24*60*60*1000).unref();
+  const retentionDays = (() => { try { const p=path.join(ALLOWED_DATA_DIR,'settings.json'); return fs.existsSync(p) ? Number(JSON.parse(fs.readFileSync(p,'utf8')).retentionDays)||30 : 30; } catch { return 30; } })();
+  dataStore.purgeTelemetry(retentionDays);
+  setInterval(() => { try { const p=path.join(ALLOWED_DATA_DIR,'settings.json'); const days=fs.existsSync(p)?Number(JSON.parse(fs.readFileSync(p,'utf8')).retentionDays)||30:30; const deleted=dataStore.purgeTelemetry(days); if(deleted) logger.write('data','info','Telemetry retention completed',{deleted,rawDays:days}); } catch(err){ logger.write('data','error','Telemetry retention failed',{error:err.message}); } }, 24*60*60*1000).unref();
   logger.write('application', 'info', 'Application started', { version: app.getVersion(), dataStore: dataStore.status() });
   try { migrateLegacyAISecret(); } catch (err) { console.error('Secret migration failed:', err); }
   try { ensureAdapterRuntime(); } catch (err) { console.error('Adapter runtime preparation failed:', err); }
@@ -594,16 +617,39 @@ ipcMain.handle('secret-set', (event, value) => {
   } catch (err) { return { ok: false, error: err.message }; }
 });
 
+ipcMain.handle('knowledge-preferences-get', () => {
+  try {
+    if (!fs.existsSync(KNOWLEDGE_PREFS_FILE)) return { ok: true, data: { favorites: [], recent: [], notes: {} } };
+    return { ok: true, data: JSON.parse(fs.readFileSync(KNOWLEDGE_PREFS_FILE, 'utf8')) };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('knowledge-preferences-set', (event, input = {}) => {
+  try {
+    requireSession(event);
+    const favorites = Array.isArray(input.favorites) ? input.favorites.map(String).slice(0, 200) : [];
+    const recent = Array.isArray(input.recent) ? input.recent.map(String).slice(0, 20) : [];
+    const notes = {};
+    for (const [key, value] of Object.entries(input.notes || {}).slice(0, 500)) notes[String(key).slice(0, 100)] = String(value).slice(0, 20000);
+    fs.mkdirSync(ALLOWED_DATA_DIR, { recursive: true });
+    fs.writeFileSync(KNOWLEDGE_PREFS_FILE, JSON.stringify({ favorites, recent, notes }, null, 2), 'utf8');
+    return { ok: true };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
 ipcMain.handle('ai-complete', async (event, request) => {
   try {
     const session = requireSession(event, ['admin', 'technician']);
     if (!safeStorage.isEncryptionAvailable() || !fs.existsSync(SECRETS_FILE)) throw new Error('AI API anahtarı yapılandırılmamış.');
     const encrypted = JSON.parse(fs.readFileSync(SECRETS_FILE, 'utf8')).aiApiKey;
     const apiKey = safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
+    const settingsPath = path.join(ALLOWED_DATA_DIR, 'settings.json');
+    const appSettings = fs.existsSync(settingsPath) ? JSON.parse(fs.readFileSync(settingsPath, 'utf8')) : {};
+    if (appSettings.internetEnabled === false) throw new Error('İnternet erişimi Ayarlar bölümünden kapatılmış.');
     const provider = request?.provider;
     const history = Array.isArray(request?.history) ? request.history.slice(-8) : [];
     const userMessage = String(request?.userMessage || '').slice(0, 12000);
-    const systemPrompt = 'Sen FANUC CNC konusunda teknik asistansın. Türkçe yanıt ver. CNC üzerinde doğrudan işlem yaptığını iddia etme; kritik adımlarda teknisyen doğrulaması iste.';
+    const systemPrompt = 'Sen FANUC CNC konusunda salt-okunur teknik asistansın. Türkçe yanıt ver. Yalnızca kullanıcı mesajındaki YEREL KAYNAKLAR bölümüne dayanan teknik ayrıntıları kesin ifade et ve kullandığın kaynak kimliklerini [Kaynak: ...] biçiminde belirt. Kaynak yoksa kesin teşhis veya değer verme; belirsizliği açıkça söyle. CNC üzerinde işlem yaptığını veya komut gönderebildiğini asla iddia etme. Her yanıtın sonunda bunun yalnızca öneri olduğunu ve yetkili teknisyen doğrulaması gerektiğini belirt.';
     let response;
     if (provider === 'openai') {
       response = await net.fetch('https://api.openai.com/v1/chat/completions', {
@@ -1020,7 +1066,7 @@ ipcMain.handle('print-to-pdf', async (event, htmlContent, defaultName) => {
 // ── Auto-Backup Engine ──────────────────────────────────────────
 async function performAutoBackup() {
   try {
-    const backupDir = path.join(os.homedir(), '.fanuc-pro-suite', 'backups');
+    const backupDir = getConfiguredBackupDir();
     if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
 
     const filesToBackup = [
@@ -1070,7 +1116,7 @@ async function performAutoBackup() {
 // IPC Handlers for Backup & Restore
 ipcMain.handle('get-backups-list', async () => {
   try {
-    const backupDir = path.join(os.homedir(), '.fanuc-pro-suite', 'backups');
+    const backupDir = getConfiguredBackupDir();
     if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
 
     const files = fs.readdirSync(backupDir)
@@ -1102,11 +1148,39 @@ ipcMain.handle('create-manual-backup', async (event) => {
   } catch (err) { return { ok: false, error: err.message }; }
 });
 
+ipcMain.handle('dialog-open-directory', async event => {
+  try {
+    requireSession(event, ['admin', 'technician']);
+    const result = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory', 'createDirectory'] });
+    if (result.canceled || !result.filePaths[0]) return null;
+    const selected = path.resolve(result.filePaths[0]);
+    grantedPaths.add(process.platform === 'win32' ? selected.toLowerCase() : selected);
+    return selected;
+  } catch (err) { return null; }
+});
+
+ipcMain.handle('storage-policy-apply', (event, policy = {}) => {
+  try {
+    requireSession(event, ['admin']);
+    const retentionDays = Math.max(1, Math.min(3650, Number(policy.retentionDays) || 30));
+    const diskLimitMB = Math.max(250, Math.min(102400, Number(policy.diskLimitMB) || 2048));
+    let deleted = dataStore ? dataStore.purgeTelemetry(retentionDays) : 0;
+    const dbPath = path.join(ALLOWED_DATA_DIR, 'fanuc-pro-suite.db');
+    const limitBytes = diskLimitMB * 1024 * 1024;
+    let databaseBytes = fs.existsSync(dbPath) ? fs.statSync(dbPath).size : 0;
+    if (dataStore && databaseBytes > limitBytes) {
+      deleted += dataStore.purgeTelemetry(1);
+      databaseBytes = dataStore.compact();
+    }
+    return { ok: true, retentionDays, diskLimitMB, deleted, databaseBytes, overLimit: databaseBytes > limitBytes };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
 ipcMain.handle('restore-backup', async (event, backupFilePath) => {
   try {
     const session = requireSession(event, ['admin']);
     const resolvedBackup = path.resolve(backupFilePath);
-    const backupDir = path.resolve(path.join(ALLOWED_DATA_DIR, 'backups'));
+    const backupDir = path.resolve(getConfiguredBackupDir());
     if (!(resolvedBackup.startsWith(backupDir + path.sep)) || !fs.existsSync(resolvedBackup)) return { ok: false, error: 'Yedek dosyası bulunamadı veya izin verilen klasörde değil.' };
     const content = fs.readFileSync(resolvedBackup, 'utf8');
     const snapshot = JSON.parse(content);
@@ -1129,6 +1203,7 @@ ipcMain.handle('restore-backup', async (event, backupFilePath) => {
 // IPC Handler for Secure Fetch Proxy (webSecurity: true compliance)
 ipcMain.handle('fetch-proxy', async (event, url, options = {}) => {
   try {
+    if (!isInternetEnabled()) throw new Error('İnternet erişimi Ayarlar bölümünden kapatılmış.');
     const parsed = new URL(url);
     const allowedHosts = new Set(['api.openai.com', 'generativelanguage.googleapis.com']);
     if (parsed.protocol !== 'https:' || !allowedHosts.has(parsed.hostname)) {
@@ -1149,6 +1224,7 @@ ipcMain.handle('update-check', async event => {
   const currentVersion = app.getVersion();
   const releasesUrl = 'https://github.com/PobloMert/fanuc-pro-suitev/releases';
   try {
+    if (!isInternetEnabled()) throw new Error('İnternet erişimi Ayarlar bölümünden kapatılmış.');
     const response = await net.fetch('https://api.github.com/repos/PobloMert/fanuc-pro-suitev/releases/latest', {
       method: 'GET',
       headers: {
