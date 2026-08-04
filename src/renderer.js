@@ -2813,10 +2813,10 @@ function renderSettings() {
           <div class="card mb-4">
             <div class="card-title mb-3" style="font-size:14px; display:flex; align-items:center; justify-content:space-between">
               <span>🔄 Sürüm & Kütüphane Güncelleme Paneli</span>
-              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.2.0)</span>
+              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.3.0)</span>
             </div>
             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px" id="updater-status-text">
-              Yüklü sürüm: v1.2.0. GitHub üzerinden istediğiniz zaman manuel güncelleme denetimi yapabilirsiniz.
+              Yüklü sürüm: v1.3.0. GitHub üzerinden istediğiniz zaman manuel güncelleme denetimi yapabilirsiniz.
             </div>
             <div id="updater-last-checked" style="font-size:11px; color:var(--text-muted); margin-bottom:10px">Henüz manuel kontrol yapılmadı.</div>
             <div class="flex gap-2">
@@ -3023,7 +3023,7 @@ function renderSettings() {
       <!-- App Settings -->
       <div class="card mb-4">
         <div class="card-title mb-4" style="font-size:14px">📁 Uygulama</div>
-        <div class="flex gap-2 mb-3"><span class="tag tag-blue">Sürüm v${escapeHTML(window.CURRENT_APP_VERSION || '1.2.0')}</span><span class="tag tag-red">KALICI SALT OKUNUR</span></div>
+        <div class="flex gap-2 mb-3"><span class="tag tag-blue">Sürüm v${escapeHTML(window.CURRENT_APP_VERSION || '1.3.0')}</span><span class="tag tag-red">KALICI SALT OKUNUR</span></div>
         <p style="font-size:11px;color:var(--text-secondary)">Uygulama CNC programı etkinleştiremez, silemez veya yükleyemez; CNC parametresi yazamaz. İzleme ve yerel analiz amacıyla tasarlanmıştır.</p>
         <div class="form-group">
           <label class="form-label">Veri Dizini</label>

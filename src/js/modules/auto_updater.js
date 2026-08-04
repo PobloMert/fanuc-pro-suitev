@@ -4,7 +4,7 @@
 
 import { showToast, escapeHTML } from '../utils.js';
 
-export const CURRENT_APP_VERSION = '1.2.0';
+export const CURRENT_APP_VERSION = '1.3.0';
 
 function compareVersions(left, right) {
   const a = String(left).split('-')[0].split('.').map(Number);
