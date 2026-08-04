@@ -25,6 +25,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   await init();
 });
 
+let authenticatedDataLoaded = false;
+window.initializeAuthenticatedApp = async function initializeAuthenticatedApp() {
+  if (authenticatedDataLoaded) return;
+  await loadData();
+  await loadSettings();
+  applyTheme(State.settings.theme || 'dark');
+  authenticatedDataLoaded = true;
+};
+
 async function init() {
   // Inject extra layout & adapter badge styles
   addStyle(`
@@ -98,10 +107,8 @@ async function init() {
     State.appDataDir = await window.electronAPI.getAppDataDir();
   }
 
-  // Load data & settings
-  await loadData();
-  await loadSettings();
-  applyTheme(State.settings.theme || 'dark');
+  // Protected data is loaded only after the main process creates a session.
+  applyTheme('dark');
   await loadUsers();
   showLoginScreen();
 

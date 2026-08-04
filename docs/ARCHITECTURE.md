@@ -20,3 +20,13 @@ server-side authentication, authorization, replay protection and durable audit.
 `lib/` (main-process services), `src/js/` (renderer modules), and `scripts/`.
 Feature migrations should move one page at a time and preserve the shared
 `window.State` object until the legacy host is retired.
+
+All mutable state lives under `%USERPROFILE%/.fanuc-pro-suite`. Files bundled
+under `app.asar/data` are immutable first-run seeds only. On first launch they
+are copied to the writable `data/` directory before SQLite migration. Runtime
+code must never write beneath `__dirname` in a packaged application.
+
+The renderer loads protected application data only after the main process has
+created an authenticated session. Privileged IPC requires the primary window,
+an unexpired session, the relevant role/permission, bounded input and an
+allowlisted filesystem or network target.

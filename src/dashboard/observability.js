@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const latest = new Map(); let lastPersist = 0;
+  const latest = new Map(); let lastPersist = 0; let renderQueued = false; let lastMarkup = '';
   const requestId = () => Math.random().toString(36).slice(2);
   function quality(sample) {
     if (sample.dataAgeMs > 10000) return 'stale';
@@ -8,8 +8,13 @@
     return 'good';
   }
   function render() {
-    const grid=document.getElementById('obs-health-grid'); if(!grid)return;
-    grid.innerHTML=[...latest.values()].map(s=>`<div class="obs-card ${s.quality==='good'?'':s.quality==='stale'?'warn':'bad'}"><b>${escapeObs(s.machine)}</b> · ${escapeObs(s.execution)}<small>Program ${escapeObs(s.program||'-')} · Yük ${Number(s.spindleLoad||0).toFixed(1)}% · Kalite ${escapeObs(s.quality)}</small></div>`).join('');
+    if(renderQueued)return; renderQueued=true;
+    requestAnimationFrame(()=>{
+      renderQueued=false;
+      const grid=document.getElementById('obs-health-grid'); if(!grid)return;
+      const markup=[...latest.values()].map(s=>`<div class="obs-card ${s.quality==='good'?'':s.quality==='stale'?'warn':'bad'}"><b>${escapeObs(s.machine)}</b> · ${escapeObs(s.execution)}<small>Program ${escapeObs(s.program||'-')} · Yük ${Number(s.spindleLoad||0).toFixed(1)}% · Kalite ${escapeObs(s.quality)}</small></div>`).join('');
+      if(markup!==lastMarkup){lastMarkup=markup;grid.innerHTML=markup;}
+    });
   }
   function escapeObs(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   window.addEventListener('fanuc:telemetry-snapshot', event => {

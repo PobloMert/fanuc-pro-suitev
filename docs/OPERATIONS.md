@@ -22,10 +22,16 @@ data. The mock API implements read-only endpoints only.
 Application data is stored under `%USERPROFILE%/.fanuc-pro-suite`:
 
 - `fanuc-pro-suite.db`: SQLite primary data store (WAL mode)
+- `data/*.json`: writable compatibility mirrors and user records
 - `logs/*.jsonl`: rotating structured logs
 - `audit/security.jsonl`: authentication and privileged-operation audit
 - `backups/`: recovery snapshots
 - `secrets.json`: DPAPI-encrypted AI API key
+
+The first launch contains no distributed accounts. The operator must create a
+local administrator with a six-digit PIN before protected data is loaded.
+Settings can export a redacted diagnostic JSON package and matching SHA-256
+sidecar; API keys, PIN material, tokens and user paths are excluded.
 
 The checked-in `data/*.json` files are compatibility mirrors. Back up both the
 SQLite database (including `-wal`/`-shm` while running) and the backups folder.
@@ -40,7 +46,19 @@ SQLite database (including `-wal`/`-shm` while running) and the backups folder.
 
 ## Release requirements
 
-A production release requires a Windows code-signing certificate. Sign the
-Electron executable, installer, `FanucSHDRAdapter.exe`, and adapter DLLs. Update
-`bin/adapter.integrity.json` only from a reviewed build. Never disable signature
-or integrity checks to ship a release.
+Release integrity is based on reviewed SHA-256 manifests. Update
+`bin/adapter.integrity.json` only from a reviewed build and publish
+SHA-256 checksums for the installer, application executable and adapter files.
+Distribute releases through a controlled internal location and verify hashes on
+the target workstation before installation.
+
+Before publishing, run `npm ci`, `npm test`, `npm run check`,
+`npm audit --omit=dev` and `npm run build:dir`. Generate and archive SHA-256
+checksums for the application executable, installer and adapter. Validate the
+final build on an isolated simulator before any CNC VLAN deployment, followed
+by a documented long-duration telemetry soak.
+
+Run `npm run release:checksums` after packaging to create
+`dist/SHA256SUMS.txt`. Run `npm run test:e2e` on a Windows runner with a working
+Electron graphics/runtime environment. Telemetry entering the main process is
+schema-validated, bounded and rate-limited before SQLite persistence.

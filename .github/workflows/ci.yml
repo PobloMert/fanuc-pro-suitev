@@ -14,3 +14,10 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run check
+      - run: npm run test:e2e
+      - run: npm audit --omit=dev
+      - run: npm run build:dir
+      - run: npm run release:checksums
+      - name: Verify packaged mutable data remains seed-only
+        shell: pwsh
+        run: npx asar list "dist/win-unpacked/resources/app.asar" | Select-String "data/users.json"

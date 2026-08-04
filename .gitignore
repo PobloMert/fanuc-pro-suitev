@@ -5,5 +5,8 @@ data/ui_error_log.txt
 data/*.bak
 scratch/
 .smoke-data/
+.e2e-data/
+test-results/
+playwright-report/
 .DS_Store
 Thumbs.db

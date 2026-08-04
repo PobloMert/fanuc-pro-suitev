@@ -8,12 +8,19 @@ export function renderInteractiveFlowchartSVG(currentStep = 'step1', selectedPat
   const isStep1Done = selectedPath.step1 !== undefined;
   const isStep2Done = selectedPath.step2 !== undefined;
   const isStep3Done = selectedPath.step3 !== undefined;
+  const completed = [isStep1Done, isStep2Done, isStep3Done].filter(Boolean).length;
+  const progress = Math.round((completed / 3) * 100);
 
   return `
     <div class="glass-card" style="padding:16px; border-radius:var(--radius-md); margin-bottom:16px">
       <div style="font-weight:700; font-size:13px; color:var(--text-accent); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between">
         <span>🌳 İnteraktif Arıza Teşhis Karar Ağacı (Interactive Flowchart)</span>
         <span class="tag tag-blue" style="font-size:10.5px">Canlı Akış Şeması</span>
+      </div>
+      <div class="flow-progress" aria-label="Teşhis ilerlemesi yüzde ${progress}">
+        <span class="status-chip" style="--status-color:var(--cyan)">${completed}/3 adım</span>
+        <div class="flow-progress-track"><div class="flow-progress-fill" style="--progress:${progress}%"></div></div>
+        <strong style="font-size:11px">%${progress}</strong>
       </div>
 
       <svg viewBox="0 0 900 180" style="width:100%; height:auto; background:var(--bg-card); border-radius:var(--radius-sm); border:1px solid var(--border); padding:10px">
@@ -25,13 +32,13 @@ export function renderInteractiveFlowchartSVG(currentStep = 'step1', selectedPat
         </defs>
 
         <!-- Connecting Line 1 -> 2 -->
-        <path d="M 220 90 L 360 90" stroke="${isStep1Done ? '#10b981' : '#334155'}" stroke-width="3" stroke-dasharray="${isStep1Done ? 'none' : '4,4'}" filter="${isStep1Done ? 'url(#laserGlow)' : 'none'}"/>
+        <path class="${isStep1Done ? 'fssb-signal' : ''}" d="M 220 90 L 360 90" stroke="${isStep1Done ? '#10b981' : '#334155'}" stroke-width="3" stroke-dasharray="${isStep1Done ? 'none' : '4,4'}" filter="${isStep1Done ? 'url(#laserGlow)' : 'none'}"/>
         
         <!-- Connecting Line 2 -> 3 -->
         <path d="M 520 90 L 660 90" stroke="${isStep2Done ? '#10b981' : '#334155'}" stroke-width="3" stroke-dasharray="${isStep2Done ? 'none' : '4,4'}" filter="${isStep2Done ? 'url(#laserGlow)' : 'none'}"/>
 
         <!-- Flow Node 1: Soru 1 -->
-        <g transform="translate(40, 45)" class="flow-node" style="cursor:pointer" onclick="window.onFlowchartNodeClick('step1')">
+        <g transform="translate(40, 45)" class="flow-node" aria-current="${currentStep === 'step1' ? 'step' : 'false'}" style="cursor:pointer" onclick="window.onFlowchartNodeClick('step1')">
           <rect width="180" height="90" rx="8" fill="var(--bg-card2)" stroke="${currentStep === 'step1' ? '#3b82f6' : (isStep1Done ? '#10b981' : 'var(--border)')}" stroke-width="2"/>
           <text x="90" y="30" fill="#60a5fa" font-size="11" font-weight="bold" text-anchor="middle">ADIM 1: ALARM KONTROLÜ</text>
           <text x="90" y="52" fill="var(--text-secondary)" font-size="10.5" text-anchor="middle">Ekran/Pano Alarmı Var mı?</text>
@@ -42,7 +49,7 @@ export function renderInteractiveFlowchartSVG(currentStep = 'step1', selectedPat
         </g>
 
         <!-- Flow Node 2: Soru 2 -->
-        <g transform="translate(340, 45)" class="flow-node" style="cursor:pointer" onclick="window.onFlowchartNodeClick('step2')">
+        <g transform="translate(340, 45)" class="flow-node" aria-current="${currentStep === 'step2' ? 'step' : 'false'}" style="cursor:pointer" onclick="window.onFlowchartNodeClick('step2')">
           <rect width="180" height="90" rx="8" fill="var(--bg-card2)" stroke="${currentStep === 'step2' ? '#3b82f6' : (isStep2Done ? '#10b981' : 'var(--border)')}" stroke-width="2"/>
           <text x="90" y="30" fill="#f59e0b" font-size="11" font-weight="bold" text-anchor="middle">ADIM 2: KUMANDA VOLTAJI</text>
           <text x="90" y="52" fill="var(--text-secondary)" font-size="10.5" text-anchor="middle">24VDC Kumanda Var mı?</text>
@@ -53,7 +60,7 @@ export function renderInteractiveFlowchartSVG(currentStep = 'step1', selectedPat
         </g>
 
         <!-- Flow Node 3: Soru 3 -->
-        <g transform="translate(640, 45)" class="flow-node" style="cursor:pointer" onclick="window.onFlowchartNodeClick('step3')">
+        <g transform="translate(640, 45)" class="flow-node" aria-current="${currentStep === 'step3' ? 'step' : 'false'}" style="cursor:pointer" onclick="window.onFlowchartNodeClick('step3')">
           <rect width="180" height="90" rx="8" fill="var(--bg-card2)" stroke="${currentStep === 'step3' ? '#3b82f6' : (isStep3Done ? '#10b981' : 'var(--border)')}" stroke-width="2"/>
           <text x="90" y="30" fill="#a78bfa" font-size="11" font-weight="bold" text-anchor="middle">ADIM 3: NOKTA ATIŞI TEŞHİS</text>
           <text x="90" y="52" fill="var(--text-secondary)" font-size="10.5" text-anchor="middle">Kök Neden & Çözüm</text>
@@ -63,6 +70,11 @@ export function renderInteractiveFlowchartSVG(currentStep = 'step1', selectedPat
           </text>
         </g>
       </svg>
+      <div class="status-surface info" style="margin-top:12px;padding:12px 14px 12px 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div><small style="color:var(--text-muted)">BEKLENEN ÖLÇÜM</small><strong style="display:block">24 VDC ± %10</strong></div>
+        <div><small style="color:var(--text-muted)">GÜVENLİK</small><strong style="display:block">LOTO doğrulaması gerekli</strong></div>
+        <div><small style="color:var(--text-muted)">AKTİF ADIM</small><strong style="display:block">${escapeHTML(currentStep.toUpperCase())}</strong></div>
+      </div>
     </div>
   `;
 }

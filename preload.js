@@ -3,6 +3,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   // Authentication (PIN values never enter renderer state or JSON storage)
   listUsers: () => ipcRenderer.invoke('auth-list-users'),
+  getBootstrapStatus: () => ipcRenderer.invoke('auth-bootstrap-status'),
+  bootstrapAdmin: (input) => ipcRenderer.invoke('auth-bootstrap-admin', input),
   login: (userId, pin) => ipcRenderer.invoke('auth-login', userId, pin),
   logout: () => ipcRenderer.invoke('auth-logout'),
   addUser: (user) => ipcRenderer.invoke('auth-add-user', user),
@@ -62,6 +64,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Export
   exportCSV: (csvContent, defaultName) => ipcRenderer.invoke('export-csv', csvContent, defaultName),
+  exportDiagnostics: () => ipcRenderer.invoke('diagnostics-export'),
 
   // Native notifications
   showNativeNotification: (title, body) => ipcRenderer.send('show-notification', { title, body }),

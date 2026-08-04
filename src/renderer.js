@@ -52,6 +52,69 @@ function escapeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
+function evaluateSafeMathExpression(source) {
+  const input = String(source || '').replace(/\[/g, '(').replace(/\]/g, ')');
+  const tokens = [];
+  const pattern = /\s*(Math\.(?:sin|cos|tan|sqrt|abs|round|PI)|(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?|[()+\-*/])\s*/igy;
+  let cursor = 0;
+  while (cursor < input.length) {
+    pattern.lastIndex = cursor;
+    const match = pattern.exec(input);
+    if (!match || match.index !== cursor) throw new Error('Desteklenmeyen ifade');
+    tokens.push(match[1]);
+    cursor = pattern.lastIndex;
+  }
+  let index = 0;
+  const peek = () => tokens[index];
+  const take = expected => {
+    const token = tokens[index++];
+    if (expected && token !== expected) throw new Error(`Beklenen: ${expected}`);
+    return token;
+  };
+  const functions = {
+    'Math.sin': Math.sin,
+    'Math.cos': Math.cos,
+    'Math.tan': Math.tan,
+    'Math.sqrt': Math.sqrt,
+    'Math.abs': Math.abs,
+    'Math.round': Math.round
+  };
+  function primary() {
+    const token = peek();
+    if (token === '(') { take('('); const value = expression(); take(')'); return value; }
+    if (token === 'Math.PI') { take(); return Math.PI; }
+    if (functions[token]) { take(); take('('); const value = expression(); take(')'); return functions[token](value); }
+    if (token && /^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(token)) { take(); return Number(token); }
+    throw new Error('Geçersiz matematik ifadesi');
+  }
+  function unary() {
+    if (peek() === '+') { take(); return unary(); }
+    if (peek() === '-') { take(); return -unary(); }
+    return primary();
+  }
+  function term() {
+    let value = unary();
+    while (peek() === '*' || peek() === '/') {
+      const operator = take();
+      const right = unary();
+      value = operator === '*' ? value * right : value / right;
+    }
+    return value;
+  }
+  function expression() {
+    let value = term();
+    while (peek() === '+' || peek() === '-') {
+      const operator = take();
+      const right = term();
+      value = operator === '+' ? value + right : value - right;
+    }
+    return value;
+  }
+  const result = expression();
+  if (index !== tokens.length) throw new Error('İfadenin tamamı işlenemedi');
+  return result;
+}
+
 if (typeof window !== 'undefined' && !window.State) {
   window.State = {
     currentPage: 'dashboard',
@@ -89,6 +152,7 @@ if (typeof window !== 'undefined' && !window.State) {
       diskLimitMB: 2048,
       backupDirectory: '',
       textScale: 100,
+      motionMode: 'full',
       highContrast: false,
       colorBlindMode: false,
       connectionProfiles: [],
@@ -499,6 +563,9 @@ function applyAccessibilitySettings() {
   document.documentElement.style.fontSize = `${scale}%`;
   document.body.classList.toggle('high-contrast-mode', !!State.settings.highContrast);
   document.body.classList.toggle('color-blind-mode', !!State.settings.colorBlindMode);
+  document.body.classList.remove('motion-full', 'motion-reduced', 'motion-off');
+  const motionMode = ['full', 'reduced', 'off'].includes(State.settings.motionMode) ? State.settings.motionMode : 'full';
+  document.body.classList.add(`motion-${motionMode}`);
 }
 
 window.chooseBackupDirectory = async function() {
@@ -536,7 +603,7 @@ window.importSafeConfiguration = async function() {
 
 window.resetSafeSettings = async function() {
   if (!confirm('Görünüm, ağ erişimi ve depolama tercihleri varsayılana döndürülsün mü? CNC bağlantıları ve kayıtlar silinmez.')) return;
-  Object.assign(State.settings, { internetEnabled: true, retentionDays: 30, diskLimitMB: 2048, backupDirectory: '', textScale: 100, highContrast: false, colorBlindMode: false, theme: 'dark' });
+  Object.assign(State.settings, { internetEnabled: true, retentionDays: 30, diskLimitMB: 2048, backupDirectory: '', textScale: 100, motionMode: 'full', highContrast: false, colorBlindMode: false, theme: 'dark' });
   await saveSettings();
   applyTheme('dark');
   applyAccessibilitySettings();
@@ -582,6 +649,8 @@ window.deleteConnectionProfile = async function(index) {
 
 // ── Navigation ─────────────────────────────────────────────────
 window.navigate = function navigate(page, extraData = null) {
+  const navigationToken = String(Date.now()) + Math.random();
+  window.__activeNavigationToken = navigationToken;
   State.currentPage = page;
 
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -593,7 +662,7 @@ window.navigate = function navigate(page, extraData = null) {
   }
 
   const content = document.getElementById('main-content');
-  content.innerHTML = '';
+  content.innerHTML = window.MTBUX?.loadingState('Ekran hazırlanıyor…') || '<div class="spinner"></div>';
 
   const pages = {
     dashboard:   renderDashboard,
@@ -640,9 +709,18 @@ window.navigate = function navigate(page, extraData = null) {
 
   const fn = pages[page];
   if (fn) {
-    const el = fn();
-    content.appendChild(el);
-    el.classList.add('animate-in');
+    requestAnimationFrame(() => {
+      if (window.__activeNavigationToken !== navigationToken) return;
+      try {
+        const el = fn();
+        if (window.__activeNavigationToken !== navigationToken) return;
+        content.replaceChildren(el);
+        el.classList.add('animate-in');
+      } catch (error) {
+        content.innerHTML = window.MTBUX?.emptyState({ icon: '!', title: 'Ekran açılamadı', description: 'Beklenmeyen bir hata oluştu. Sayfayı yeniden açmayı deneyin.' }) || '';
+        window.MTBUX?.notify({ type: 'error', title: 'Ekran yüklenemedi', message: error?.message || 'Beklenmeyen bir uygulama hatası oluştu.', actionLabel: 'Tekrar dene', onAction: () => window.navigate(page, extraData) });
+      }
+    });
   }
 };
 
@@ -987,6 +1065,9 @@ function renderFssbTopology() {
       <!-- Topology Canvas -->
       <div class="card" id="fssb-topology-canvas">
         <div class="card-title mb-3">📊 Bağlantı Topolojisi</div>
+        <div class="flex gap-2 mb-3"><button class="btn btn-ghost btn-sm" onclick="setFssbSimulationMode('normal')">Normal yol</button><button class="btn btn-ghost btn-sm" onclick="setFssbSimulationMode('kablo2')">Fiber 2 kopuk</button><button class="btn btn-ghost btn-sm" onclick="setFssbSimulationMode('amp1')">Amp 1 arızalı</button></div>
+        <div id="fssb-live-path" class="mb-3">${window.renderFSSBTopologySVG ? window.renderFSSBTopologySVG('normal') : ''}</div>
+        <div id="fssb-node-detail" class="status-surface info" style="padding:12px 14px 12px 18px;margin-bottom:12px">Bir düğüm seçerek konnektör ve kontrol bilgisini görüntüleyin.</div>
         <div id="fssb-diagram" style="overflow-x:auto">
           <div style="text-align:center; padding:40px; color:var(--text-muted); font-size:13px">
             🔧 Yapılandırmayı seçip "Topoloji Çiz" butonuna basın.
@@ -1001,6 +1082,11 @@ function renderFssbTopology() {
       </div>
     </div>
   `;
+
+  window.setFssbSimulationMode = function(mode) {
+    const target = document.getElementById('fssb-live-path');
+    if (target && window.renderFSSBTopologySVG) target.innerHTML = window.renderFSSBTopologySVG(mode);
+  };
 
   window.drawFssbTopology = function(page = document) {
     const axisCountEl = page.querySelector('#fssb-axis-count');
@@ -1853,7 +1939,7 @@ function renderProjects() {
     </div>
   `;
 
-  renderProjectGrid();
+  renderProjectGrid(page);
   page.querySelector('#btn-new-project').addEventListener('click', showNewProjectModal);
   page.querySelector('#proj-search').addEventListener('input', () => renderProjectGrid(page));
   page.querySelector('#proj-type-filter').addEventListener('change', () => renderProjectGrid(page));
@@ -1873,11 +1959,14 @@ function renderProjectGrid(page) {
   );
 
   if (!projs.length) {
-    container.innerHTML = `
-      <div class="empty-state" style="grid-column:1/-1">
-        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        <p>Henüz proje yok.<br>Yeni proje oluşturun.</p>
-      </div>`;
+    const filtered = State.projects.length > 0;
+    container.innerHTML = `<div style="grid-column:1/-1">${window.MTBUX.emptyState({
+      icon: '▣',
+      title: filtered ? 'Filtrelere uygun proje bulunamadı' : 'Henüz proje oluşturulmadı',
+      description: filtered ? 'Arama ifadesini veya proje tipi filtresini değiştirerek tekrar deneyin.' : 'Elektrik, mekanik veya PMC çalışmalarınızı tek yerde takip etmek için ilk projeyi oluşturun.',
+      actionLabel: filtered ? 'Filtreleri temizle' : 'İlk projeyi oluştur',
+      command: filtered ? 'clear-filters' : 'new-project'
+    })}</div>`;
     return;
   }
 
@@ -2910,6 +2999,7 @@ function renderSettings() {
           <div class="form-group"><label class="form-label">Yazı büyüklüğü</label><input id="text-scale" type="range" min="85" max="140" value="${Number(State.settings.textScale)||100}" /><span id="text-scale-value">%${Number(State.settings.textScale)||100}</span></div>
           <label class="flex items-center gap-2"><input type="checkbox" id="high-contrast" ${State.settings.highContrast?'checked':''}/> Yüksek kontrast</label>
           <label class="flex items-center gap-2"><input type="checkbox" id="color-blind-mode" ${State.settings.colorBlindMode?'checked':''}/> Renk körlüğü paleti</label>
+          <div class="form-group"><label class="form-label">Hareket seviyesi</label><select class="form-control" id="motion-mode"><option value="full" ${State.settings.motionMode==='full'?'selected':''}>Tam</option><option value="reduced" ${State.settings.motionMode==='reduced'?'selected':''}>Azaltılmış</option><option value="off" ${State.settings.motionMode==='off'?'selected':''}>Kapalı</option></select></div>
         </div>
         <div class="flex gap-2" style="flex-wrap:wrap">
           <button class="btn btn-secondary btn-sm" onclick="exportSafeConfiguration()">Yapılandırmayı Dışa Aktar</button>
@@ -2945,6 +3035,7 @@ function renderSettings() {
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
           Klasörü Aç
         </button>
+        <button class="btn btn-secondary btn-sm" id="btn-export-diagnostics">Tanılama Paketi Oluştur</button>
       </div>
 
       <!-- CSV Export -->
@@ -3020,6 +3111,11 @@ function renderSettings() {
     const inp = page.querySelector('#ai-api-key');
     inp.type = inp.type === 'password' ? 'text' : 'password';
   });
+  page.querySelector('#btn-export-diagnostics')?.addEventListener('click', async () => {
+    const result = await window.electronAPI.exportDiagnostics();
+    if (result?.ok) showToast(`Tanılama paketi oluşturuldu. SHA-256: ${result.checksum.slice(0, 12)}…`, 'success');
+    else if (!result?.canceled) showToast(result?.error || 'Tanılama paketi oluşturulamadı.', 'error');
+  });
 
   // Load CNC Machine Network Settings from bin/adapter.config.json
   window.electronAPI.readFile('bin/adapter.config.json').then(res => {
@@ -3073,6 +3169,7 @@ function renderSettings() {
     State.settings.textScale = Number(page.querySelector('#text-scale').value) || 100;
     State.settings.highContrast = page.querySelector('#high-contrast').checked;
     State.settings.colorBlindMode = page.querySelector('#color-blind-mode').checked;
+    State.settings.motionMode = page.querySelector('#motion-mode').value;
     if (!State.settings.internetEnabled) State.settings.aiProvider = 'offline';
     const secretResult = await window.electronAPI.setAISecret(State.settings.aiApiKey);
     if (!secretResult?.ok && State.currentUser?.role === 'admin') {
@@ -3497,7 +3594,7 @@ window.sendAIMessage = async function() {
   response += citations + '\n\n⚠️ Bu yalnızca öneridir; yetkili teknisyen doğrulaması gerekir. Uygulama CNC’ye komut gönderemez.';
 
   removeTyping(typingId);
-  appendMessage('ai', response);
+  appendMessage('ai', response, { sources: ragResult.sources, confidence: ragResult.sources.length ? 'Yerel kaynakla destekli' : 'Düşük güven — kaynak eşleşmedi' });
   ChatHistory.push({ role: 'assistant', content: response });
 };
 
@@ -3752,7 +3849,7 @@ function offlineAI(msg) {
   return `MTB Elektrik Bakım Asistanı — Çevrimdışı Mod\n\n"${msg}" sorunuzu aldım.\n\nÇevrimdışı modda şu konularda yardımcı olabilirim:\n• Alarm kodları (ör: SV0401, PS0010)\n• Parametre numaraları (ör: Param 1320)\n• E-Stop, servo gain, yedekleme prosedürleri\n• PMC adres haritası\n\nDaha kapsamlı yanıtlar için **Ayarlar** menüsünden OpenAI veya Gemini API anahtarınızı ekleyebilirsiniz.`;
 }
 
-function appendMessage(role, text) {
+function appendMessage(role, text, metadata = {}) {
   const container = document.getElementById('ai-messages');
   if (!container) return;
   const isAI = role === 'ai';
@@ -3760,7 +3857,7 @@ function appendMessage(role, text) {
   div.className = `msg-row ${role} animate-in`;
 
   // Simple markdown rendering
-  const html = text
+  const rendered = escapeHTML(text)
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/## (.+)/g, '<div style="font-weight:700; font-size:13px; margin:8px 0 4px; color:var(--text-accent)">$1</div>')
@@ -3769,11 +3866,15 @@ function appendMessage(role, text) {
       return '<div style="display:flex; gap:12px; font-size:11.5px; margin:2px 0">' + cells.map(c => `<span>${c.trim()}</span>`).join('') + '</div>';
     })
     .replace(/\n/g, '<br>');
+  const html = window.DOMPurify ? window.DOMPurify.sanitize(rendered, { ALLOWED_TAGS: ['strong','code','div','span','br'], ALLOWED_ATTR: ['style','class'] }) : rendered;
+  const sourceHTML = isAI && metadata.sources?.length
+    ? `<div class="ai-source-list">${metadata.sources.map(source => `<span class="ai-source-chip">${escapeHTML(source.type)} · ${escapeHTML(source.id)}</span>`).join('')}</div>` : '';
+  const confidenceHTML = isAI ? `<span class="status-chip ai-confidence">${escapeHTML(metadata.confidence || 'Teknisyen doğrulaması gerekli')}</span>` : '';
 
   div.innerHTML = `
     <div class="msg-avatar ${role}">${isAI ? 'AI' : '👤'}</div>
     <div>
-      <div class="msg-bubble">${html}</div>
+      <div class="msg-bubble ${isAI ? 'ai-technical-card' : ''}">${confidenceHTML}<div class="ai-tech-section"><strong>${isAI ? 'Teknik değerlendirme' : 'Mesaj'}</strong>${html}</div>${sourceHTML}</div>
       <div class="msg-time">${formatTime(new Date())}</div>
     </div>
   `;
@@ -3913,6 +4014,11 @@ function renderMachines() {
       </div>
     </div>
     <div class="page-body" style="padding:0">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:14px 16px 0">
+        <div class="status-surface ok" style="padding:12px 14px 12px 18px"><small>TAMAMLANAN</small><strong style="display:block;font-size:20px">${State.maintenances.filter(item=>item.durum==='Tamamlandı').length}</strong></div>
+        <div class="status-surface info" style="padding:12px 14px 12px 18px"><small>DEVAM EDEN</small><strong style="display:block;font-size:20px">${State.maintenances.filter(item=>item.durum==='Devam Ediyor').length}</strong></div>
+        <div class="status-surface warn" style="padding:12px 14px 12px 18px"><small>BEKLEYEN</small><strong style="display:block;font-size:20px">${State.maintenances.filter(item=>item.durum==='Beklemede').length}</strong></div>
+      </div>
       <div style="overflow-y:auto; flex:1">
         <table class="data-table">
           <thead>
@@ -3956,7 +4062,12 @@ function filterMachines(page) {
 function renderMachineTable(list, page) {
   const tbody = page.querySelector('#mach-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted)">Tezgah bulunamadı</td></tr>`;
+    const filtered = State.machines.length > 0;
+    tbody.innerHTML = window.MTBUX.emptyTableRow({ colspan: 6, icon: '⚙',
+      title: filtered ? 'Filtrelere uygun tezgâh bulunamadı' : 'Henüz tezgâh eklenmedi',
+      description: filtered ? 'Arama veya bölüm filtrelerini temizleyerek tüm tezgâhları görüntüleyin.' : 'Bakım, pil, fan ve arıza kayıtlarını ilişkilendirmek için ilk tezgâhı ekleyin.',
+      actionLabel: filtered ? 'Filtreleri temizle' : (canEdit() ? 'İlk tezgâhı ekle' : ''),
+      command: filtered ? 'clear-filters' : 'new-machine' });
     return;
   }
   const sortedList = [...list].sort((a, b) =>
@@ -4596,7 +4707,12 @@ function filterMaintenances(page) {
 function renderMaintTable(list, page) {
   const tbody = page.querySelector('#maint-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted)">Bakım kaydı bulunamadı</td></tr>`;
+    const filtered = State.maintenances.length > 0;
+    tbody.innerHTML = window.MTBUX.emptyTableRow({ colspan: 6, icon: '✓',
+      title: filtered ? 'Bu filtrelerde bakım kaydı yok' : 'Henüz bakım kaydı oluşturulmadı',
+      description: filtered ? 'Tezgâh, durum veya arama filtresini temizleyerek diğer kayıtları görüntüleyin.' : 'Yapılan işlemleri, teknisyeni ve bakım sonucunu kayıt altına alarak geçmişi oluşturmaya başlayın.',
+      actionLabel: filtered ? 'Filtreleri temizle' : (canEdit() ? 'İlk bakım kaydını oluştur' : ''),
+      command: filtered ? 'clear-filters' : 'new-maintenance' });
     return;
   }
   
@@ -4945,7 +5061,12 @@ function renderBatteryTable(list, page) {
   const tbody = page.querySelector('#batt-tbody');
   if (!tbody) return;
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-muted)">Pil kaydı bulunamadı</td></tr>`;
+    const filtered = State.batteries.length > 0;
+    tbody.innerHTML = window.MTBUX.emptyTableRow({ colspan: 9, icon: '▰',
+      title: filtered ? 'Bu filtrelerde pil kaydı yok' : 'Henüz pil değişimi kaydedilmedi',
+      description: filtered ? 'Tezgâh, durum veya arama filtresini temizleyerek diğer pilleri görüntüleyin.' : 'Enkoder pilinin değişim tarihini kaydedin; kalan ömür ve kritik eşikler otomatik hesaplansın.',
+      actionLabel: filtered ? 'Filtreleri temizle' : (canEdit() ? 'Pil değişimi kaydet' : ''),
+      command: filtered ? 'clear-filters' : 'new-battery' });
     return;
   }
 
@@ -4980,9 +5101,7 @@ function renderBatteryTable(list, page) {
             <span class="font-mono" style="font-weight:700; color:${deg.color}; font-size:12px">%${deg.percentRemaining}</span>
             <span class="font-mono text-xs" style="color:var(--text-muted)">(${deg.daysRemaining} Gün)</span>
           </div>
-          <div style="width: 110px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; height: 6px; margin-top: 4px">
-            <div style="width: ${deg.percentRemaining}%; height: 100%; background: ${deg.color}; transition: width 0.3s ease"></div>
-          </div>
+          <div class="lifecycle-timeline" style="width:180px;--life-percent:${Math.max(0, Math.min(100, 100 - deg.percentRemaining))}%;--life-color:${deg.color}"><div class="lifecycle-track"><div class="lifecycle-fill"></div></div><div class="lifecycle-marker"></div><div class="lifecycle-labels"><span>Değişim</span><span>Bugün</span><span>Limit</span></div></div>
         </td>
         <td><span class="tag ${stat.class}">${escapeHTML(stat.label.split(' ')[0])}</span></td>
 
@@ -5009,7 +5128,12 @@ function renderFanTable(list, page) {
   const tbody = page.querySelector('#fan-tbody');
   if (!tbody) return;
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted)">Fan takip kaydı bulunamadı</td></tr>`;
+    const filtered = State.fans.length > 0;
+    tbody.innerHTML = window.MTBUX.emptyTableRow({ colspan: 7, icon: '✣',
+      title: filtered ? 'Bu filtrelerde fan kaydı yok' : 'Henüz fan takibi başlatılmadı',
+      description: filtered ? 'Tezgâh, durum veya arama filtresini temizleyerek diğer fanları görüntüleyin.' : 'Sürücü ve kabin fanlarının çalışma saatlerini kaydedin; yaklaşan bakım zamanını takip edin.',
+      actionLabel: filtered ? 'Filtreleri temizle' : (canEdit() ? 'İlk fanı takibe al' : ''),
+      command: filtered ? 'clear-filters' : 'new-fan' });
     return;
   }
 
@@ -5037,9 +5161,7 @@ function renderFanTable(list, page) {
         <td><span class="font-mono">${f.calisma_saati.toLocaleString('tr-TR')} Sa</span></td>
         <td>
           <span class="font-mono" style="font-weight:600; color:${statusColor}">${lifeLeft.toLocaleString('tr-TR')} Sa</span>
-          <div style="width: 90px; background: var(--border-light); border-radius: 4px; overflow: hidden; height: 5px; margin-top: 4px">
-            <div style="width: ${Math.max(0, Math.min(100, (lifeLeft / 20000) * 100))}%; height: 100%; background: ${statusColor}"></div>
-          </div>
+          <div class="lifecycle-timeline" style="width:180px;--life-percent:${Math.max(0, Math.min(100, (f.calisma_saati / 20000) * 100))}%;--life-color:${statusColor}"><div class="lifecycle-track"><div class="lifecycle-fill"></div></div><div class="lifecycle-marker"></div><div class="lifecycle-labels"><span>0 saat</span><span>Bugün</span><span>20.000</span></div></div>
         </td>
         <td><span>${escapeHTML(f.bakim_yapan || '—')}</span></td>
         <td><span class="tag ${statusClass}">${escapeHTML(statusLabel)}</span></td>
@@ -5316,6 +5438,7 @@ window.closeModal = function(id) {
 
 // Toast
 function showToast(message, type = 'info') {
+  if (window.MTBUX?.notify) return window.MTBUX.notify(message, type);
   let container = document.getElementById('toast-container');
   if (!container) {
     container = document.createElement('div');
@@ -7194,7 +7317,7 @@ window.evaluateMacro = function() {
 
     // 4. Safe evaluate
     // Use Function constructor instead of direct eval for safety
-    const result = new Function(`return (${expr})`)();
+    const result = evaluateSafeMathExpression(expr);
 
     if (isNaN(result) || result === Infinity || result === -Infinity) {
       resEl.innerText = 'Hesaplama Hatası (Bölünme veya Geçersiz İşlem)';
@@ -8529,7 +8652,7 @@ function renderDiffTableRows(diffsList) {
     const bitDiffsHtml = getBitDifferenceDetails(d.no, d.valA, d.valB);
 
     return `
-      <tr style="${cellStyle}">
+      <tr class="${d.isCritical ? 'diff-critical' : ''}" style="${cellStyle}">
         <td>
           <strong class="font-mono" style="font-size:12px; color:var(--text-accent)">#${d.no}</strong>
           ${d.isCritical ? '<span style="font-size:9px; background:rgba(239,68,68,0.18); color:#f87171; padding:1px 4px; border-radius:3px; margin-left:4px">KRİTİK</span>' : ''}
@@ -8620,6 +8743,7 @@ function getBitDifferenceDetails(no, valA, valB) {
   };
 
   let rows = '';
+  const bitStrip = `<div class="bit-diff" aria-label="8 bit karşılaştırması">${Array.from({length:8},(_,index)=>{ const bit=7-index; const changed=valA[index]!==valB[index]; return `<span class="${changed?'changed':''}" title="Bit ${bit}: ${valA[index]} → ${valB[index]}">${valB[index]}</span>`; }).join('')}</div>`;
   for (let bit = 7; bit >= 0; bit--) {
     const charA = valA[7 - bit];
     const charB = valB[7 - bit];
@@ -8642,6 +8766,7 @@ function getBitDifferenceDetails(no, valA, valB) {
   return `
     <div style="background:var(--bg-card2); border-left: 3px solid var(--accent); padding: 8px; margin: 6px 0 10px 0; border-radius: var(--radius-sm)">
       <strong style="font-size:10px; text-transform:uppercase; color:var(--text-accent)">Değişen Bitlerin Analizi:</strong>
+      ${bitStrip}
       ${rows}
     </div>
   `;

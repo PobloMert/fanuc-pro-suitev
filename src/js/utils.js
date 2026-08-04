@@ -35,6 +35,7 @@ export function addStyle(cssString) {
 }
 
 export function showToast(message, type = 'info') {
+  if (window.MTBUX?.notify) return window.MTBUX.notify(message, type);
   let toastContainer = document.getElementById('toast-container');
   if (!toastContainer) {
     toastContainer = document.createElement('div');

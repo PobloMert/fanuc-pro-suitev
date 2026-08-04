@@ -9,9 +9,11 @@
     "mock-adapter": "node scripts/mock-adapter.js",
     "smoke": "powershell -ExecutionPolicy Bypass -File scripts/smoke.ps1",
     "test": "node --test",
+    "test:e2e": "playwright test",
     "check": "node scripts/check.js",
-    "build:dir": "electron-builder --dir --win"
-    ,"build:setup": "electron-builder --win nsis"
+    "build:dir": "electron-builder --dir --win",
+    "build:setup": "electron-builder --win nsis",
+    "release:checksums": "node scripts/generate-checksums.js"
   },
   "keywords": [
     "fanuc",
@@ -50,8 +52,7 @@
       "icon": "assets/app-icon.ico",
       "target": [
         "nsis"
-      ],
-      "verifyUpdateCodeSignature": true
+      ]
     },
     "nsis": {
       "oneClick": false,
@@ -64,6 +65,7 @@
     }
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "electron": "^43.0.0",
     "electron-builder": "^26.15.3"
   },

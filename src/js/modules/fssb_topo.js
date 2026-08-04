@@ -31,17 +31,17 @@ export function renderFSSBTopologySVG(activeSimMode = 'normal') {
       </defs>
 
       <!-- Connection Line 1: Main CPU -> Amp 1 -->
-      <path d="M 180 130 L 300 130" stroke="${line1Color}" stroke-width="4" stroke-dasharray="${isAmp1Fault ? '6,6' : 'none'}" filter="url(#glow)"/>
+      <path class="fssb-signal ${isAmp1Fault ? 'fault' : ''}" d="M 180 130 L 300 130" stroke="${line1Color}" stroke-width="4" filter="url(#glow)"/>
       <text x="240" y="118" fill="var(--text-muted)" font-size="10" text-anchor="middle" font-family="sans-serif">Optik Fiber 1 (COP10A)</text>
 
       <!-- Connection Line 2: Amp 1 -> Amp 2 -->
-      <path d="M 440 130 L 560 130" stroke="${line2Color}" stroke-width="4" stroke-dasharray="${isKablo2Broken ? '6,6' : 'none'}" filter="url(#glow)"/>
+      <path class="fssb-signal ${isKablo2Broken || isAmp1Fault ? 'fault' : ''}" d="M 440 130 L 560 130" stroke="${line2Color}" stroke-width="4" filter="url(#glow)"/>
       <text x="500" y="118" fill="${isKablo2Broken ? '#ef4444' : 'var(--text-muted)'}" font-size="10" text-anchor="middle" font-weight="${isKablo2Broken ? 'bold' : 'normal'}">
         ${isKablo2Broken ? '❌ Kopuk Hat' : 'Optik Fiber 2'}
       </text>
 
       <!-- Connection Line 3: Amp 2 -> Spindle Amp -->
-      <path d="M 700 130 L 800 130" stroke="${line3Color}" stroke-width="4" filter="url(#glow)"/>
+      <path class="fssb-signal ${isKablo2Broken || isAmp1Fault ? 'fault' : ''}" d="M 700 130 L 800 130" stroke="${line3Color}" stroke-width="4" filter="url(#glow)"/>
       <text x="750" y="118" fill="var(--text-muted)" font-size="10" text-anchor="middle">Optik Fiber 3</text>
 
       <!-- Node 1: CNC Main CPU -->
@@ -91,6 +91,19 @@ export function renderFSSBTopologySVG(activeSimMode = 'normal') {
   `;
 }
 
+export function onFssbNodeClick(nodeId) {
+  const details = {
+    cnc: ['CNC Main CPU', 'COP10A çıkışı, P1023 eşleşmesi ve optik çıkış ışığını kontrol edin.'],
+    amp1: ['Servo Amp 1 — X/Y', 'COP10A/COP10B yönü, güç LED’i ve 7-segment hata kodunu kontrol edin.'],
+    amp2: ['Servo Amp 2 — Z', 'Önceki fiber çıkışı ile bu amplifikatörün COP10A girişini karşılaştırın.'],
+    spindle: ['Spindle Amp', 'JA7A geri besleme hattını ve spindle sensör bağlantısını kontrol edin.']
+  };
+  const [title, description] = details[nodeId] || ['FSSB düğümü', 'Bağlantı bilgisini doğrulayın.'];
+  const target = document.getElementById('fssb-node-detail');
+  if (target) target.innerHTML = `<strong>${title}</strong><span style="display:block;color:var(--text-secondary);margin-top:4px">${description}</span>`;
+}
+
 if (typeof window !== 'undefined') {
   window.renderFSSBTopologySVG = renderFSSBTopologySVG;
+  window.onFssbNodeClick = onFssbNodeClick;
 }
