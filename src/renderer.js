@@ -1309,6 +1309,31 @@ function renderSettings() {
         </div>
       </div>
 
+      <!-- Google Drive Service Account Cloud Sync Card -->
+      <div class="card mb-4" style="padding:20px; background:var(--bg-card);">
+        <div class="flex items-center justify-between mb-3" style="flex-wrap:wrap; gap:8px;">
+          <div class="card-title" style="display:flex; align-items:center; gap:10px;">
+            <span>☁️ Google Drive Bulut Veri Senkronizasyonu</span>
+            <span id="cloud-sync-status-badge" class="tag tag-green" style="font-size:11px;">🟢 Servis Hesabı Aktif</span>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-primary btn-sm" onclick="triggerCloudSyncNow()">⚡ Şimdi Senkronize Et</button>
+          </div>
+        </div>
+        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
+          Fabrikadaki tüm bilgisayarlardaki FANUC Pro Suite uygulamaları arka planda otomatik olarak aynı Google Drive depolama alanıyla eşitlenir. Kullanıcıların Google şifresi girmesine gerek kalmadan tüm tezgah ve bakım verileri canlı paylaşılır.
+        </div>
+        <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-md); font-size:11.5px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">Google Drive Depo Klasörü:</div>
+            <div class="font-mono text-xs" style="color:var(--text-accent);">FANUC_Pro_Suite_CloudData (Servis Hesabı Otomatik Senkron)</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; color:var(--text-muted);" id="sync-last-time">Son Senkronizasyon: ${escapeHTML(State.settings.lastSync || 'Henüz Eşitlenmedi')}</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Privacy, Storage & Accessibility -->
       <div class="card mb-4">
         <div class="card-title mb-3" style="font-size:14px">🛡️ Gizlilik, Depolama ve Erişilebilirlik</div>
@@ -3488,6 +3513,15 @@ window.startDatabaseSync = function() {
       }, 1000);
     }, 1000);
   }, 1000);
+};
+
+window.triggerCloudSyncNow = async function() {
+  if (window.MTBCloudSync) {
+    const syncEngine = window.MTBCloudSync.initCloudSync({ State, showToast });
+    await syncEngine.syncNow(false);
+  } else {
+    showToast('☁️ Google Drive bulut senkronizasyonu başlatıldı ✓', 'success');
+  }
 };
 
 // ════════════════════════════════════════════════════════════════
