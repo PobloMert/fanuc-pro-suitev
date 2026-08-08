@@ -30,6 +30,8 @@
     }
 
     async function autoWriteBackupPackage(silent = false) {
+      if (syncConfig.status === 'syncing') return;
+      syncConfig.status = 'syncing';
       try {
         const bundle = {
           schemaVersion: "1.4.1",
@@ -49,8 +51,6 @@
         };
 
         const jsonStr = JSON.stringify(bundle, null, 2);
-
-        // Direct HTTPS API Push to Google Drive Webhook (100% Single File Cloud Sync)
 
         // Direct HTTPS API Push to Google Drive Webhook
         if (syncConfig.webAppUrl) {
@@ -77,7 +77,6 @@
 
         const now = new Date().toLocaleString('tr-TR');
         syncConfig.lastSyncTime = now;
-        syncConfig.status = 'success';
         if (State.settings) {
           State.settings.lastSync = now;
         }
@@ -93,6 +92,8 @@
         }
       } catch (e) {
         console.error('Auto Drive sync failed:', e);
+      } finally {
+        syncConfig.status = 'idle';
       }
     }
 
