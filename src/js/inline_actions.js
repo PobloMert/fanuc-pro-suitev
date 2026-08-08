@@ -17,7 +17,7 @@
     askAIAboutNc showPmcDetail askAIAboutPmc toggleGeneratorFields generateGcode copyGcodeToClipboard
     showNewKeepRelayModal showEditKeepRelayModal saveKeepRelayNote createNewKeepRelay evaluateMacro
     startDncTransmission stopDncTransmission updateDiagLedDisplay runDriveDiagnosis calculateFlexibleGearRatio
-    runGcodeCheck loadDefaultGcodeBug compareParameterFiles loadDefaultParamDiff filterDiffRows exportDiffPDF
+    runGcodeCheck loadDefaultGcodeBug compareParameterFiles loadDefaultParamDiff filterDiffRows exportDiffPDF exportDiffCSV loadPresetBackupForDiff
     showIoSlotMapping checkWizardStepsCompletion showNewWikiArticleModal deleteWikiArticle createNewWikiArticle
     showNewBackupLogModal handleBackupFileSelect showBackupHistoryModal createNewBackupLog
     generateBacklashGcode copyBacklashGcode calculateNewBacklash showSpindleAlarmDetail calculateSpindleGearRatio

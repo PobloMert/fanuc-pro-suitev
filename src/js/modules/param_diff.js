@@ -57,11 +57,31 @@ export function compareParameterSources(paramsA = [], paramsB = [], nameA = 'Kay
       const name = itemA.name || itemB.name || itemA.description || itemB.description || `Parametre #${k}`;
 
       if (String(valA).trim() !== String(valB).trim()) {
+        const vA = String(valA).trim();
+        const vB = String(valB).trim();
+        const bitDiffs = [];
+
+        if (/^[01]{8}$/.test(vA) && /^[01]{8}$/.test(vB)) {
+          for (let b = 0; b < 8; b++) {
+            const charA = vA[b];
+            const charB = vB[b];
+            if (charA !== charB) {
+              const bitNum = 7 - b;
+              bitDiffs.push({
+                bit: bitNum,
+                oldVal: charA,
+                newVal: charB
+              });
+            }
+          }
+        }
+
         mismatched.push({
           no: k,
           name,
-          valA: String(valA).trim(),
-          valB: String(valB).trim(),
+          valA: vA,
+          valB: vB,
+          bitDiffs,
           itemA,
           itemB,
           type: 'diff'

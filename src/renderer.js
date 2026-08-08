@@ -3954,6 +3954,7 @@ function renderParamComparator() {
             <button class="btn btn-ghost btn-sm" onclick="filterDiffMode('all')" id="btn-diff-all" style="color:var(--text-accent); font-weight:bold">Tümü</button>
             <button class="btn btn-ghost btn-sm" onclick="filterDiffMode('critical')" id="btn-diff-critical">⚠️ Kritikler</button>
             <button class="btn btn-secondary btn-sm" onclick="exportDiffPDF()">🖨️ PDF Rapor</button>
+            <button class="btn btn-secondary btn-sm" onclick="exportDiffCSV()">📊 CSV İndir</button>
           </div>
         </div>
 
@@ -4209,6 +4210,45 @@ window.exportDiffPDF = function() {
     return;
   }
   window.print();
+};
+
+window.exportDiffCSV = function() {
+  const diffs = window.CurrentDiffs || [];
+  if (!diffs.length) {
+    showToast('Dışa aktarılacak parametre farkı bulunamadı.', 'warning');
+    return;
+  }
+
+  let csvContent = '\uFEFF';
+  csvContent += 'Parametre No;Parametre Tanimi;Yedek A (Eski);Yedek B (Yeni);Fark Durumu;Kritik Sinyal\n';
+
+  diffs.forEach(d => {
+    const cleanDesc = (d.desc || '').replace(/;/g, ',');
+    csvContent += `${d.no};"${cleanDesc}";"${d.valA}";"${d.valB}";"${d.status}";"${d.isCritical ? 'KRITIK' : 'Normal'}"\n`;
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `fanuc-param-diff-${new Date().toISOString().slice(0,10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('Parametre fark raporu CSV olarak indirildi (Excel Uyumlu) ✓', 'success');
+};
+
+window.loadPresetBackupForDiff = function(target, presetId) {
+  const area = document.getElementById(`pmc-file-${target}`);
+  if (!area) return;
+
+  if (presetId === 'factory_default') {
+    area.value = `1001 00001000\n1002 00000000\n1006 00000000\n1320 500000\n1321 -500000\n1815 00110000\n1851 10\n3111 00000001\n3202 00010001`;
+  } else if (presetId === 'modified_site') {
+    area.value = `1001 00001000\n1002 00000000\n1006 00000000\n1320 450000\n1321 -500000\n1815 00100000\n1851 25\n3111 00000001\n3202 00000001`;
+  }
+  showToast(`Örnek ${presetId} yedeği ${target.toUpperCase()} alanına aktarıldı.`, 'info');
+  compareParameterFiles();
 };
 
 function getBitDifferenceDetails(no, valA, valB) {
