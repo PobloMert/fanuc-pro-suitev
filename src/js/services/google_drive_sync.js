@@ -53,15 +53,24 @@
           await window.electronAPI.writeFile(localBackupPath, jsonStr).catch(() => {});
         }
 
-        // Direct HTTPS API Push to Google Drive Webhook if Endpoint configured
-        if (syncConfig.webAppUrl && window.fetch) {
+        // Direct HTTPS API Push to Google Drive Webhook
+        if (syncConfig.webAppUrl) {
           try {
-            await fetch(syncConfig.webAppUrl, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: jsonStr
-            });
+            if (window.electronAPI && window.electronAPI.fetchProxy) {
+              const res = await window.electronAPI.fetchProxy(syncConfig.webAppUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: jsonStr
+              });
+              console.log('Google Drive Webhook result:', res);
+            } else if (window.fetch) {
+              await fetch(syncConfig.webAppUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: jsonStr
+              });
+            }
           } catch (fetchErr) {
             console.log('Drive HTTPS push note:', fetchErr);
           }

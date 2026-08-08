@@ -1690,9 +1690,14 @@ ipcMain.handle('fetch-proxy', async (event, url, options = {}) => {
     requireSession(event, ['admin', 'technician']);
     if (!isInternetEnabled()) throw new Error('İnternet erişimi Ayarlar bölümünden kapatılmış.');
     const parsed = new URL(url);
-    const allowedHosts = new Set(['api.openai.com', 'generativelanguage.googleapis.com']);
+    const allowedHosts = new Set([
+      'api.openai.com',
+      'generativelanguage.googleapis.com',
+      'script.google.com',
+      'script.googleusercontent.com'
+    ]);
     if (parsed.protocol !== 'https:' || !allowedHosts.has(parsed.hostname)) {
-      throw new Error('Ağ hedefi izin listesinde değil.');
+      throw new Error('Ağ hedefi izin listesinde değil: ' + parsed.hostname);
     }
     const response = await net.fetch(url, options);
     const text = await response.text();
