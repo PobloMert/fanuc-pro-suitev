@@ -1314,22 +1314,22 @@ function renderSettings() {
         <div class="flex items-center justify-between mb-3" style="flex-wrap:wrap; gap:8px;">
           <div class="card-title" style="display:flex; align-items:center; gap:10px;">
             <span>☁️ Google Drive Bulut Veri Senkronizasyonu</span>
-            <span id="cloud-sync-status-badge" class="tag tag-green" style="font-size:11px;">🟢 Servis Hesabı Aktif</span>
+            <span id="cloud-sync-status-badge" class="tag tag-green" style="font-size:11px;">🟢 Webhook Bulut Yükleme Aktif</span>
           </div>
           <div class="flex gap-2" style="flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm" onclick="exportFullCloudBundle()">📥 Drive Klasörüne Yedekle</button>
-            <button class="btn btn-secondary btn-sm" onclick="importFullCloudBundle()">📤 Drive Yedeği İçe Aktar</button>
-            <button class="btn btn-ghost btn-sm" onclick="triggerCloudSyncNow()">⚡ Şimdi Senkronize Et</button>
+            <button class="btn btn-primary btn-sm" onclick="triggerCloudSyncNow()">⚡ Şimdi Senkronize Et & Drive'a Yükle</button>
+            <button class="btn btn-secondary btn-sm" onclick="exportFullCloudBundle()">📥 Yerel Yedek Dosyası Üret</button>
+            <button class="btn btn-secondary btn-sm" onclick="importFullCloudBundle()">📤 Yedeği İçe Aktar</button>
           </div>
         </div>
         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
-          Fabrikadaki tüm bilgisayarlardaki FANUC Pro Suite uygulamaları arka planda otomatik olarak aynı Google Drive depolama alanıyla eşitlenir. Kullanıcıların Google şifresi girmesine gerek kalmadan tüm tezgah ve bakım verileri canlı paylaşılır.
+          Fabrikadaki tüm bilgisayarlardaki FANUC Pro Suite uygulamaları arka planda otomatik olarak doğrudan Google Drive Webhook endpoint'ine (Google Apps Script) bağlanır. Bilgisayarlara hiçbir Google Drive programı kurulmasına gerek kalmadan tüm veriler canlı senkronize edilir.
         </div>
         <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-md); font-size:11.5px; display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">Google Drive Depo Klasör ID:</div>
+            <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">Google Drive Depo Klasörü & Webhook:</div>
             <div class="font-mono text-xs" style="color:var(--text-accent);">
-              1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK
+              1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK (Aktif Webhook Entegre)
               <a href="https://drive.google.com/drive/folders/1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK" target="_blank" style="color:var(--accent); margin-left:6px; text-decoration:underline;">🔗 Google Drive'da Aç</a>
             </div>
           </div>

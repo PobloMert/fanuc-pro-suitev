@@ -9,6 +9,7 @@
   let syncConfig = {
     enabled: true,
     folderId: '1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK',
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbybA3KLhKtW9UufoBCFa_lo1UTPWkz1_aRhDXHdDjFnhBdi3D3Nal_-kmN2jB2r9QlPOA/exec',
     lastSyncTime: null,
     status: 'idle', // 'idle' | 'syncing' | 'success' | 'error'
     autoPollInterval: 60000 // 60 seconds
