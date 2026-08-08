@@ -52,7 +52,7 @@
 
         // Try writing directly to local backup directory
         if (window.electronAPI && window.electronAPI.writeFile) {
-          const fileName = `FANUC_AUTO_DRIVE_SYNC_${syncConfig.folderId}.json`;
+          const fileName = `FANUC_AUTO_DATABASE.json`;
           const localBackupPath = `${State.appDataDir || '.'}/backups/${fileName}`;
           await window.electronAPI.writeFile(localBackupPath, jsonStr).catch(() => {});
         }
