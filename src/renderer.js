@@ -192,10 +192,9 @@ window.addEventListener('message', async (event) => {
 
 
 // Main initialization is bootstrapped via src/js/app.js module
-
-
 // Initialization is owned by js/app.js.
-// Navigation and ripple behavior are owned by js/ui/navigation.js.
+
+
 async function saveKnowledgePreferences() {
   const result = await window.electronAPI.setKnowledgePreferences({
     favorites: State.settings.knowledgeFavorites || [],
@@ -6541,6 +6540,10 @@ function renderCncDashboard() {
   }).join('');
 
   page.innerHTML = `
+    <div style="padding:16px 18px 12px; background:var(--bg-base); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+      <div><div style="font-size:18px; font-weight:750; letter-spacing:-.2px;">Canlı Tezgâh Merkezi</div><div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">FOCAS telemetrisi salt-okunur izleme modunda çalışır. Yapılandırma ve adaptör başlatma yönetici yetkisi ister.</div></div>
+      <div id="cnc-adapter-state" class="tag tag-gray">Telemetri durumu kontrol ediliyor</div>
+    </div>
     <div style="background: var(--bg-surface); padding: 8px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex-shrink: 0; box-shadow: var(--shadow-sm);">
       <div style="display: flex; align-items: center; gap: 8px;">
         <label style="font-weight: 700; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">İzleme Yuvası:</label>
@@ -6568,6 +6571,9 @@ function renderCncDashboard() {
         <svg viewBox="0 0 24 24" style="width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5;"><polyline points="16 16 20 20 24 16"/><path d="M18 20V10a4 4 0 00-8 0v4"/><path d="M12 10a4 4 0 00-8 0v10"/><polyline points="8 16 4 20 0 16"/></svg>
         Bağlan ve İzle
       </button>
+      <button class="btn btn-secondary btn-sm" id="btn-cnc-scan" onclick="showFocasScannerModal()" style="padding: 5px 12px; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+        🌐 Otomatik Ağ Tarayıcısı
+      </button>
     </div>
     <div style="flex: 1; position: relative; width: 100%; height: 100%;">
       <iframe src="./dashboard/index.html" style="width: 100%; height: 100%; border: none; background: #171a1c;"></iframe>
@@ -6579,6 +6585,19 @@ function renderCncDashboard() {
   const txtIp = page.querySelector('#cnc-sel-ip');
   const txtPort = page.querySelector('#cnc-sel-port');
   const btnConnect = page.querySelector('#btn-cnc-connect');
+  const isCncAdmin = State.currentUser?.role === 'admin';
+  if (!isCncAdmin) {
+    txtIp.readOnly = true;
+    txtPort.readOnly = true;
+    btnConnect.style.display = 'none';
+  }
+  window.electronAPI.getAdapterStatus().then(res => {
+    const badge = page.querySelector('#cnc-adapter-state');
+    if (!badge || !res?.ok) return;
+    const running = res.data?.state === 'running';
+    badge.className = `tag ${running ? 'tag-green' : 'tag-orange'}`;
+    badge.textContent = running ? '● Telemetri adaptörü çalışıyor' : `● Adaptör: ${res.data?.state || 'bilinmiyor'}`;
+  });
 
   // Load slot names from LocalStorage
   State.cnc_slot1_name = localStorage.getItem('cnc_slot1_name') || 'Fanuc Tezgah 1';
@@ -6650,6 +6669,7 @@ function renderCncDashboard() {
   });
 
   btnConnect.addEventListener('click', async () => {
+    if (!isCncAdmin) { showToast('Bağlantı ayarları yalnızca yönetici tarafından değiştirilebilir.', 'error'); return; }
     const slotIdx = parseInt(selSlot.value);
     const mId = parseInt(selMachine.value);
     const ip = txtIp.value.trim();
@@ -6827,6 +6847,190 @@ window.onCncScreenMachineChange = function() {
   const opt = sel.options[sel.selectedIndex];
   if (opt && opt.dataset && opt.dataset.ip) {
     ipInput.value = opt.dataset.ip;
+  }
+};
+
+// ── FANUC Network Scanner & Machine Matcher ────────────────────────
+window.showFocasScannerModal = async function() {
+  const content = `
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">🌐</span>
+        <span>FANUC Otomatik Ağ Tarayıcısı & Tezgah Eşleştirici</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('focas-scanner')">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex; flex-direction:column; gap:14px; font-size:12px;">
+      <div style="background:var(--bg-card2); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border);">
+        <div style="font-weight:700; color:var(--text-primary); margin-bottom:4px;">🔍 Ağ Taraması & Subnet Bilgisi</div>
+        <p style="color:var(--text-secondary); margin:0; line-height:1.4;">
+          Uygulama yerel ağ kartlarını inceleyerek hedef IP bloğunu otomatik tanımlar. Farklı bir pano veya VLAN üzerinde ise aşağıdaki kutucuğa hedef subnet bilgisini girebilirsiniz.
+        </p>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+        <div style="flex:1; min-width:200px;">
+          <label class="form-label" style="font-size:11px; font-weight:700;">Hedef Subnet / IP Bloğu:</label>
+          <input type="text" id="scanner-subnet-input" class="form-control" placeholder="192.168.30.1-254 (Veya 192.168.30)" style="font-size:12px;" />
+        </div>
+        <div style="width:100px;">
+          <label class="form-label" style="font-size:11px; font-weight:700;">FOCAS Port:</label>
+          <input type="number" id="scanner-port-input" class="form-control" value="8193" style="font-size:12px;" />
+        </div>
+        <button class="btn btn-primary" id="btn-run-scanner" onclick="runFocasScanner()" style="padding:7px 16px;">
+          ⚡ Taramayı Başlat
+        </button>
+      </div>
+
+      <!-- Live Scan Progress -->
+      <div id="scanner-progress-box" style="display:none; background:var(--bg-card2); padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--accent); color:var(--text-accent);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span style="font-weight:700;">● Tarama Yapılıyor...</span>
+          <span id="scanner-progress-status" class="font-mono">IP adresleri taranıyor...</span>
+        </div>
+        <div style="height:4px; background:var(--border); border-radius:2px; overflow:hidden;">
+          <div id="scanner-progress-bar" style="width:30%; height:100%; background:var(--accent); transition:width 0.3s;"></div>
+        </div>
+      </div>
+
+      <!-- Discovered Devices Section -->
+      <div id="scanner-results-container" style="display:none; flex-direction:column; gap:10px; margin-top:6px;">
+        <div style="font-weight:700; color:var(--text-primary); display:flex; justify-content:space-between; align-items:center;">
+          <span>🟢 Bulunan CNC Cihazları ve Eşleştirmeler</span>
+          <span id="scanner-count-badge" class="tag tag-green">0 Cihaz</span>
+        </div>
+        <div id="scanner-results-list" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px;"></div>
+      </div>
+    </div>
+  `;
+
+  showModal('focas-scanner', content, 'lg');
+
+  // Auto-detect local subnet in background to prefill input
+  try {
+    const scanRes = await window.electronAPI.scanFocasNetwork({ subnet: '', timeoutMs: 1 });
+    if (scanRes && scanRes.detectedSubnets && scanRes.detectedSubnets.length > 0) {
+      const input = document.getElementById('scanner-subnet-input');
+      if (input) input.value = `${scanRes.detectedSubnets[0].subnetPrefix}.1-254`;
+    }
+  } catch (e) {}
+};
+
+window.runFocasScanner = async function() {
+  const subnetInput = document.getElementById('scanner-subnet-input')?.value.trim() || '';
+  const portInput = parseInt(document.getElementById('scanner-port-input')?.value) || 8193;
+  const btn = document.getElementById('btn-run-scanner');
+  const progressBox = document.getElementById('scanner-progress-box');
+  const progressBar = document.getElementById('scanner-progress-bar');
+  const progressStatus = document.getElementById('scanner-progress-status');
+  const resultsContainer = document.getElementById('scanner-results-container');
+  const resultsList = document.getElementById('scanner-results-list');
+  const countBadge = document.getElementById('scanner-count-badge');
+
+  if (btn) btn.disabled = true;
+  if (progressBox) progressBox.style.display = 'block';
+  if (progressBar) progressBar.style.width = '20%';
+  if (progressStatus) progressStatus.textContent = 'Paralel TCP port taraması başlatılıyor...';
+
+  try {
+    const response = await window.electronAPI.scanFocasNetwork({
+      subnet: subnetInput,
+      port: portInput,
+      timeoutMs: 350
+    });
+
+    if (progressBar) progressBar.style.width = '100%';
+    if (progressStatus) progressStatus.textContent = 'Tarama tamamlandı!';
+
+    setTimeout(() => {
+      if (progressBox) progressBox.style.display = 'none';
+    }, 400);
+
+    if (!response || !response.ok) {
+      showToast('Ağ taraması sırasında hata oluştu: ' + (response?.error || 'Bilinmeyen hata'), 'error');
+      if (btn) btn.disabled = false;
+      return;
+    }
+
+    const devices = response.foundDevices || [];
+    if (resultsContainer) resultsContainer.style.display = 'flex';
+    if (countBadge) countBadge.textContent = `${devices.length} Cihaz Bulundu`;
+
+    if (!devices.length) {
+      if (resultsList) {
+        resultsList.innerHTML = `
+          <div style="text-align:center; padding:20px; color:var(--text-muted); background:var(--bg-card2); border-radius:var(--radius-md);">
+            🔍 Taranan IP bloğunda 8193 portu açık bir FANUC CNC cihazı bulunamadı.<br>
+            <small style="color:var(--text-secondary); display:block; margin-top:4px;">Lütfen tezgâh panosundaki Ethernet kablosunun takılı ve FOCAS2 fonksiyonunun aktif olduğunu kontrol edin.</small>
+          </div>
+        `;
+      }
+      if (btn) btn.disabled = false;
+      return;
+    }
+
+    // Render discovered devices with automatic matching against State.machines
+    const sortedMachines = [...State.machines].sort((a, b) => {
+      return String(a.numarasi || '').localeCompare(String(b.numarasi || ''), 'tr-TR', { numeric: true, sensitivity: 'base' });
+    });
+
+    if (resultsList) {
+      resultsList.innerHTML = devices.map((dev, idx) => {
+        // Try matching IP with existing machines
+        const matched = sortedMachines.find(m => m.ip === dev.ip);
+        const matchLabel = matched ? `🟢 Tanımlı Tezgah: ${escapeHTML(matched.numarasi)}` : '⚠️ Yeni Cihaz (Tanımsız IP)';
+
+        const machineOptionsHtml = sortedMachines.map(m => `
+          <option value="${m.id}" ${matched && matched.id === m.id ? 'selected' : ''}>${escapeHTML(m.numarasi)} (${escapeHTML(m.tip || 'CNC')})</option>
+        `).join('');
+
+        return `
+          <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:750; font-size:13px; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                <span class="font-mono" style="color:var(--text-accent);">IP: ${dev.ip}</span>
+                <span class="tag tag-blue" style="font-size:10px;">Port ${dev.port} Açık</span>
+              </div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:3px;">${matchLabel}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <select id="scan-assign-m-${idx}" class="form-control" style="width:160px; font-size:11.5px; padding:3px 6px;">
+                <option value="">-- Tezgâh Eşleştir --</option>
+                ${machineOptionsHtml}
+              </select>
+              <button class="btn btn-secondary btn-sm" onclick="saveDiscoveredMachine('${dev.ip}', ${dev.port}, 'scan-assign-m-${idx}')" style="padding:4px 10px; font-size:11px;">
+                💾 Kaydet
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  } catch (err) {
+    showToast('Ağ tarama hatası: ' + err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+};
+
+window.saveDiscoveredMachine = async function(ip, port, selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel || !sel.value) {
+    showToast('Lütfen IP adresinin atanacağı tezgahı listeden seçin.', 'warning');
+    return;
+  }
+  const machineId = parseInt(sel.value);
+  const machine = State.machines.find(m => m.id === machineId);
+  if (!machine) return;
+
+  machine.ip = ip;
+  machine.port = port;
+
+  try {
+    await window.electronAPI.upsertRecord('machines', machine.id, machine);
+    showToast(`✓ ${machine.numarasi} IP adresi ${ip}:${port} olarak güncellendi ve kaydedildi.`, 'success');
+  } catch (e) {
+    showToast('Kaydetme hatası: ' + e.message, 'error');
   }
 };
 

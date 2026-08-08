@@ -1137,6 +1137,104 @@ ipcMain.handle('ping-tcp-port', async (event, { host, port, timeoutMs = 2500 }) 
   });
 });
 
+// Network-wide FANUC FOCAS CNC Scanner (Auto-detects local subnets or accepts custom VLAN ranges)
+ipcMain.handle('scan-focas-network', async (event, options = {}) => {
+  try {
+    requireSession(event, ['admin', 'technician']);
+    const net = require('net');
+    const os = require('os');
+
+    const port = parseInt(options.port) || 8193;
+    const timeoutMs = Math.min(1000, Math.max(100, parseInt(options.timeoutMs) || 350));
+
+    // Auto-detect local IPv4 subnets
+    const localSubnets = [];
+    const interfaces = os.networkInterfaces();
+    for (const devName in interfaces) {
+      const iface = interfaces[devName];
+      for (const alias of iface) {
+        if (alias.family === 'IPv4' && !alias.internal) {
+          const parts = alias.address.split('.');
+          if (parts.length === 4) {
+            localSubnets.push({
+              ip: alias.address,
+              subnetPrefix: `${parts[0]}.${parts[1]}.${parts[2]}`,
+              netmask: alias.netmask,
+              name: devName
+            });
+          }
+        }
+      }
+    }
+
+    // Determine target IP list
+    let targetIps = [];
+    let customSubnet = String(options.subnet || '').trim();
+
+    if (customSubnet) {
+      let prefix = customSubnet.replace(/\.0\/24$/, '').replace(/\.1-254$/, '').replace(/\.$/, '');
+      if (/^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(prefix)) {
+        for (let i = 1; i <= 254; i++) {
+          targetIps.push(`${prefix}.${i}`);
+        }
+      } else if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(customSubnet)) {
+        targetIps.push(customSubnet);
+      }
+    } else if (localSubnets.length > 0) {
+      const prefix = localSubnets[0].subnetPrefix;
+      for (let i = 1; i <= 254; i++) {
+        targetIps.push(`${prefix}.${i}`);
+      }
+    } else {
+      for (let i = 1; i <= 254; i++) {
+        targetIps.push(`192.168.1.${i}`);
+      }
+    }
+
+    // Probe IP asynchronously
+    const probeIp = (ip) => new Promise((resolve) => {
+      const socket = new net.Socket();
+      let status = false;
+
+      socket.setTimeout(timeoutMs);
+      socket.on('connect', () => {
+        status = true;
+        socket.destroy();
+      });
+      socket.on('timeout', () => {
+        socket.destroy();
+      });
+      socket.on('error', () => {
+        socket.destroy();
+      });
+      socket.on('close', () => {
+        resolve({ ip, port, open: status });
+      });
+
+      socket.connect(port, ip);
+    });
+
+    const results = [];
+    const BATCH_SIZE = 40;
+    for (let i = 0; i < targetIps.length; i += BATCH_SIZE) {
+      const batch = targetIps.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.all(batch.map(ip => probeIp(ip)));
+      for (const res of batchResults) {
+        if (res.open) results.push(res);
+      }
+    }
+
+    return {
+      ok: true,
+      scannedCount: targetIps.length,
+      detectedSubnets: localSubnets,
+      foundDevices: results
+    };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
 
 
 // Open external (with Protocol and Safe Path Validation)

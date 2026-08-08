@@ -153,3 +153,17 @@ test('every declared inline UI action is present in the delegated allowlist', ()
   assert.deepEqual([...missing], []);
   for (const action of intentionallyBlocked) assert.equal(allowed.has(action), false);
 });
+
+test('backup listing is independent from PDF rendering input', () => {
+  const backupStart = main.indexOf("ipcMain.handle('get-backups-list'");
+  const backupEnd = main.indexOf("ipcMain.handle('create-manual-backup'", backupStart);
+  const backupHandler = main.slice(backupStart, backupEnd);
+  assert.ok(backupStart >= 0 && backupEnd > backupStart);
+  assert.doesNotMatch(backupHandler, /htmlContent/);
+
+  const pdfStart = main.indexOf("ipcMain.handle('print-to-pdf'");
+  const pdfEnd = main.indexOf("ipcMain.handle('get-backups-list'", pdfStart);
+  const pdfHandler = main.slice(pdfStart, pdfEnd);
+  assert.match(pdfHandler, /requireSession\(event\)/);
+  assert.match(pdfHandler, /PDF içeriği boyut sınırını aşıyor/);
+});

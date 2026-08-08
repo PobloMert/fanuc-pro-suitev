@@ -55,6 +55,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkForUpdates: () => ipcRenderer.invoke('update-check'),
   applyStoragePolicy: (policy) => ipcRenderer.invoke('storage-policy-apply', policy),
   pingTcpPort: (host, port, timeoutMs) => ipcRenderer.invoke('ping-tcp-port', { host, port, timeoutMs }),
+  scanFocasNetwork: (options) => ipcRenderer.invoke('scan-focas-network', options),
   searchPDFText: (pdfPath, query) => ipcRenderer.invoke('search-pdf-text', pdfPath, query),
 
 

@@ -26,6 +26,7 @@
     connectCncScreenStream disconnectCncScreenStream switchBatteryTab uploadParamFile clearParamInput
     filterDiffMode navigateTroubleshootNode switchIOTab switchBackupTab switchBuilderTab switchLimitTab
     switchParamTab switchSpindleTab switchMachine viewProgramCode setFssbSimulationMode onFlowchartNodeClick onFssbNodeClick clearActiveDiagnostic loginSelectUser loginSubmitPin loginBack closeSpotlight closeNotifPanel
+    showFocasScannerModal runFocasScanner saveDiscoveredMachine
   `.trim().split(/\s+/));
 
   function splitTopLevel(source, separator) {
