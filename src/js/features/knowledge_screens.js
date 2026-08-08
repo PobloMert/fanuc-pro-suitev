@@ -40,9 +40,6 @@ function renderLibrary() {
       </div>
     </div>
     <div class="page-body">
-      <!-- Interactive PMC Signal & Ladder Simulator -->
-      ${window.renderPmcInteractiveExplorer ? window.renderPmcInteractiveExplorer() : ''}
-
       <!-- Hardware & Drive Replacement Field Manual Card -->
       <div class="card glass-card mb-4" style="padding:20px;">
         <div style="font-weight:750; font-size:15px; color:var(--text-primary); margin-bottom:10px; display:flex; align-items:center; gap:8px;">
