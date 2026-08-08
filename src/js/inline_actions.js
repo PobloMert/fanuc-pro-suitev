@@ -28,6 +28,7 @@
     switchParamTab switchSpindleTab switchMachine viewProgramCode setFssbSimulationMode onFlowchartNodeClick onFssbNodeClick clearActiveDiagnostic loginSelectUser loginSubmitPin loginBack closeSpotlight closeNotifPanel
     showFocasScannerModal runFocasScanner saveDiscoveredMachine exportScannerResultsCSV autoCreateMachineFromScan
     runOfflineRootCauseAnalysis selectOfflinePreset printOfflineDiagnosticPDF
+    runKeepRelayDiffComparison loadDefaultKeepRelayDiff exportKeepRelayDiffPDF exportKeepRelayDiffCSV filterKeepRelayDiffRows filterKeepRelayDiffMode uploadKeepRelayFile clearKeepRelayInput
   `.trim().split(/\s+/));
 
   function splitTopLevel(source, separator) {

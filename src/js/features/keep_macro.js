@@ -34,8 +34,90 @@ function renderKeepRelays() {
         </select>
       </div>
     </div>
-    <div class="page-body" style="padding:0">
+    <div class="page-body" style="padding:16px">
+      <!-- Keep Relay Diff Engine Card -->
+      <div id="kr-diff-section" class="card glass-card mb-4" style="padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <div style="font-weight:750; font-size:15px; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+              <span>🔌 Keep Relay Karşılaştırma & Side-by-Side Diff Engine</span>
+              <span class="tag tag-blue" style="font-size:10px;">PMC K00 - K15 Karşılaştırma</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
+              İki ayrı Keep Relay yedeğini yan yana kıyaslayarak güvenlik kilitlerindeki (K00.0, K00.1, K00.7) ve opsiyon bitlerindeki değişiklikleri tespit edin.
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="runKeepRelayDiffComparison()">⚡ Farkları Analiz Et</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadDefaultKeepRelayDiff()">🔄 Örnek Veri Yükle</button>
+          </div>
+        </div>
+
+        <!-- Side-by-Side Textarea Inputs -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+          <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-weight:700; font-size:12px; color:var(--text-accent);">📋 Yedek A (Referans / Orijinal)</span>
+              <button class="btn btn-ghost btn-sm" onclick="clearKeepRelayInput('a')">🗑️</button>
+            </div>
+            <textarea id="kr-file-a" class="form-control font-mono" rows="5" style="font-size:11px; background:#0b0f19; color:#34d399; resize:vertical;" placeholder="K00 = 00000000 veya K00.0 = 0...">K00 = 00000000
+K01 = 00000000
+K02 = 00000000</textarea>
+          </div>
+
+          <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-weight:700; font-size:12px; color:var(--amber);">📋 Yedek B (Yeni / Mevcut Ayarlar)</span>
+              <button class="btn btn-ghost btn-sm" onclick="clearKeepRelayInput('b')">🗑️</button>
+            </div>
+            <textarea id="kr-file-b" class="form-control font-mono" rows="5" style="font-size:11px; background:#0b0f19; color:#fbbf24; resize:vertical;" placeholder="K00 = 00000011 veya K00.0 = 1...">K00 = 00000011
+K01 = 00000100
+K02 = 00000000</textarea>
+          </div>
+        </div>
+
+        <!-- KPI Summary Cards -->
+        <div id="kr-diff-kpis" style="display:none; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+          <div style="background:var(--bg-card2); border:1px solid var(--border); padding:10px 14px; border-radius:var(--radius-md);">
+            <div id="kr-kpi-changed" style="font-size:20px; font-weight:800; color:#fbbf24;">0</div>
+            <div style="font-size:11px; color:var(--text-secondary);">Değişen Bit Sayısı</div>
+          </div>
+          <div style="background:var(--bg-card2); border:1px solid var(--border); padding:10px 14px; border-radius:var(--radius-md);">
+            <div id="kr-kpi-critical" style="font-size:20px; font-weight:800; color:#f87171;">0</div>
+            <div style="font-size:11px; color:var(--text-secondary);">Kritik Emniyet Uyarısı</div>
+          </div>
+          <div style="background:var(--bg-card2); border:1px solid var(--border); padding:10px 14px; border-radius:var(--radius-md);">
+            <div id="kr-kpi-total" style="font-size:20px; font-weight:800; color:#34d399;">0</div>
+            <div style="font-size:11px; color:var(--text-secondary);">Toplam İncelenen Adres</div>
+          </div>
+        </div>
+
+        <!-- Results Table -->
+        <div id="kr-diff-results" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-weight:700; font-size:13px; color:var(--text-primary);">Side-by-Side Keep Relay Farkları:</span>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-secondary btn-sm" onclick="exportKeepRelayDiffPDF()" style="font-size:11px;">🖨️ PDF Rapor</button>
+              <button class="btn btn-secondary btn-sm" onclick="exportKeepRelayDiffCSV()" style="font-size:11px;">📊 CSV İndir</button>
+            </div>
+          </div>
+          <table class="data-table" style="font-size:11.5px;">
+            <thead>
+              <tr>
+                <th style="width:110px;">Keep Relay</th>
+                <th>Açıklama & İşlev</th>
+                <th style="width:140px; background:rgba(16,185,129,0.08);">Yedek A (Referans)</th>
+                <th style="width:140px; background:rgba(245,158,11,0.08);">Yedek B (Yeni)</th>
+                <th style="width:100px;">Durum</th>
+              </tr>
+            </thead>
+            <tbody id="kr-diff-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div style="overflow-y:auto; flex:1">
+        <div style="font-weight:700; font-size:13px; margin-bottom:8px; color:var(--text-primary);">📚 Keep Relay & Timer El Kitabı Kataloğu</div>
         <table class="data-table">
           <thead>
             <tr>
@@ -356,9 +438,143 @@ window.evaluateMacro = function() {
   }
 };
 
-// ════════════════════════════════════════════════════════════════
-//  RS232 / DNC SERİ HABERLEŞME SİMÜLATÖRÜ & KILAVUZU
+let lastKeepRelayDiffs = [];
 
+window.clearKeepRelayInput = function(type) {
+  const el = document.getElementById(`kr-file-${type}`);
+  if (el) el.value = '';
+  showToast(`Yedek ${type.toUpperCase()} temizlendi.`, 'info');
+};
+
+window.loadDefaultKeepRelayDiff = function() {
+  const elA = document.getElementById('kr-file-a');
+  const elB = document.getElementById('kr-file-b');
+  if (elA && elB) {
+    elA.value = "K00 = 00000000\nK01 = 00000000\nK02 = 00000000";
+    elB.value = "K00 = 00000011\nK01 = 00000100\nK02 = 00000000";
+    runKeepRelayDiffComparison();
+    showToast('Örnek Keep Relay yedeği yüklendi.', 'success');
+  }
+};
+
+window.runKeepRelayDiffComparison = function() {
+  const textA = document.getElementById('kr-file-a')?.value || '';
+  const textB = document.getElementById('kr-file-b')?.value || '';
+  const resultsCard = document.getElementById('kr-diff-results');
+  const kpisCard = document.getElementById('kr-diff-kpis');
+  const tbody = document.getElementById('kr-diff-tbody');
+
+  if (!resultsCard || !tbody) return;
+
+  const parseKRM = (txt) => {
+    const map = {};
+    const lines = txt.split('\n');
+    lines.forEach(l => {
+      const clean = l.replace(/Keep/gi, '').replace(/=/g, ' ').trim();
+      const parts = clean.split(/\s+/);
+      if (parts.length >= 2) {
+        const key = parts[0].toUpperCase();
+        map[key] = parts[1].trim();
+      }
+    });
+    return map;
+  };
+
+  const mapA = parseKRM(textA);
+  const mapB = parseKRM(textB);
+  const allKeys = Array.from(new Set([...Object.keys(mapA), ...Object.keys(mapB)])).sort();
+
+  const diffs = [];
+  let changedCount = 0;
+  let criticalCount = 0;
+
+  allKeys.forEach(key => {
+    const valA = mapA[key];
+    const valB = mapB[key];
+
+    if (valA !== valB) {
+      changedCount++;
+      const vA = valA || '────────';
+      const vB = valB || '────────';
+      const isCritical = key.includes('K00') || key.includes('K01') || key.includes('K00.0') || key.includes('K00.1');
+      if (isCritical) criticalCount++;
+
+      const krInfo = (State.keep_relays || []).find(k => k.id === key || k.id.startsWith(key));
+      const desc = krInfo ? `${krInfo.name} - ${krInfo.description}` : 'Standart PMC Keep Relay Adresi';
+
+      diffs.push({
+        key,
+        desc,
+        valA: vA,
+        valB: vB,
+        isCritical,
+        status: !valA ? 'Eklendi' : (!valB ? 'Silindi' : 'Değişti'),
+        colorClass: !valA ? 'tag-green' : (!valB ? 'tag-red' : 'tag-orange')
+      });
+    }
+  });
+
+  lastKeepRelayDiffs = diffs;
+
+  if (kpisCard) {
+    kpisCard.style.display = 'grid';
+    document.getElementById('kr-kpi-changed').textContent = changedCount;
+    document.getElementById('kr-kpi-critical').textContent = criticalCount;
+    document.getElementById('kr-kpi-total').textContent = allKeys.length;
+  }
+
+  resultsCard.style.display = 'block';
+
+  if (!diffs.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--green);">✔️ İki yedeğin Keep Relay değerleri %100 birebir aynıdır.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = diffs.map(d => `
+    <tr class="${d.isCritical ? 'diff-critical' : ''}">
+      <td>
+        <strong class="font-mono" style="color:var(--text-accent); font-size:12px;">${escapeHTML(d.key)}</strong>
+        ${d.isCritical ? '<span style="font-size:9px; background:rgba(239,68,68,0.18); color:#f87171; padding:1px 4px; border-radius:3px; margin-left:4px">KRİTİK EMNİYET</span>' : ''}
+      </td>
+      <td>
+        <div style="font-size:12px; color:var(--text-primary); font-weight:600;">${escapeHTML(d.desc)}</div>
+      </td>
+      <td style="background:rgba(16,185,129,0.04)"><span class="font-mono" style="color:#34d399; font-size:12px;">${escapeHTML(d.valA)}</span></td>
+      <td style="background:rgba(245,158,11,0.04)"><span class="font-mono" style="color:#fbbf24; font-size:12px; font-weight:bold;">${escapeHTML(d.valB)}</span></td>
+      <td><span class="tag ${d.colorClass}">${d.status}</span></td>
+    </tr>
+  `).join('');
+};
+
+window.exportKeepRelayDiffCSV = function() {
+  if (!lastKeepRelayDiffs.length) {
+    showToast('Dışa aktarılacak Keep Relay farkı bulunamadı.', 'warning');
+    return;
+  }
+  let csv = '\uFEFF';
+  csv += 'Keep Relay Adres;Açıklama;Yedek A (Referans);Yedek B (Yeni);Durum;Kritik Sinyal\n';
+  lastKeepRelayDiffs.forEach(d => {
+    csv += `${d.key};"${d.desc.replace(/;/g, ',')}";"${d.valA}";"${d.valB}";"${d.status}";"${d.isCritical ? 'KRİTİK' : 'Normal'}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `fanuc-keeprelay-diff-${new Date().toISOString().slice(0,10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('Keep Relay fark raporu CSV olarak indirildi (Excel Uyumlu) ✓', 'success');
+};
+
+window.exportKeepRelayDiffPDF = function() {
+  if (!lastKeepRelayDiffs.length) {
+    showToast('Dışa aktarılacak Keep Relay farkı bulunamadı.', 'warning');
+    return;
+  }
+  window.print();
+};
 
     api = { renderKeepRelays, renderMacroVariables };
     return api;
