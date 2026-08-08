@@ -14,6 +14,10 @@ const index = fs.readFileSync(path.join(root, 'src', 'index.html'), 'utf8');
 const intro = fs.readFileSync(path.join(root, 'src', 'js', 'intro.js'), 'utf8');
 const feedback = fs.readFileSync(path.join(root, 'src', 'js', 'ux_feedback.js'), 'utf8');
 const mainStyle = fs.readFileSync(path.join(root, 'src', 'styles', 'main.css'), 'utf8');
+const fanucCenter = fs.readFileSync(path.join(root, 'src', 'js', 'fanuc_center.js'), 'utf8');
+const fanucCenterStyle = fs.readFileSync(path.join(root, 'src', 'styles', 'fanuc-center.css'), 'utf8');
+const operationsDashboard = fs.readFileSync(path.join(root, 'src', 'js', 'operations_dashboard.js'), 'utf8');
+const spotlight = fs.readFileSync(path.join(root, 'src', 'js', 'ui', 'spotlight.js'), 'utf8');
 
 test('visual system provides motion accessibility modes', () => {
   assert.match(visual, /prefers-reduced-motion:reduce/);
@@ -62,4 +66,34 @@ test('feedback system provides actionable notifications, guided empty states and
   assert.match(mainStyle, /\.empty-state-guided/);
   assert.match(mainStyle, /\.page-loading-state/);
   assert.match(mainStyle, /\.toast-help/);
+});
+
+test('FANUC center integrates machine profiles, diagnostics, parameters, backups and LED guidance', () => {
+  assert.match(index, /data-page="fanuc_center"/);
+  assert.match(renderer, /FanucCenterBridge/);
+  assert.match(fanucCenter, /FANUC Bakım & Teşhis Merkezi/);
+  assert.match(fanucCenter, /Teşhis Senaryoları/);
+  assert.match(fanucCenter, /param_comparator/);
+  assert.match(fanucCenter, /backup_wizard/);
+  assert.match(fanucCenter, /Sürücü LED ve alarm rehberi/);
+  assert.match(fanucCenter, /Model kılavuzuyla doğrulayın/);
+  assert.match(fanucCenter, /saveMachineProfile/);
+  assert.match(fanucCenterStyle, /\.fanuc-scenario-layout/);
+  assert.match(fanucCenterStyle, /\.fanuc-led-grid/);
+});
+
+test('module inventory, universal search and operations dashboard are integrated as separate modules', () => {
+  assert.match(renderer, /saveModuleInventory/);
+  assert.match(fanucCenter, /moduleInventory/);
+  assert.match(fanucCenter, /ELEKTRİK PANO & MODÜL ENVANTERİ/);
+  assert.match(fanucCenter, /data-module-edit/);
+  assert.match(spotlight, /Pano Modülü/);
+  assert.match(spotlight, /FanucCenterCatalog/);
+  assert.match(spotlight, /backup_logs/);
+  assert.match(operationsDashboard, /GÜNLÜK OPERASYON ÖZETİ/);
+  assert.match(operationsDashboard, /backupRisk/);
+  assert.match(operationsDashboard, /missingInventory/);
+  assert.match(index, /js\/operations_dashboard\.js/);
+  assert.match(fanucCenterStyle, /\.ops-priority-grid/);
+  assert.match(fanucCenterStyle, /\.fanuc-inventory-table/);
 });

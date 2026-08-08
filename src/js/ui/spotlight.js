@@ -36,6 +36,7 @@ export function spotlightSearch(query) {
   }
 
   const results = [];
+  const includes = (...values) => values.some(value => String(value || '').toLocaleLowerCase('tr-TR').includes(q));
 
   // Alarms
   State.alarms.filter(a => (a.code || '').toLowerCase().includes(q) || (a.title || '').toLowerCase().includes(q)).slice(0, 4).forEach(a => {
@@ -46,9 +47,12 @@ export function spotlightSearch(query) {
     results.push({ icon: '⚙️', title: 'P' + (p.number || p.no) + ' — ' + (p.description || p.name || ''), sub: p.group || p.category || '', type: 'Parametre', action: () => window.navigate && window.navigate('parameters') });
   });
   // Machines
-  State.machines.filter(m => (m.name || '').toLowerCase().includes(q) || (m.serial || '').toLowerCase().includes(q)).slice(0, 3).forEach(m => {
-    results.push({ icon: '🏭', title: m.name, sub: m.model || '', type: 'Tezgah', action: () => window.navigate && window.navigate('machines') });
+  State.machines.filter(m => includes(m.name, m.numarasi, m.serial, m.bolum, m.tip, m.fanucProfile?.series, m.fanucProfile?.serial, m.fanucProfile?.modules)).slice(0, 4).forEach(m => {
+    results.push({ icon: '🏭', title: m.numarasi || m.name, sub: `${m.fanucProfile?.series || m.tip || 'Tezgâh'} · ${m.bolum || ''}`, type: 'Tezgâh', action: () => { window.ActiveFanucMachineId = m.id; window.navigate && window.navigate('fanuc_center'); } });
   });
+  State.machines.flatMap(m => (m.moduleInventory || []).map(module => ({ machine:m, module })))
+    .filter(({machine,module}) => includes(module.name, module.model, module.serial, module.category, module.location, module.axis, machine.numarasi))
+    .slice(0, 5).forEach(({machine,module}) => results.push({ icon:'▦', title:`${module.model} — ${module.name}`, sub:`${machine.numarasi || machine.name} · ${module.location || module.axis || module.category}`, type:'Pano Modülü', action:() => { window.ActiveFanucMachineId = machine.id; window.navigate && window.navigate('fanuc_center'); } }));
   // Maintenance
   State.maintenances.filter(r => (r.description || '').toLowerCase().includes(q) || (r.machine_name || '').toLowerCase().includes(q)).slice(0, 3).forEach(r => {
     results.push({ icon: '🔧', title: r.description || 'Bakım', sub: (r.machine_name || '') + ' — ' + (r.date || ''), type: 'Bakım', action: () => window.navigate && window.navigate('maintenance') });
@@ -64,6 +68,15 @@ export function spotlightSearch(query) {
   // Keep relays
   State.keep_relays.filter(r => (r.address || r.id || '').toLowerCase().includes(q) || (r.description || '').toLowerCase().includes(q)).slice(0, 2).forEach(r => {
     results.push({ icon: '🔌', title: (r.address || r.id) + ' — ' + (r.description || r.name || ''), sub: '', type: 'Keep Relay', action: () => window.navigate && window.navigate('keep_relays') });
+  });
+  State.backup_logs.filter(item => includes(item.tip, item.type, item.aciklama, item.description, item.dosya, item.file, item.machine, item.machine_name)).slice(0, 3).forEach(item => {
+    results.push({ icon:'↥', title:item.dosya || item.file || item.tip || item.type || 'Yedek kaydı', sub:`${item.machine || item.machine_name || ''} · ${item.tarih || item.date || ''}`, type:'Yedek', action:() => window.navigate && window.navigate('backup_tracker') });
+  });
+  (window.FanucCenterCatalog?.scenarios || []).filter(item => includes(item.title, item.category, ...(item.checks || []))).slice(0,3).forEach(item => {
+    results.push({ icon:item.icon || '◇', title:item.title, sub:`${item.category} teşhis senaryosu`, type:'FANUC Teşhis', action:() => window.navigate && window.navigate('fanuc_center') });
+  });
+  (window.FanucCenterCatalog?.ledGuide || []).filter(item => includes(item.code, item.module, item.state, item.checks)).slice(0,3).forEach(item => {
+    results.push({ icon:'▣', title:`LED ${item.code} — ${item.state}`, sub:`${item.module} · Model kılavuzuyla doğrulayın`, type:'LED Kodu', action:() => window.navigate && window.navigate('fanuc_center') });
   });
 
   if (!results.length) {

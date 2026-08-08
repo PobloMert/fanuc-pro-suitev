@@ -11,7 +11,7 @@
     addNewUser changeMyPin chooseBackupDirectory exportSafeConfiguration importSafeConfiguration resetSafeSettings
     saveConnectionProfile applyConnectionProfile deleteConnectionProfile openDataDir exportAlarmsCSV
     exportMaintenanceCSV startDatabaseSync saveKnowledgeNote exportAIConversationReport quickAsk sendAIMessage
-    showNewMachineModal showMachineDetailsModal printMachineCard deleteMachine createNewMachine
+    showNewMachineModal showMachineDetailsModal printMachineCard deleteMachine createNewMachine openFanucCenter
     printMaintenanceReport showNewMaintModal deleteMaint createNewMaint showNewBattModal showNewFanModal
     resetBatteryLife deleteBattery resetFanHours deleteFan createNewBattery createNewFan showNcDetail
     askAIAboutNc showPmcDetail askAIAboutPmc toggleGeneratorFields generateGcode copyGcodeToClipboard

@@ -702,6 +702,7 @@ window.navigate = function navigate(page, extraData = null) {
     nc_codes:    renderNcCodes,
     pmc_signals: renderPmcSignals,
     fssb_topology: renderFssbTopology,
+    fanuc_center: () => window.renderFanucCenter ? window.renderFanucCenter(extraData) : createPage('fanuc_center'),
     ai:          renderAI,
     settings:    renderSettings,
     pdf_viewer:  () => renderPdfViewer(extraData),
@@ -1402,6 +1403,8 @@ function renderDashboard() {
       </div>
     </div>
     <div class="page-body">
+
+      ${window.renderOperationsBrief ? window.renderOperationsBrief(State) : ''}
 
       <!-- Main Stats -->
       <div class="stats-grid">
@@ -2813,10 +2816,10 @@ function renderSettings() {
           <div class="card mb-4">
             <div class="card-title mb-3" style="font-size:14px; display:flex; align-items:center; justify-content:space-between">
               <span>🔄 Sürüm & Kütüphane Güncelleme Paneli</span>
-              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.3.0)</span>
+              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.4.0)</span>
             </div>
             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px" id="updater-status-text">
-              Yüklü sürüm: v1.3.0. GitHub üzerinden istediğiniz zaman manuel güncelleme denetimi yapabilirsiniz.
+              Yüklü sürüm: v1.4.0. GitHub üzerinden istediğiniz zaman manuel güncelleme denetimi yapabilirsiniz.
             </div>
             <div id="updater-last-checked" style="font-size:11px; color:var(--text-muted); margin-bottom:10px">Henüz manuel kontrol yapılmadı.</div>
             <div class="flex gap-2">
@@ -3023,7 +3026,7 @@ function renderSettings() {
       <!-- App Settings -->
       <div class="card mb-4">
         <div class="card-title mb-4" style="font-size:14px">📁 Uygulama</div>
-        <div class="flex gap-2 mb-3"><span class="tag tag-blue">Sürüm v${escapeHTML(window.CURRENT_APP_VERSION || '1.3.0')}</span><span class="tag tag-red">KALICI SALT OKUNUR</span></div>
+        <div class="flex gap-2 mb-3"><span class="tag tag-blue">Sürüm v${escapeHTML(window.CURRENT_APP_VERSION || '1.4.0')}</span><span class="tag tag-red">KALICI SALT OKUNUR</span></div>
         <p style="font-size:11px;color:var(--text-secondary)">Uygulama CNC programı etkinleştiremez, silemez veya yükleyemez; CNC parametresi yazamaz. İzleme ve yerel analiz amacıyla tasarlanmıştır.</p>
         <div class="form-group">
           <label class="form-label">Veri Dizini</label>
@@ -3970,6 +3973,23 @@ async function saveJSONDatabase(fileName, key, data) {
 }
 
 async function saveMachines() { return await saveJSONDatabase('machines.json', 'machines', State.machines); }
+window.FanucCenterBridge = Object.freeze({
+  getState: () => State,
+  saveMachineProfile: async (machineId, profile) => {
+    const machine = State.machines.find(item => item.id === Number(machineId));
+    if (!machine) return { ok: false, error: 'Tezgâh bulunamadı.' };
+    machine.fanucProfile = { ...(machine.fanucProfile || {}), ...profile, updatedAt: new Date().toISOString() };
+    await saveMachines();
+    return { ok: true };
+  },
+  saveModuleInventory: async (machineId, inventory) => {
+    const machine = State.machines.find(item => item.id === Number(machineId));
+    if (!machine) return { ok: false, error: 'Tezgâh bulunamadı.' };
+    machine.moduleInventory = Array.isArray(inventory) ? inventory : [];
+    await saveMachines();
+    return { ok: true };
+  }
+});
 async function saveMaintenances() { return await saveJSONDatabase('maintenances.json', 'maintenances', State.maintenances); }
 async function saveBatteries() { return await saveJSONDatabase('batteries.json', 'batteries', State.batteries); }
 async function saveFans() { return await saveJSONDatabase('fans.json', 'fans', State.fans); }
@@ -4208,6 +4228,7 @@ window.showMachineDetailsModal = function(id) {
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="printMachineCard(${m.id})">🖨️ PDF Kartı</button>
       <button class="btn btn-ghost" onclick="closeModal('mach-details')">Kapat</button>
+      <button class="btn btn-secondary" onclick="openFanucCenter(${m.id})">FANUC Merkezini Aç</button>
       <button class="btn btn-primary" onclick="closeModal('mach-details'); navigate('maintenance')">🔧 Bakım Defterine Git</button>
     </div>
   `, 'lg');
@@ -5430,6 +5451,7 @@ function showModal(id, content, size = 'md') {
   }
   requestAnimationFrame(() => overlay.classList.add('open'));
 }
+window.showModal = showModal;
 
 window.closeModal = function(id) {
   const overlay = document.getElementById('modal-' + id);
