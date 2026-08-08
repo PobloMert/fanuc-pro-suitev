@@ -50,12 +50,7 @@
 
         const jsonStr = JSON.stringify(bundle, null, 2);
 
-        // Try writing directly to local backup directory
-        if (window.electronAPI && window.electronAPI.writeFile) {
-          const fileName = `FANUC_AUTO_DATABASE.json`;
-          const localBackupPath = `${State.appDataDir || '.'}/backups/${fileName}`;
-          await window.electronAPI.writeFile(localBackupPath, jsonStr).catch(() => {});
-        }
+        // Direct HTTPS API Push to Google Drive Webhook (100% Single File Cloud Sync)
 
         // Direct HTTPS API Push to Google Drive Webhook
         if (syncConfig.webAppUrl) {
