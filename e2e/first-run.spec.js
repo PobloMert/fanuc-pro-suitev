@@ -9,7 +9,7 @@ test('first-run administrator setup opens the protected dashboard', async () => 
   const dataDir = path.join(projectRoot, '.e2e-data');
   fs.rmSync(dataDir, { recursive: true, force: true });
   const application = await electron.launch({
-    args: [projectRoot, '--disable-gpu', '--in-process-gpu', '--disable-gpu-compositing'],
+    args: [projectRoot, '--disable-gpu', '--disable-gpu-compositing'],
     env: { ...process.env, FANUC_SIMULATION: '1', FANUC_E2E: '1', FANUC_DATA_DIR: dataDir }
   });
   try {
@@ -21,6 +21,21 @@ test('first-run administrator setup opens the protected dashboard', async () => 
     await page.locator('#bootstrap-admin-submit').click();
     await expect(page.locator('#login-overlay')).toHaveClass(/hidden/);
     await expect(page.locator('#user-avatar-name')).toContainText('Test Yöneticisi');
+    await page.locator('#nav-machines').click();
+    await expect(page.locator('#page-machines')).toBeVisible();
+    await expect(page.locator('#page-machines tbody tr[data-machine-id]').first()).toBeVisible();
+    await page.locator('#page-machines [data-machine-action="details"]').first().click();
+    await expect(page.locator('#modal-machine-workspace-detail')).toHaveClass(/open/);
+    await page.locator('#modal-machine-workspace-detail [data-machine-detail-tab="backup"]').click();
+    await expect(page.locator('#modal-machine-workspace-detail .machine-detail-content')).toContainText('Yedekleme geçmişi');
+    await page.locator('#modal-machine-workspace-detail').getByRole('button', { name: 'Kapat', exact: true }).click();
+    await page.locator('#machine-workspace-search').fill('__eslesmeyen_tezgah__');
+    await expect(page.locator('#machine-filter-empty')).toBeVisible();
+    await page.locator('#machine-filter-empty [data-machine-action="clear-filters"]').click();
+    await expect(page.locator('#page-machines tbody tr[data-machine-id]').first()).toBeVisible();
+    await page.locator('#nav-dashboard').click();
+    await page.locator('[data-ops-nav="fanuc_center"]').first().click();
+    await expect(page.locator('#page-fanuc_center')).toBeVisible();
   } finally {
     await application.close();
     fs.rmSync(dataDir, { recursive: true, force: true });

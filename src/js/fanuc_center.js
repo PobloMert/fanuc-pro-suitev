@@ -41,6 +41,12 @@
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' })[char]);
   const state = () => window.FanucCenterBridge?.getState?.() || window.State || {};
+  const canEdit = () => window.FanucCenterBridge?.canEdit?.() === true;
+  const denyEdit = () => window.MTBUX?.notify({
+    type: 'warning',
+    title: 'Düzenleme yetkisi gerekli',
+    message: 'FANUC profilini ve modül envanterini değiştirmek için düzenleme yetkisine sahip bir kullanıcıyla giriş yapın.'
+  });
   const selectedMachine = () => {
     const machines = state().machines || [];
     const stored = Number(window.ActiveFanucMachineId);
@@ -63,11 +69,15 @@
     const records = machineRecords(machine);
     const lastMaint = [...records.maint].sort((a,b) => Number(b.id)-Number(a.id))[0];
     const lastBackup = [...records.backups].sort((a,b) => String(b.tarih || b.date || '').localeCompare(String(a.tarih || a.date || '')))[0];
-    const completeness = ['series','software','serial','axes','spindles','modules'].filter(key => profile[key]).length;
+    const profileFields = [
+      ['series', 'kontrol serisi'], ['software', 'yazılım sürümü'], ['serial', 'seri numarası'],
+      ['axes', 'eksen sayısı'], ['spindles', 'spindle sayısı'], ['modules', 'modül bilgisi']
+    ];
+    const missingProfileFields = profileFields.filter(([key]) => !profile[key]).map(([, label]) => label);
     return `
       <section class="fanuc-hero">
         <div><span class="fanuc-eyebrow">SALT OKUNUR TEKNİK PROFİL</span><h2>${esc(machine.numarasi || machine.name)}</h2><p>${esc(machine.bolum || 'Bölüm belirtilmemiş')} · ${esc(machine.tip || 'Tezgâh tipi belirtilmemiş')}</p></div>
-        <div class="fanuc-health-ring" style="--score:${Math.round(completeness / 6 * 100)}"><strong>%${Math.round(completeness / 6 * 100)}</strong><span>profil doluluğu</span></div>
+        <div class="fanuc-profile-status"><strong>${missingProfileFields.length ? `${missingProfileFields.length} profil alanı eksik` : 'Profil bilgileri tamam'}</strong><span>${esc(missingProfileFields.length ? missingProfileFields.join(', ') : 'Kontrol ve donanım kimliği kayıtlı')}</span></div>
       </section>
       <div class="fanuc-kpi-grid">
         <article><span>Kontrol</span><strong>${esc(profile.series || 'Belirtilmedi')}</strong><small>${esc(profile.software || 'Yazılım sürümü yok')}</small></article>
@@ -76,7 +86,7 @@
         <article><span>Son yedek</span><strong>${esc(lastBackup?.tarih || lastBackup?.date || 'Kayıt yok')}</strong><small>${records.backups.length} takip kaydı</small></article>
       </div>
       <div class="fanuc-layout-two">
-        <article class="fanuc-panel"><div class="fanuc-panel-head"><div><span>DONANIM KİMLİĞİ</span><h3>FANUC teknik profil</h3></div><button class="btn btn-primary btn-sm" data-fanuc-action="edit-profile">Profili düzenle</button></div>
+        <article class="fanuc-panel"><div class="fanuc-panel-head"><div><span>DONANIM KİMLİĞİ</span><h3>FANUC teknik profil</h3></div>${canEdit() ? '<button class="btn btn-primary btn-sm" data-fanuc-action="edit-profile">Profili düzenle</button>' : '<span class="readonly-chip">Salt okunur</span>'}</div>
           <dl class="fanuc-spec-list"><div><dt>Seri numarası</dt><dd>${esc(profile.serial || '—')}</dd></div><div><dt>Kontrol serisi</dt><dd>${esc(profile.series || '—')}</dd></div><div><dt>CNC yazılımı</dt><dd>${esc(profile.software || '—')}</dd></div><div><dt>Modüller</dt><dd>${esc(profile.modules || '—')}</dd></div><div><dt>FSSB / I/O notu</dt><dd>${esc(profile.topology || '—')}</dd></div></dl>
         </article>
         <article class="fanuc-panel"><div class="fanuc-panel-head"><div><span>KAYIT ÖZETİ</span><h3>Tezgâha bağlı bilgiler</h3></div></div>
@@ -88,7 +98,8 @@
 
   function renderInventory(machine) {
     const inventory = machine?.moduleInventory || [];
-    return `<article class="fanuc-panel fanuc-inventory-panel"><div class="fanuc-panel-head"><div><span>ELEKTRİK PANO & MODÜL ENVANTERİ</span><h3>Takılı FANUC donanımları</h3></div><button class="btn btn-primary btn-sm" data-fanuc-action="add-module">Modül ekle</button></div>${inventory.length ? `<div class="fanuc-inventory-table"><div class="inventory-row inventory-head"><span>Modül</span><span>Model / Parça no</span><span>Konum</span><span>Bağlantı</span><span>İşlem</span></div>${inventory.map(item => `<div class="inventory-row"><span><i class="inventory-type">${esc(item.category || 'Modül')}</i><strong>${esc(item.name || 'Adsız modül')}</strong></span><span><strong>${esc(item.model || '—')}</strong><small>S/N: ${esc(item.serial || '—')}</small></span><span>${esc(item.location || '—')}</span><span>${esc(item.axis || '—')}</span><span><button class="btn btn-ghost btn-sm" data-module-edit="${esc(item.id)}">Düzenle</button><button class="btn btn-ghost btn-sm inventory-delete" data-module-delete="${esc(item.id)}">Sil</button></span></div>`).join('')}</div>` : `<div class="fanuc-inventory-empty"><span>▦</span><div><strong>Henüz modül eklenmedi</strong><p>PSM, SVM, SPM, I/O ünitesi ve diğer pano bileşenlerini kayıt altına alın.</p></div><button class="btn btn-secondary btn-sm" data-fanuc-action="add-module">İlk modülü ekle</button></div>`}</article>`;
+    const editControls = canEdit();
+    return `<article class="fanuc-panel fanuc-inventory-panel"><div class="fanuc-panel-head"><div><span>ELEKTRİK PANO & MODÜL ENVANTERİ</span><h3>Takılı FANUC donanımları</h3></div>${editControls ? '<button class="btn btn-primary btn-sm" data-fanuc-action="add-module">Modül ekle</button>' : '<span class="readonly-chip">Salt okunur</span>'}</div>${inventory.length ? `<div class="fanuc-inventory-table"><div class="inventory-row inventory-head"><span>Modül</span><span>Model / Parça no</span><span>Konum</span><span>Bağlantı</span>${editControls ? '<span>İşlem</span>' : ''}</div>${inventory.map(item => `<div class="inventory-row${editControls ? '' : ' readonly'}"><span><i class="inventory-type">${esc(item.category || 'Modül')}</i><strong>${esc(item.name || 'Adsız modül')}</strong></span><span><strong>${esc(item.model || '—')}</strong><small>S/N: ${esc(item.serial || '—')}</small></span><span>${esc(item.location || '—')}</span><span>${esc(item.axis || '—')}</span>${editControls ? `<span><button class="btn btn-ghost btn-sm" data-module-edit="${esc(item.id)}">Düzenle</button><button class="btn btn-ghost btn-sm inventory-delete" data-module-delete="${esc(item.id)}">Sil</button></span>` : ''}</div>`).join('')}</div>` : `<div class="fanuc-inventory-empty"><span>▦</span><div><strong>Henüz modül eklenmedi</strong><p>PSM, SVM, SPM, I/O ünitesi ve diğer pano bileşenlerini kayıt altına alın.</p></div>${editControls ? '<button class="btn btn-secondary btn-sm" data-fanuc-action="add-module">İlk modülü ekle</button>' : ''}</div>`}</article>`;
   }
 
   function renderScenarios() {
@@ -145,7 +156,7 @@
 
   window.renderFanucCenter = function() {
     const page = document.createElement('section');
-    page.className = 'page fanuc-center-page';
+    page.className = 'page active fanuc-center-page';
     page.id = 'page-fanuc_center';
     const machines = state().machines || [];
     if (!window.ActiveFanucMachineId && machines[0]) window.ActiveFanucMachineId = machines[0].id;
@@ -174,6 +185,7 @@
   }
 
   async function persistInventory(inventory, message) {
+    if (!canEdit()) return denyEdit();
     const result = await window.FanucCenterBridge.saveModuleInventory(selectedMachine()?.id, inventory);
     if (!result.ok) return window.MTBUX?.notify({ type:'error', message: result.error || 'Modül envanteri kaydedilemedi.' });
     window.closeModal?.('fanuc-module');
@@ -184,8 +196,10 @@
   document.addEventListener('change', event => {
     if (event.target.id === 'fanuc-machine-select') { window.ActiveFanucMachineId = Number(event.target.value); rerender(); }
   });
+  const applyLedSearch = window.MTBPerformance?.debounce?.(value => { ledQuery = value; rerender(); const input = document.getElementById('fanuc-led-search'); input?.focus(); input?.setSelectionRange(ledQuery.length, ledQuery.length); }, 180)
+    || (value => { ledQuery = value; rerender(); });
   document.addEventListener('input', event => {
-    if (event.target.id === 'fanuc-led-search') { ledQuery = event.target.value; rerender(); const input = document.getElementById('fanuc-led-search'); input?.focus(); input?.setSelectionRange(ledQuery.length, ledQuery.length); }
+    if (event.target.id === 'fanuc-led-search') applyLedSearch(event.target.value);
   });
   document.addEventListener('click', async event => {
     const tab = event.target.closest('[data-fanuc-tab]');
@@ -195,17 +209,19 @@
     const nav = event.target.closest('[data-fanuc-nav]');
     if (nav) { window.navigate?.(nav.dataset.fanucNav); return; }
     const action = event.target.closest('[data-fanuc-action]')?.dataset.fanucAction;
-    if (action === 'edit-profile') openProfileModal();
-    if (action === 'add-module') openModuleModal();
+    if (action === 'edit-profile') { if (!canEdit()) denyEdit(); else openProfileModal(); }
+    if (action === 'add-module') { if (!canEdit()) denyEdit(); else openModuleModal(); }
     if (action === 'close-profile') window.closeModal?.('fanuc-profile');
     if (action === 'close-module') window.closeModal?.('fanuc-module');
     if (action === 'save-profile') {
+      if (!canEdit()) return denyEdit();
       const profile = { series: document.getElementById('fp-series')?.value.trim(), software: document.getElementById('fp-software')?.value.trim(), serial: document.getElementById('fp-serial')?.value.trim(), axes: document.getElementById('fp-axes')?.value.trim(), spindles: document.getElementById('fp-spindles')?.value.trim(), modules: document.getElementById('fp-modules')?.value.trim(), topology: document.getElementById('fp-topology')?.value.trim(), notes: document.getElementById('fp-notes')?.value.trim() };
       const result = await window.FanucCenterBridge.saveMachineProfile(selectedMachine()?.id, profile);
       if (result.ok) { window.closeModal?.('fanuc-profile'); window.MTBUX?.notify({ type:'success', title:'FANUC profili güncellendi', message:'Tezgâhın kontrol, modül ve topoloji bilgileri kaydedildi.' }); rerender(); }
       else window.MTBUX?.notify({ type:'error', message: result.error || 'Profil kaydedilemedi.' });
     }
     if (action === 'save-module') {
+      if (!canEdit()) return denyEdit();
       const name = document.getElementById('fm-name')?.value.trim();
       const model = document.getElementById('fm-model')?.value.trim();
       if (!name || !model) return window.MTBUX?.notify({ type:'warning', title:'Eksik modül bilgisi', message:'Modül adı ve model/parça numarası zorunludur.' });
@@ -217,8 +233,9 @@
       await persistInventory(inventory, `${name} modülü tezgâh profiline kaydedildi.`);
     }
     const editId = event.target.closest('[data-module-edit]')?.dataset.moduleEdit;
-    if (editId) openModuleModal(editId);
+    if (editId) { if (!canEdit()) denyEdit(); else openModuleModal(editId); }
     const deleteId = event.target.closest('[data-module-delete]')?.dataset.moduleDelete;
+    if (deleteId && !canEdit()) return denyEdit();
     if (deleteId && window.confirm('Bu modül envanter kaydını silmek istediğinize emin misiniz?')) {
       const inventory = (selectedMachine()?.moduleInventory || []).filter(item => String(item.id) !== String(deleteId));
       await persistInventory(inventory, 'Modül envanter kaydı silindi.');

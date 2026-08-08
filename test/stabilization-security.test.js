@@ -34,10 +34,50 @@ test('first run creates a user-defined administrator with no distributed account
 });
 
 test('backups use versioned SHA-256 integrity and rollback recovery', () => {
-  assert.match(main, /schemaVersion: 2/);
+  assert.match(main, /schemaVersion: 3/);
   assert.match(main, /snapshot\.checksums\[file\]/);
   assert.match(main, /Yedek bütünlük doğrulaması başarısız/);
   assert.match(main, /Geri yükleme geri alındı/);
+});
+
+test('backup manifest covers business data, SQLite and excludes identity', () => {
+  for (const name of ['backup_logs.json', 'pmc_signals.json', 'library.json']) assert.match(main, new RegExp(name.replace('.', '\\.')));
+  assert.match(main, /scope: 'business-data'/);
+  assert.match(main, /identityData: \{ included: false/);
+  assert.match(main, /backupTo\(sqliteTemp, \{ excludeIdentity: true \}\)/);
+  assert.match(main, /validateBackupSnapshot\(snapshot\)/);
+});
+
+test('restore stages changes and removes newly created files during rollback', () => {
+  const handler = main.slice(main.indexOf("ipcMain.handle('restore-backup'"), main.indexOf('// IPC Handler for Secure Fetch Proxy'));
+  assert.match(handler, /restore-staging/);
+  assert.match(handler, /restore-journal\.json/);
+  assert.match(handler, /prior === null/);
+  assert.match(handler, /fs\.unlinkSync\(target\)/);
+  assert.match(main, /function recoverInterruptedRestore/);
+  assert.match(main, /preExisting/);
+});
+
+test('backup listing is independent from PDF content and automatic backups are daily', () => {
+  const listHandler = main.slice(main.indexOf("ipcMain.handle('get-backups-list'"), main.indexOf("ipcMain.handle('create-manual-backup'"));
+  assert.doesNotMatch(listHandler, /htmlContent/);
+  assert.match(main, /reason: 'daily-backup-exists'/);
+  assert.match(main, /performAutoBackup\(\{ force: true \}\)/);
+});
+
+test('PDF export requires a session, limits input and disables active content', () => {
+  const handler = main.slice(main.indexOf("ipcMain.handle('print-to-pdf'"), main.indexOf('// Auto-Backup Engine'));
+  assert.match(handler, /requireSession\(event\)/);
+  assert.match(handler, /5 \* 1024 \* 1024/);
+  assert.match(handler, /script-src 'none'/);
+  assert.match(handler, /connect-src 'none'/);
+  assert.match(handler, /replace\(\/<\(script\|iframe\|object\|embed\|base\)/);
+});
+
+test('successful restore invalidates all active sessions', () => {
+  const handler = main.slice(main.indexOf("ipcMain.handle('restore-backup'"), main.indexOf('// IPC Handler for Secure Fetch Proxy'));
+  assert.match(handler, /sessions\.clear\(\)/);
+  assert.match(handler, /requiresRelogin: true/);
 });
 
 test('release checksum generator covers executable artifacts', () => {

@@ -93,58 +93,6 @@ export function parseDateHelper(dateStr) {
   }
 }
 
-export async function exportMaintenanceCSV() {
-  const headers = ['Tarih', 'Tezgah', 'Tür', 'Açıklama', 'Teknisyen', 'Süre (dk)'];
-  const rows = State.maintenances.map(r => {
-    const mach = State.machines.find(x => x.id == (r.tezgah_id || r.machine_id));
-    const machName = mach ? mach.numarasi : (r.tezgah_adi || r.machine_name || `Tezgah #${r.tezgah_id || r.machine_id}`);
-    
-    let type = r.tur || r.type;
-    if (!type) {
-      const desc = (r.aciklama || r.description || '').toLowerCase();
-      if (desc.includes('[pm]') || desc.includes('periyodik') || desc.includes('planli') || desc.includes('planlı')) {
-        type = 'Planlı Bakım';
-      } else {
-        type = 'Arıza';
-      }
-    }
-
-    return [
-      (r.tarih || r.date || '').replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      machName.replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      type.replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      (r.aciklama || r.description || '').replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      (r.bakim_yapan || r.technician || '').replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      String(r.sure || r.duration || '').replace(/;/g, ',').replace(/[\r\n]+/g, ' ')
-    ];
-  });
-  const csv = [headers, ...rows].map(r => r.join(';')).join('\r\n');
-  const res = await window.electronAPI.exportCSV(csv, `bakim_defteri_${new Date().toISOString().slice(0,10)}.csv`);
-  if (res && res.ok) showToast('CSV başarıyla kaydedildi ✓', 'success');
-  else showToast('CSV kaydedilemedi', 'error');
-}
-
-export async function exportAlarmsCSV() {
-  const headers = ['Kod', 'Kategori', 'Başlık', 'Açıklama', 'Olası Nedenler', 'Çözüm Önerileri'];
-  const rows = State.alarms.map(a => {
-    const causesStr = Array.isArray(a.causes) ? a.causes.join(' | ') : (a.causes || '');
-    const solutionsStr = Array.isArray(a.solutions) ? a.solutions.join(' | ') : (a.solution || a.solutions || '');
-    
-    return [
-      (a.code || '').replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      (a.category || '').replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      (a.title || '').replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      (a.description || '').replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      causesStr.replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
-      solutionsStr.replace(/;/g, ',').replace(/[\r\n]+/g, ' ')
-    ];
-  });
-  const csv = [headers, ...rows].map(r => r.join(';')).join('\r\n');
-  const res = await window.electronAPI.exportCSV(csv, `alarm_veritabani_${new Date().toISOString().slice(0,10)}.csv`);
-  if (res && res.ok) showToast('Alarm CSV kaydedildi ✓', 'success');
-  else showToast('CSV kaydedilemedi', 'error');
-}
-
 // Attach to window for legacy inline script compatibility
 if (typeof window !== 'undefined') {
   window.escapeHTML = escapeHTML;
@@ -152,6 +100,4 @@ if (typeof window !== 'undefined') {
   window.showToast = showToast;
   window.canEdit = canEdit;
   window.canDelete = canDelete;
-  window.exportMaintenanceCSV = exportMaintenanceCSV;
-  window.exportAlarmsCSV = exportAlarmsCSV;
 }

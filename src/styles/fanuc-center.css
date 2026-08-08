@@ -1,4 +1,5 @@
 .fanuc-center-page { --fanuc-red:#e21b2d; --fanuc-cyan:#38bdf8; }
+.fanuc-profile-status{max-width:300px;padding:12px 14px;border:1px solid var(--border-light);border-radius:9px;background:var(--bg-card2);text-align:right}.fanuc-profile-status strong,.fanuc-profile-status span{display:block}.fanuc-profile-status strong{color:var(--text-primary);font-size:12px}.fanuc-profile-status span{margin-top:4px;color:var(--text-muted);font-size:9.5px;line-height:1.45}.inventory-row.readonly{grid-template-columns:1.25fr 1.2fr .8fr .7fr}
 .fanuc-center-header { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; background:radial-gradient(circle at 80% 10%,rgba(226,27,45,.15),transparent 36%); }
 .fanuc-eyebrow { display:block; color:var(--fanuc-red); font:700 10px/1.2 var(--font-mono); letter-spacing:.14em; margin-bottom:7px; }
 .fanuc-machine-picker { display:flex; flex-direction:column; gap:5px; min-width:230px; }

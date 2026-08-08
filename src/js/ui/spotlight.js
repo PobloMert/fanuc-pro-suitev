@@ -69,8 +69,9 @@ export function spotlightSearch(query) {
   State.keep_relays.filter(r => (r.address || r.id || '').toLowerCase().includes(q) || (r.description || '').toLowerCase().includes(q)).slice(0, 2).forEach(r => {
     results.push({ icon: '🔌', title: (r.address || r.id) + ' — ' + (r.description || r.name || ''), sub: '', type: 'Keep Relay', action: () => window.navigate && window.navigate('keep_relays') });
   });
-  State.backup_logs.filter(item => includes(item.tip, item.type, item.aciklama, item.description, item.dosya, item.file, item.machine, item.machine_name)).slice(0, 3).forEach(item => {
-    results.push({ icon:'↥', title:item.dosya || item.file || item.tip || item.type || 'Yedek kaydı', sub:`${item.machine || item.machine_name || ''} · ${item.tarih || item.date || ''}`, type:'Yedek', action:() => window.navigate && window.navigate('backup_tracker') });
+  State.backup_logs.filter(item => includes(item.tip, item.type, item.aciklama, item.description, item.dosya_konumu, item.dosya, item.file, item.machine, item.machine_name, item.son_yedek_tarihi)).slice(0, 3).forEach(item => {
+    const machine = State.machines.find(candidate => Number(candidate.id) === Number(item.tezgah_id ?? item.machine_id));
+    results.push({ icon:'↥', title:item.dosya_konumu || item.dosya || item.file || item.tip || item.type || 'Yedek kaydı', sub:`${item.machine || item.machine_name || machine?.numarasi || ''} · ${item.son_yedek_tarihi || item.tarih || item.date || ''}`, type:'Yedek', action:() => window.navigate && window.navigate('backup_tracker') });
   });
   (window.FanucCenterCatalog?.scenarios || []).filter(item => includes(item.title, item.category, ...(item.checks || []))).slice(0,3).forEach(item => {
     results.push({ icon:item.icon || '◇', title:item.title, sub:`${item.category} teşhis senaryosu`, type:'FANUC Teşhis', action:() => window.navigate && window.navigate('fanuc_center') });

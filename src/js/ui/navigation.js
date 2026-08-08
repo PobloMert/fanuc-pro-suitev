@@ -43,7 +43,7 @@ export function organizeNavigation() {
     [...sidebar.querySelectorAll('.nav-item[data-page]')].map(item => [item.dataset.page, item])
   );
   const groups = [
-    { id: 'operations', label: 'Operasyon', pages: ['cnc_dashboard', 'cnc_screen_viewer', 'machines', 'maintenance', 'battery', 'reports', 'predictive', 'reliability', 'projects'] },
+    { id: 'operations', label: 'Operasyon', pages: ['cnc_dashboard', 'cnc_screen_viewer', 'machines', 'fanuc_center', 'maintenance', 'battery', 'reports', 'predictive', 'reliability', 'projects'] },
 
     { id: 'diagnostics', label: 'Teşhis ve Destek', pages: ['troubleshooter', 'io_link', 'drive_diagnostics', 'spindle_diagnostics', 'backup_wizard', 'backup_tracker', 'troubleshoot_wiki'] },
     { id: 'engineering', label: 'Mühendislik Araçları', pages: ['tuning', 'generator', 'gcode_checker', 'param_comparator', 'gear_ratio', 'backlash_helper', 'axis_limits_helper', 'rs232', 'rs232_cables', 'fssb_topology'] },
@@ -121,8 +121,9 @@ export function checkNotifications() {
 
 
   // Maintenance check — machines with no PM in 90+ days
+  const recordIndex = window.MTBPerformance?.buildRecordIndex?.(State);
   State.machines.forEach(m => {
-    const machineMaint = State.maintenances.filter(r => r.tezgah_id == m.id || r.machine_id == m.id);
+    const machineMaint = recordIndex?.forMachine(m).maintenance || State.maintenances.filter(r => r.tezgah_id == m.id || r.machine_id == m.id);
     if (!machineMaint.length) return;
     const lastMaint = machineMaint.sort((a, b) => {
       return parseDateHelper(b.tarih || b.date) - parseDateHelper(a.tarih || a.date);

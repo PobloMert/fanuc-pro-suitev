@@ -165,7 +165,18 @@ export async function loadSettings() {
     try {
       Object.assign(State.settings, JSON.parse(res.data));
       if (!State.settings.pdfPaths) State.settings.pdfPaths = {};
+      if (!Array.isArray(State.settings.connectionProfiles)) State.settings.connectionProfiles = [];
+      if (!Array.isArray(State.settings.knowledgeFavorites)) State.settings.knowledgeFavorites = [];
+      if (!Array.isArray(State.settings.knowledgeRecent)) State.settings.knowledgeRecent = [];
+      if (!State.settings.knowledgeNotes) State.settings.knowledgeNotes = {};
+      window.applyAccessibilitySettings?.();
     } catch {}
+  }
+  const knowledge = await window.electronAPI.getKnowledgePreferences();
+  if (knowledge?.ok) {
+    State.settings.knowledgeFavorites = knowledge.data.favorites || [];
+    State.settings.knowledgeRecent = knowledge.data.recent || [];
+    State.settings.knowledgeNotes = knowledge.data.notes || {};
   }
 }
 

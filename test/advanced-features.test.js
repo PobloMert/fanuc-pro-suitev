@@ -7,15 +7,19 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const main = read('main.js');
 const renderer = read('src/renderer.js');
+const diagnostics = read('src/js/diagnostics_engine.js');
+const aiKnowledge = read('src/js/features/ai_knowledge.js');
+const aiScreen = read('src/js/features/ai_screen.js');
 const rag = read('src/js/modules/rag.js');
 
 test('AI cloud requests are gated, masked and source constrained', () => {
   assert.match(main, /if \(appSettings\.internetEnabled === false\)/);
   assert.match(main, /Kaynak yoksa kesin teşhis veya değer verme/);
-  assert.match(renderer, /maskSensitiveForCloud/);
-  assert.match(renderer, /\[IP MASKELENDİ\]/);
+  assert.match(aiScreen, /maskSensitiveForCloud/);
+  assert.match(diagnostics, /\[IP MASKELENDİ\]/);
+  assert.match(aiKnowledge, /maskForCloud/);
   assert.match(rag, /buildRAGResult/);
-  assert.match(renderer, /KALICI SALT OKUNUR — CNC'YE KOMUT GÖNDEREMEZ/);
+  assert.match(aiScreen, /KALICI SALT OKUNUR — CNC'YE KOMUT GÖNDEREMEZ/);
 });
 
 test('knowledge preferences are stored separately from privileged settings', () => {

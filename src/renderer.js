@@ -194,360 +194,8 @@ window.addEventListener('message', async (event) => {
 // Main initialization is bootstrapped via src/js/app.js module
 
 
-async function init() {
-  // Inject extra styles
-  addStyle(`
-    .book-card { cursor: pointer; }
-    .book-card:hover { border-color: var(--border-light); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-    .book-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    [id^="page-"] .page-body .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    [id^="page-"] .page-body .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    @media (max-width: 900px) {
-      [id^="page-"] .page-body .grid-2 { grid-template-columns: 1fr !important; }
-      [id^="page-"] .page-body .grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
-    }
-    @media (max-width: 600px) {
-      [id^="page-"] .page-body .grid-3 { grid-template-columns: 1fr !important; }
-    }
-  `);
-
-  // Window controls
-  document.getElementById('btn-minimize').addEventListener('click', () => window.electronAPI.minimize());
-  document.getElementById('btn-maximize').addEventListener('click', () => window.electronAPI.maximize());
-  document.getElementById('btn-close').addEventListener('click', () => window.electronAPI.close());
-
-  // App data dir
-  State.appDataDir = await window.electronAPI.getAppDataDir();
-
-  // Load data
-  await loadData();
-
-  // Load settings from disk
-  await loadSettings();
-
-  // Apply saved theme
-  applyTheme(State.settings.theme || 'dark');
-
-  // Load users
-  await loadUsers();
-
-  // Show login screen
-  showLoginScreen();
-
-  // Spotlight search
-  document.getElementById('btn-spotlight').addEventListener('click', openSpotlight);
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSpotlight(); }
-    if (e.key === 'Escape') { closeSpotlight(); closeNotifPanel(); }
-  });
-  document.getElementById('spotlight-input').addEventListener('input', (e) => spotlightSearch(e.target.value));
-
-  // Notification bell
-  document.getElementById('btn-notif').addEventListener('click', toggleNotifPanel);
-
-  // User avatar → switch user
-  document.getElementById('user-avatar-btn').addEventListener('click', showLoginScreen);
-
-  // Initialize ripple click animations
-  initRippleEffect();
-
-  organizeNavigation();
-
-  // Navigation
-  document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
-    btn.addEventListener('click', () => navigate(btn.dataset.page));
-  });
-}
-
-// ── Ripple Click Effect ─────────────────────────────────────────
-function initRippleEffect() {
-  document.addEventListener('pointerdown', (e) => {
-    const target = e.target.closest('.btn, .btn-icon, .tb-btn, .login-user-btn, .tab-btn, .nav-item');
-    if (!target) return;
-
-    const rect = target.getBoundingClientRect();
-    const ripple = document.createElement('span');
-    ripple.className = 'ripple-wave';
-
-    const size = Math.max(rect.width, rect.height);
-    const x = e.clientX - rect.left - size / 2;
-    const y = e.clientY - rect.top - size / 2;
-
-    ripple.style.width = `${size}px`;
-    ripple.style.height = `${size}px`;
-    ripple.style.left = `${x}px`;
-    ripple.style.top = `${y}px`;
-
-    if (target.classList.contains('btn-secondary') || target.classList.contains('btn-ghost') || target.classList.contains('tb-btn') || target.classList.contains('nav-item')) {
-      ripple.style.background = 'rgba(var(--accent-rgb), 0.3)';
-    }
-
-    target.appendChild(ripple);
-
-    setTimeout(() => {
-      ripple.remove();
-    }, 600);
-  });
-}
-
-// ── Data Loading ───────────────────────────────────────────────
-function organizeNavigation() {
-  const sidebar = document.getElementById('sidebar');
-  const footer = sidebar.querySelector('.sidebar-footer');
-  const items = new Map(
-    [...sidebar.querySelectorAll('.nav-item[data-page]')].map(item => [item.dataset.page, item])
-  );
-  const groups = [
-    { id: 'operations', label: 'Operasyon', pages: ['cnc_dashboard', 'machines', 'maintenance', 'battery', 'reports', 'predictive', 'reliability', 'projects'] },
-    { id: 'diagnostics', label: 'Teşhis ve Destek', pages: ['troubleshooter', 'io_link', 'drive_diagnostics', 'spindle_diagnostics', 'backup_wizard', 'backup_tracker', 'troubleshoot_wiki'] },
-    { id: 'engineering', label: 'Mühendislik Araçları', pages: ['tuning', 'generator', 'gcode_checker', 'param_comparator', 'gear_ratio', 'backlash_helper', 'axis_limits_helper', 'rs232', 'rs232_cables', 'fssb_topology'] },
-    { id: 'reference', label: 'Bilgi Merkezi', pages: ['library', 'alarms', 'parameters', 'keep_relays', 'macro', 'nc_codes', 'pmc_signals', 'custom_builder_library', 'cheat_sheets'] }
-  ];
-
-  const home = document.createElement('div');
-  home.className = 'sidebar-home';
-  if (items.has('dashboard')) home.append(items.get('dashboard'));
-
-  const host = document.createElement('div');
-  host.className = 'nav-groups';
-  groups.forEach(group => {
-    const groupItems = group.pages.map(page => items.get(page)).filter(Boolean);
-    if (!groupItems.length) return;
-    const details = document.createElement('details');
-    details.className = 'nav-group';
-    details.dataset.group = group.id;
-    details.open = group.id === 'operations';
-    const summary = document.createElement('summary');
-    const title = document.createElement('span');
-    title.className = 'nav-group-title';
-    title.textContent = group.label;
-    const count = document.createElement('span');
-    count.className = 'nav-group-count';
-    count.textContent = String(groupItems.length);
-    summary.append(title, count);
-    details.append(summary, ...groupItems);
-    host.append(details);
-  });
-
-  const shortcuts = document.createElement('div');
-  shortcuts.className = 'sidebar-shortcuts';
-  if (items.has('ai')) shortcuts.append(items.get('ai'));
-
-  sidebar.querySelectorAll('.sidebar-section').forEach(section => section.remove());
-  sidebar.insertBefore(home, footer);
-  sidebar.insertBefore(host, footer);
-  sidebar.insertBefore(shortcuts, footer);
-}
-
-function safeParseJSON(dataString, key, fallbackValue) {
-  if (!dataString || !dataString.trim()) return fallbackValue;
-  try {
-    const parsed = JSON.parse(dataString);
-    if (key) {
-      return parsed[key] !== undefined ? parsed[key] : fallbackValue;
-    }
-    return parsed;
-  } catch (e) {
-    console.error(`Failed to parse JSON for key "${key}":`, e);
-    return fallbackValue;
-  }
-}
-
-// ── Startup Log Collector ──
-const StartupErrors = [];
-
-async function loadJSONDatabase(fileName, key, defaultValue) {
-  const filePath = `./data/${fileName}`;
-  const backupPath = `${filePath}.bak`;
-  let dataStr = null;
-  let fromBackup = false;
-
-  // 1. Try reading the primary database file
-  let res = await window.electronAPI.readFile(filePath);
-  if (res.ok) {
-    dataStr = res.data;
-  } else {
-    StartupErrors.push(`${fileName} ana dosyası okunamadı: ${res.error || 'Dosya bulunamadı'}`);
-    
-    // Try reading backup file
-    let backupRes = await window.electronAPI.readFile(backupPath);
-    if (backupRes.ok) {
-      dataStr = backupRes.data;
-      fromBackup = true;
-    }
-  }
-
-  // 2. Parse JSON data
-  let parsedData = defaultValue;
-  if (dataStr && dataStr.trim()) {
-    try {
-      const parsed = JSON.parse(dataStr);
-      parsedData = key ? (parsed[key] !== undefined ? parsed[key] : defaultValue) : parsed;
-      
-      // If we recovered from a backup, try writing it back to primary to self-heal
-      if (fromBackup) {
-        await window.electronAPI.writeFile(filePath, dataStr);
-        StartupErrors.push(`${fileName} yedek dosyadan kurtarılarak otomatik onarıldı.`);
-      }
-    } catch (e) {
-      StartupErrors.push(`${fileName} JSON ayrıştırma hatası: ${e.message}`);
-      
-      // Try backup file if parsing primary failed
-      if (!fromBackup) {
-        let backupRes = await window.electronAPI.readFile(backupPath);
-        if (backupRes.ok && backupRes.data.trim()) {
-          try {
-            const parsed = JSON.parse(backupRes.data);
-            parsedData = key ? (parsed[key] !== undefined ? parsed[key] : defaultValue) : parsed;
-            await window.electronAPI.writeFile(filePath, backupRes.data);
-            StartupErrors.push(`${fileName} bozuk dosya yedek sürümden geri yüklenerek onarıldı.`);
-          } catch (backupErr) {
-            StartupErrors.push(`${fileName} yedek dosyası da bozuk: ${backupErr.message}`);
-          }
-        }
-      }
-    }
-  } else {
-    // File is empty or missing, and no backup was found.
-    // Self-heal: Write default empty template to disk
-    try {
-      const emptyPayload = key ? JSON.stringify({ [key]: defaultValue }, null, 2) : JSON.stringify(defaultValue, null, 2);
-      await window.electronAPI.writeFile(filePath, emptyPayload);
-      StartupErrors.push(`${fileName} bulunamadı, şablon otomatik oluşturuldu.`);
-    } catch (writeErr) {
-      console.error(`Failed to self-heal missing database ${fileName}:`, writeErr);
-    }
-  }
-
-  return parsedData;
-}
-
-async function loadData() {
-  StartupErrors.length = 0; // Reset
-  try {
-    const results = await Promise.all([
-      loadJSONDatabase('alarms.json', 'alarms', []),
-      loadJSONDatabase('parameters.json', 'parameters', []),
-      loadJSONDatabase('library.json', 'books', []),
-      loadJSONDatabase('nc_codes.json', 'nc_codes', []),
-      loadJSONDatabase('pmc_signals.json', 'pmc_signals', []),
-      loadJSONDatabase('machines.json', 'machines', []),
-      loadJSONDatabase('maintenances.json', 'maintenances', []),
-      loadJSONDatabase('batteries.json', 'batteries', []),
-      loadJSONDatabase('keep_relays.json', 'keep_relays', []),
-      loadJSONDatabase('drive_alarms.json', 'drive_alarms', []),
-      loadJSONDatabase('fans.json', 'fans', []),
-      loadJSONDatabase('wiki.json', 'articles', []),
-      loadJSONDatabase('backup_logs.json', 'backup_logs', []),
-      loadJSONDatabase('custom_mcodes.json', 'mcodes', []),
-      loadJSONDatabase('custom_alarms.json', 'alarms', []),
-      loadJSONDatabase('custom_alarm_notes.json', 'notes', {})
-    ]);
-
-    State.alarms = results[0];
-    State.parameters = results[1];
-    State.library = results[2];
-    State.nc_codes = results[3];
-    State.pmc_signals = results[4];
-    State.machines = results[5];
-    State.maintenances = results[6];
-    State.batteries = results[7];
-    State.keep_relays = results[8];
-    State.drive_alarms = results[9];
-    State.fans = results[10];
-    State.wiki = results[11];
-    State.backup_logs = results[12];
-    State.custom_mcodes = results[13];
-    State.custom_alarms = results[14];
-    State.custom_alarm_notes = results[15];
-
-    if (StartupErrors.length > 0) {
-      console.warn('Veri yükleme sırasında uyarılar oluştu:\n', StartupErrors.join('\n'));
-      const warningCount = StartupErrors.filter(e => e.includes('kurtarılarak') || e.includes('onarıldı') || e.includes('bulunamadı')).length;
-      const errorCount = StartupErrors.length - warningCount;
-      
-      if (errorCount > 0) {
-        showToast(`Veri yüklemede ${errorCount} hata oluştu. Lütfen log dosyasını kontrol edin.`, 'error');
-      } else if (warningCount > 0) {
-        showToast(`${warningCount} veritabanı otomatik onarıldı veya oluşturuldu.`, 'info');
-      }
-      
-      try {
-        const errText = `Startup Log [${new Date().toISOString()}]:\n` + StartupErrors.join('\n') + '\n\n';
-        await window.electronAPI.writeFile('./data/ui_error_log.txt', errText, 'utf8');
-      } catch {}
-    }
-  } catch (e) {
-    console.error('Data load exception:', e);
-    alert('Kritik veri yükleme hatası: ' + e.message);
-  }
-
-  await loadProjects();
-}
-
-async function loadUsers() {
-  try {
-    const res = await window.electronAPI.listUsers();
-    if (res.ok) {
-      State.users = res.users || [];
-    }
-  } catch {}
-}
-
-async function loadProjects() {
-  try {
-    const projDir = State.appDataDir + '/projects';
-    const listRes = await window.electronAPI.listDir(projDir);
-    if (listRes.ok) {
-      State.projects = [];
-      for (const item of listRes.items) {
-        if (item.isDir) {
-          const metaPath = item.path + '/meta.json';
-          const metaRes = await window.electronAPI.readFile(metaPath);
-          if (metaRes.ok) {
-            try { State.projects.push(JSON.parse(metaRes.data)); } catch {}
-          }
-        }
-      }
-    }
-  } catch {}
-}
-
-async function loadSettings() {
-  const settingsPath = State.appDataDir + '/settings.json';
-  const res = await window.electronAPI.readFile(settingsPath);
-  if (res.ok) {
-    try {
-      Object.assign(State.settings, JSON.parse(res.data));
-      if (!State.settings.pdfPaths) State.settings.pdfPaths = {};
-      if (!Array.isArray(State.settings.connectionProfiles)) State.settings.connectionProfiles = [];
-      if (!Array.isArray(State.settings.knowledgeFavorites)) State.settings.knowledgeFavorites = [];
-      if (!Array.isArray(State.settings.knowledgeRecent)) State.settings.knowledgeRecent = [];
-      if (!State.settings.knowledgeNotes) State.settings.knowledgeNotes = {};
-      applyAccessibilitySettings();
-    } catch {}
-  }
-  const knowledge = await window.electronAPI.getKnowledgePreferences();
-  if (knowledge?.ok) {
-    State.settings.knowledgeFavorites = knowledge.data.favorites || [];
-    State.settings.knowledgeRecent = knowledge.data.recent || [];
-    State.settings.knowledgeNotes = knowledge.data.notes || {};
-  }
-}
-
-async function saveSettings() {
-  const settingsPath = State.appDataDir + '/settings.json';
-  try {
-    const { aiApiKey, ...safeSettings } = State.settings;
-    const res = await window.electronAPI.writeFile(settingsPath, JSON.stringify(safeSettings, null, 2));
-    if (!res || !res.ok) {
-      showToast('Ayarlar kaydedilemedi: ' + (res?.error || 'Bilinmeyen hata'), 'error');
-    }
-  } catch (err) {
-    showToast('Ayarlar kaydedilirken hata oluştu: ' + err.message, 'error');
-  }
-}
-
+// Initialization is owned by js/app.js.
+// Navigation and ripple behavior are owned by js/ui/navigation.js.
 async function saveKnowledgePreferences() {
   const result = await window.electronAPI.setKnowledgePreferences({
     favorites: State.settings.knowledgeFavorites || [],
@@ -672,7 +320,7 @@ window.navigate = function navigate(page, extraData = null) {
 
     projects:    renderProjects,
     machines:    renderMachines,
-    maintenance: renderMaintenance,
+    maintenance: () => renderMaintenance(extraData),
     battery:     renderBattery,
     reports:     renderReports,
     predictive:  renderPredictive,
@@ -693,7 +341,7 @@ window.navigate = function navigate(page, extraData = null) {
     io_link:     renderIOLink,
     backup_wizard: renderBackupWizard,
     troubleshoot_wiki: renderTroubleshootWiki,
-    backup_tracker: renderBackupTracker,
+    backup_tracker: () => renderBackupTracker(extraData),
     backlash_helper: renderBacklashHelper,
     axis_limits_helper: renderAxisLimitsHelper,
     spindle_diagnostics: renderSpindleDiagnostics,
@@ -705,6 +353,7 @@ window.navigate = function navigate(page, extraData = null) {
     fanuc_center: () => window.renderFanucCenter ? window.renderFanucCenter(extraData) : createPage('fanuc_center'),
     ai:          renderAI,
     settings:    renderSettings,
+    performance_diagnostics: () => window.MTBPerformanceDiagnostics.render(),
     pdf_viewer:  () => renderPdfViewer(extraData),
   };
 
@@ -755,182 +404,20 @@ function canDelete() {
 // ════════════════════════════════════════════════════════════════
 //  SPOTLIGHT SEARCH
 // ════════════════════════════════════════════════════════════════
-function openSpotlight() {
-  document.getElementById('spotlight-overlay').classList.add('open');
-  document.getElementById('spotlight-input').value = '';
-  document.getElementById('spotlight-results').innerHTML = '<div id="spotlight-empty">Aramak istediğiniz alarm, parametre, tezgah veya bakım kaydını yazın...</div>';
-  setTimeout(() => document.getElementById('spotlight-input').focus(), 80);
-}
-
-window.closeSpotlight = function(event) {
-  if (!event || event.target === document.getElementById('spotlight-overlay')) {
-    document.getElementById('spotlight-overlay').classList.remove('open');
-  }
-};
-
-function spotlightSearch(query) {
-  const q = (query || '').trim().toLowerCase();
-  const resultsEl = document.getElementById('spotlight-results');
-  if (!q || q.length < 2) {
-    resultsEl.innerHTML = '<div id="spotlight-empty">En az 2 karakter giriniz...</div>';
-    return;
-  }
-
-  const results = [];
-
-  // Alarms
-  State.alarms.filter(a => (a.code || '').toLowerCase().includes(q) || (a.title || '').toLowerCase().includes(q)).slice(0, 4).forEach(a => {
-    results.push({ icon: '🚨', title: a.code + ' — ' + a.title, sub: a.category || '', type: 'Alarm', action: () => navigate('alarms') });
-  });
-  // Parameters
-  State.parameters.filter(p => String(p.number || '').includes(q) || (p.description || '').toLowerCase().includes(q)).slice(0, 4).forEach(p => {
-    results.push({ icon: '⚙️', title: 'P' + p.number + ' — ' + (p.description || ''), sub: p.group || '', type: 'Parametre', action: () => navigate('parameters') });
-  });
-  // Machines
-  State.machines.filter(m => (m.name || '').toLowerCase().includes(q) || (m.serial || '').toLowerCase().includes(q)).slice(0, 3).forEach(m => {
-    results.push({ icon: '🏭', title: m.name, sub: m.model || '', type: 'Tezgah', action: () => navigate('machines') });
-  });
-  // Maintenance
-  State.maintenances.filter(r => (r.description || '').toLowerCase().includes(q) || (r.machine_name || '').toLowerCase().includes(q)).slice(0, 3).forEach(r => {
-    results.push({ icon: '🔧', title: r.description || 'Bakım', sub: r.machine_name || '' + ' — ' + (r.date || ''), type: 'Bakım', action: () => navigate('maintenance') });
-  });
-  // Wiki
-  State.wiki.filter(w => (w.title || '').toLowerCase().includes(q) || (w.content || '').toLowerCase().includes(q)).slice(0, 3).forEach(w => {
-    results.push({ icon: '📖', title: w.title, sub: w.category || '', type: 'Wiki', action: () => navigate('troubleshoot_wiki') });
-  });
-  // Keep relays
-  State.keep_relays.filter(r => (r.address || '').toLowerCase().includes(q) || (r.description || '').toLowerCase().includes(q)).slice(0, 2).forEach(r => {
-    results.push({ icon: '🔌', title: r.address + ' — ' + (r.description || ''), sub: '', type: 'Keep Relay', action: () => navigate('keep_relays') });
-  });
-
-  if (!results.length) {
-    resultsEl.innerHTML = `<div id="spotlight-empty">🔍 "<strong>${escapeHTML(query)}</strong>" için sonuç bulunamadı.</div>`;
-    return;
-  }
-
-  resultsEl.innerHTML = results.map((r, i) => `
-    <div class="spotlight-item" onclick="spotlightGo(${i})" id="spl-item-${i}">
-      <div class="spotlight-item-icon">${r.icon}</div>
-      <div class="spotlight-item-text">
-        <div class="spotlight-item-title">${escapeHTML(r.title)}</div>
-        ${r.sub ? `<div class="spotlight-item-sub">${escapeHTML(r.sub)}</div>` : ''}
-      </div>
-      <span class="spotlight-item-type">${escapeHTML(r.type)}</span>
-    </div>
-  `).join('');
-
-  window._spotlightResults = results;
-}
-
-window.spotlightGo = function(index) {
-  document.getElementById('spotlight-overlay').classList.remove('open');
-  if (window._spotlightResults && window._spotlightResults[index]) {
-    window._spotlightResults[index].action();
-  }
-};
-
 // ════════════════════════════════════════════════════════════════
 //  NOTIFICATION SYSTEM
 // ════════════════════════════════════════════════════════════════
-function checkNotifications() {
-  const notifications = [];
-  const now = new Date();
-
-  // Battery checks — older than 12 months
-  State.batteries.forEach(b => {
-    const dateStr = b.tarih || b.lastChanged;
-    if (!dateStr) return;
-    const d = parseDateHelper(dateStr);
-    if (!d || d.getTime() === 0) return;
-    const monthsDiff = (now - d) / (1000 * 60 * 60 * 24 * 30);
-    const mach = State.machines.find(x => x.id === b.tezgah_id);
-    const machName = mach ? mach.numarasi : (b.machine || b.controller || `Tezgah #${b.tezgah_id}`);
-    if (monthsDiff >= 12) {
-      notifications.push({ level: 'red', title: '🔋 Pil Değişimi Gerekli', sub: `${machName} (Eksen ${b.eksen || '?'}) — ${dateStr} tarihinden beri (${Math.floor(monthsDiff)} ay)` });
-    } else if (monthsDiff >= 10) {
-      notifications.push({ level: 'amber', title: '🔋 Pil Değişimi Yaklaşıyor', sub: `${machName} (Eksen ${b.eksen || '?'}) — ${dateStr} (${Math.floor(monthsDiff)} ay)` });
-    }
-  });
-
-  // Fan checks — older than 8760 hours (1 year)
-  State.fans.forEach(f => {
-    const hours = parseFloat(f.calisma_saati || 0);
-    const mach = State.machines.find(x => x.id === f.tezgah_id);
-    const machName = mach ? mach.numarasi : `Tezgah #${f.tezgah_id}`;
-    if (hours >= 8760) {
-      notifications.push({ level: 'amber', title: '💨 Fan Değişimi Gerekli', sub: `${machName} (${f.konum || 'Fan'}) — ${Math.floor(hours)} saat çalıştı` });
-    }
-  });
-
-  // Maintenance check — machines with no PM in 90+ days
-  State.machines.forEach(m => {
-    const machineMaint = State.maintenances.filter(r => r.tezgah_id == m.id || r.machine_id == m.id);
-    if (!machineMaint.length) return;
-    const lastMaint = machineMaint.sort((a, b) => {
-      return parseDateHelper(b.tarih || b.date) - parseDateHelper(a.tarih || a.date);
-    })[0];
-    const lastDate = parseDateHelper(lastMaint.tarih || lastMaint.date);
-    if (lastDate.getTime() > 0) {
-      const daysDiff = (now - lastDate) / (1000 * 60 * 60 * 24);
-      if (daysDiff >= 90) {
-        notifications.push({ level: 'amber', title: '🔧 Bakım Süresi Geçti', sub: `${m.name} — Son bakım: ${lastMaint.tarih || lastMaint.date} (${Math.floor(daysDiff)} gün önce)` });
-      }
-    }
-  });
-
-  State.notifications = notifications;
-  renderNotifPanel();
-  updateNotifBadge();
-
-  // Send native OS notification for critical items
-  const critical = notifications.filter(n => n.level === 'red');
-  if (critical.length) {
-    window.electronAPI.showNativeNotification('MTB Elektrik Bakım — Kritik Uyarı', `${critical.length} kritik bakım uyarısı var!`);
-  }
-}
-
-function updateNotifBadge() {
-  const badge = document.getElementById('notif-badge');
-  if (State.notifications.length > 0) badge.classList.add('show');
-  else badge.classList.remove('show');
-}
-
-function renderNotifPanel() {
-  const body = document.getElementById('notif-panel-body');
-  if (!body) return;
-  if (!State.notifications.length) {
-    body.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-muted); font-size:12px">✅ Tüm sistemler normal. Aktif uyarı yok.</div>';
-    return;
-  }
-  body.innerHTML = State.notifications.map(n => `
-    <div class="notif-item">
-      <div class="notif-dot ${n.level}"></div>
-      <div class="notif-text">
-        <div class="notif-title">${escapeHTML(n.title)}</div>
-        <div class="notif-sub">${escapeHTML(n.sub)}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function toggleNotifPanel() {
-  const panel = document.getElementById('notif-panel');
-  panel.classList.toggle('open');
-}
-
-window.closeNotifPanel = function() {
-  document.getElementById('notif-panel').classList.remove('open');
-};
 
 // ════════════════════════════════════════════════════════════════
 //  CSV EXPORT
 // ════════════════════════════════════════════════════════════════
+/* CSV export implementations live in js/features/report_exports.js.
 window.exportMaintenanceCSV = async function() {
   const headers = ['Tarih', 'Tezgah', 'Tür', 'Açıklama', 'Teknisyen', 'Süre (dk)'];
   const rows = State.maintenances.map(r => {
     const mach = State.machines.find(x => x.id == (r.tezgah_id || r.machine_id));
     const machName = mach ? mach.numarasi : (r.tezgah_adi || r.machine_name || `Tezgah #${r.tezgah_id || r.machine_id}`);
-    
+
     // Determine type/tur
     let type = r.tur || r.type;
     if (!type) {
@@ -963,7 +450,7 @@ window.exportAlarmsCSV = async function() {
   const rows = State.alarms.map(a => {
     const causesStr = Array.isArray(a.causes) ? a.causes.join(' | ') : (a.causes || '');
     const solutionsStr = Array.isArray(a.solutions) ? a.solutions.join(' | ') : (a.solution || a.solutions || '');
-    
+
     // Tüm alanlarda noktalı virgül temizliği yap
     return [
       (a.code || '').replace(/;/g, ',').replace(/[\r\n]+/g, ' '),
@@ -978,7 +465,7 @@ window.exportAlarmsCSV = async function() {
   const res = await window.electronAPI.exportCSV(csv, `alarm_veritabani_${new Date().toISOString().slice(0,10)}.csv`);
   if (res && res.ok) showToast('Alarm CSV kaydedildi ✓', 'success');
   else showToast('CSV kaydedilemedi', 'error');
-};
+}; */
 
 // ════════════════════════════════════════════════════════════════
 //  FSSB TOPOLOGY VIEWER
@@ -1149,7 +636,7 @@ function renderFssbTopology() {
       svg += `<rect x="${startX}" y="${y}" width="${nodeW}" height="${nodeH}" rx="10" fill="#3b82f622" stroke="#3b82f6" stroke-width="2"/>`;
       svg += `<text x="${startX + nodeW / 2}" y="${y + 26}" text-anchor="middle" font-size="12" font-family="JetBrains Mono, monospace" fill="#3b82f6" font-weight="700">CNC</text>`;
       svg += `<text x="${startX + nodeW / 2}" y="${y + 44}" text-anchor="middle" font-size="12" font-family="JetBrains Mono, monospace" fill="#3b82f6" font-weight="400">Kontrolör</text>`;
-      
+
       // Port COP10A
       svg += `<rect x="${startX + nodeW - 12}" y="${y + nodeH / 2 - 8}" width="16" height="14" rx="2" fill="#1f2937" stroke="#3b82f6" stroke-width="1"/>`;
       svg += `<text x="${startX + nodeW - 4}" y="${y + nodeH / 2 + 2}" text-anchor="middle" font-size="7" fill="#60a5fa" font-family="monospace" font-weight="bold">COP</text>`;
@@ -1192,7 +679,7 @@ function renderFssbTopology() {
       svg += `<rect x="${startX}" y="${cncY}" width="${nodeW}" height="${nodeH}" rx="10" fill="#3b82f622" stroke="#3b82f6" stroke-width="2"/>`;
       svg += `<text x="${startX + nodeW / 2}" y="${cncY + 26}" text-anchor="middle" font-size="12" font-family="JetBrains Mono, monospace" fill="#3b82f6" font-weight="700">CNC</text>`;
       svg += `<text x="${startX + nodeW / 2}" y="${cncY + 44}" text-anchor="middle" font-size="12" font-family="JetBrains Mono, monospace" fill="#3b82f6" font-weight="400">Kontrolör</text>`;
-      
+
       // Port CH1 & CH2 on CNC
       svg += `<rect x="${startX + nodeW - 12}" y="${cncY + 6}" width="16" height="14" rx="2" fill="#1f2937" stroke="#3b82f6" stroke-width="1"/>`;
       svg += `<text x="${startX + nodeW - 4}" y="${cncY + 16}" text-anchor="middle" font-size="7" fill="#60a5fa" font-family="monospace" font-weight="bold">CH1</text>`;
@@ -1356,7 +843,15 @@ function renderDashboard() {
     return d && d.getTime() > 0 && d.getMonth() === thisMonth && d.getFullYear() === thisYear;
   });
 
-  const criticalBatteries = State.batteries.filter(b => {
+  const latestBatteryByLocation = new Map();
+  State.batteries.forEach(battery => {
+    const key = `${battery.tezgah_id ?? battery.machine_id ?? battery.machine ?? battery.machine_name ?? ''}|${String(battery.eksen || battery.axis || 'genel').toLocaleLowerCase('tr-TR')}`;
+    const current = latestBatteryByLocation.get(key);
+    const batteryTime = parseDateHelper(battery.tarih || battery.date)?.getTime() || Number(battery.id) || 0;
+    const currentTime = parseDateHelper(current?.tarih || current?.date)?.getTime() || Number(current?.id) || 0;
+    if (!current || batteryTime >= currentTime) latestBatteryByLocation.set(key, battery);
+  });
+  const criticalBatteries = [...latestBatteryByLocation.values()].filter(b => {
     const dateStr = b.tarih || b.lastChanged;
     if (!dateStr) return false;
     const d = parseDateHelper(dateStr);
@@ -1377,14 +872,12 @@ function renderDashboard() {
     .sort((a, b) => parseDateHelper(b.tarih || b.date) - parseDateHelper(a.tarih || a.date))
     .slice(0, 5);
 
-  // Compute average machine health
-  const avgHealth = State.machines.length > 0
-    ? Math.round(State.machines.reduce((sum, m) => sum + calculateMachineHealth(m).score, 0) / State.machines.length)
-    : 100;
-  const strokeDashOffset = 251.2 - (251.2 * avgHealth) / 100;
-  const healthGlowColor = avgHealth >= 80 ? '#10b981' : (avgHealth >= 50 ? '#f59e0b' : '#ef4444');
-  const healthLabel = avgHealth >= 80 ? 'STABİL' : (avgHealth >= 50 ? 'HASSAS' : 'KRİTİK');
-  const healthClass = avgHealth >= 80 ? 'tag-green' : (avgHealth >= 50 ? 'tag-amber' : 'tag-red');
+  const machineConditions = State.machines.map(machine => calculateMachineHealth(machine));
+  const machineConditionCounts = {
+    critical: machineConditions.filter(item => item.status === 'Critical').length,
+    attention: machineConditions.filter(item => item.status === 'Warning').length,
+    normal: machineConditions.filter(item => item.status === 'Safe').length
+  };
 
   page.innerHTML = `
     <div class="page-header">
@@ -1499,21 +992,14 @@ function renderDashboard() {
       </div>
 
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 16px">
-        <!-- Health Gauge -->
-        <div class="card flex flex-col justify-center items-center" style="padding:20px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center">
-          <div class="card-title mb-3">⚙️ Ortalama Tezgah Sağlığı</div>
-          <div class="health-gauge-wrap" style="position:relative; width:100px; height:100px; display:flex; align-items:center; justify-content:center">
-            <svg class="health-gauge-svg" width="90" height="90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" stroke="var(--border)" stroke-width="8" fill="transparent" />
-              <circle cx="50" cy="50" r="40" stroke="${healthGlowColor}" stroke-width="8" fill="transparent" 
-                stroke-dasharray="251.2" stroke-dashoffset="${strokeDashOffset}" stroke-linecap="round"
-                style="filter: drop-shadow(0 0 5px ${healthGlowColor}); transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.5s ease" />
-            </svg>
-            <div style="position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center">
-              <span id="gauge-val-health" style="font-size:18px; font-weight:800; color:var(--text-primary)">0%</span>
-            </div>
+        <!-- Explainable machine conditions -->
+        <div class="card" style="padding:20px">
+          <div class="card-title mb-3">Tezgâh Durum Özeti</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button class="status-surface danger" onclick="navigate('predictive')" style="text-align:left;padding:12px"><strong>${machineConditionCounts.critical}</strong><span style="display:block">Kritik pil veya fan bildirimi</span></button>
+            <button class="status-surface warn" onclick="navigate('predictive')" style="text-align:left;padding:12px"><strong>${machineConditionCounts.attention}</strong><span style="display:block">Kontrol edilmeli</span></button>
+            <button class="status-surface ok" onclick="navigate('predictive')" style="text-align:left;padding:12px"><strong>${machineConditionCounts.normal}</strong><span style="display:block">Aktif kritik bildirim yok</span></button>
           </div>
-          <span class="tag ${healthClass} mt-3">✓ ${healthLabel}</span>
         </div>
 
         <!-- Quick Access -->
@@ -1600,7 +1086,6 @@ function renderDashboard() {
     animateCounter(page.querySelector('#dash-val-month'), thisMonthMaint.length);
     animateCounter(page.querySelector('#dash-val-crit-bat'), criticalBatteries.length);
     animateCounter(page.querySelector('#dash-val-notifs'), State.notifications.length);
-    animateCounter(page.querySelector('#gauge-val-health'), avgHealth, 800, '', '%');
   }, 40);
 
   return page;
@@ -1614,1174 +1099,17 @@ function alarmCategoryTag(cat) {
 // ════════════════════════════════════════════════════════════════
 //  LIBRARY
 // ════════════════════════════════════════════════════════════════
-function renderLibrary() {
-  const page = createPage('library');
-  page.innerHTML = `
-    <div class="page-header">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1>📚 Tezgah Kitaplığı</h1>
-          <p>${State.library.length} teknik doküman — Operatör, Bakım, PMC, Servo, Elektrik, Mekanik</p>
-        </div>
-        <button class="btn btn-primary" id="btn-import-book">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          PDF Ekle
-        </button>
-      </div>
-      <div class="flex gap-2 mt-3" style="flex-wrap:wrap">
-        <div class="search-bar" style="flex:1; max-width:320px">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="lib-search" placeholder="Kitap ara..." />
-        </div>
-        <select id="lib-cat-filter" style="width:160px">
-          <option value="">Tüm Kategoriler</option>
-          <option>Operatör</option>
-          <option>Bakım</option>
-          <option>Parametre</option>
-          <option>PMC / PLC</option>
-          <option>Servo</option>
-          <option>Spindle</option>
-          <option>Elektrik</option>
-          <option>Mekanik</option>
-        </select>
-        <select id="lib-series-filter" style="width:140px">
-          <option value="">Tüm Seriler</option>
-          <option>0i-F</option>
-          <option>30i-B</option>
-          <option>31i-B</option>
-          <option>Genel</option>
-        </select>
-        <select id="lib-view-filter" style="width:150px"><option value="all">Tüm Belgeler</option><option value="favorites">Favoriler</option><option value="recent">Son Görüntülenenler</option></select>
-      </div>
-    </div>
-    <div class="page-body">
-      <!-- Offline Knowledge Packs Card -->
-      <div class="card mb-4" style="padding:16px; background:var(--bg-card2)">
-        <div class="card-title mb-3" style="display:flex; align-items:center; justify-content:space-between">
-          <span>📦 Çevrimdışı Kılavuz Paketleri (Offline Knowledge Packs)</span>
-          <span class="tag tag-blue" style="font-size:11px">İnternetsiz Fabrika Kullanımı</span>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
-          ${(window.OFFLINE_PACKS || []).map(p => `
-            <div style="background:var(--bg-card); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border); display:flex; flex-direction:column; justify-content:space-between">
-              <div>
-                <div style="font-weight:700; font-size:12.5px; color:var(--text-accent); margin-bottom:4px">${escapeHTML(p.name)}</div>
-                <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px">${escapeHTML(p.desc)}</div>
-              </div>
-              <div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px; border-top:1px solid var(--border-light); padding-top:8px">
-                <span class="font-mono text-xs" style="color:var(--text-muted)">${p.size} · ${p.version}</span>
-                ${p.status === 'installed' ? `
-                  <span class="tag tag-green" style="font-size:11px">✅ Çevrimdışı Hazır</span>
-                ` : `
-                  <button class="btn btn-primary btn-sm" id="btn-pack-${p.id}" onclick="downloadOfflinePack('${p.id}')" style="font-size:11px; padding:3px 10px">
-                    📥 İndir & Arşivle
-                  </button>
-                `}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
+let KnowledgeScreens;
+let AlarmParameterScreens;
+const sendAIMessage = (...args) => { getAIScreen(); return window.sendAIMessage(...args); };
+function getAlarmParameterScreens(){if(!AlarmParameterScreens)AlarmParameterScreens=window.MTBAlarmParameterScreens.initialize({State,createPage,escapeHTML,showToast,showModal,closeModal,canEdit,saveCustomAlarmNotes,navigate,alarmCategoryTag,sendAIMessage});return AlarmParameterScreens;}
+function renderAlarms(){return getAlarmParameterScreens().renderAlarms();}
+function renderParameters(){return getAlarmParameterScreens().renderParameters();}
+function getKnowledgeScreens(){if(!KnowledgeScreens)KnowledgeScreens=window.MTBKnowledgeScreens.initialize({State,createPage,escapeHTML,showToast,navigate,saveKnowledgePreferences});return KnowledgeScreens;}
+function renderLibrary(){return getKnowledgeScreens().renderLibrary();}
+function renderPdfViewer(extraData){return getKnowledgeScreens().renderPdfViewer(extraData);}
+const renderProjects = (...args) => window.OperationsInsights.renderProjects(...args);
 
-      <div class="card mb-4"><div class="card-title mb-2">🔎 Birleşik Yerel Bilgi Araması</div><div style="font-size:11px;color:var(--text-secondary)">Kılavuz başlıkları, açıklamalar, bölümler ve alarm kataloğu çevrimdışı tam metin indeksinde birlikte aranır.</div><div id="knowledge-search-results" style="margin-top:10px"></div></div>
-      <div id="lib-grid" class="grid-2"></div>
-    </div>
-
-  `;
-
-  renderLibraryGrid(State.library);
-
-  page.querySelector('#lib-search').addEventListener('input', filterLibrary);
-  page.querySelector('#lib-cat-filter').addEventListener('change', filterLibrary);
-  page.querySelector('#lib-series-filter').addEventListener('change', filterLibrary);
-  page.querySelector('#lib-view-filter').addEventListener('change', filterLibrary);
-  page.querySelector('#btn-import-book').addEventListener('click', importBook);
-
-  function filterLibrary() {
-    const q = page.querySelector('#lib-search').value.toLowerCase();
-    const cat = page.querySelector('#lib-cat-filter').value;
-    const series = page.querySelector('#lib-series-filter').value;
-    const view = page.querySelector('#lib-view-filter').value;
-    const favorites = State.settings.knowledgeFavorites || [];
-    const recent = State.settings.knowledgeRecent || [];
-    const filtered = State.library.filter(b =>
-      (!q || [b.id,b.title,b.description,...(b.chapters||[])].join(' ').toLowerCase().includes(q)) &&
-      (!cat || b.category === cat) &&
-      (!series || b.series.includes(series)) &&
-      (view === 'all' || (view === 'favorites' && favorites.includes(b.id)) || (view === 'recent' && recent.includes(b.id)))
-    );
-    renderLibraryGrid(filtered);
-    const results = page.querySelector('#knowledge-search-results');
-    if (!q) { results.innerHTML = '<span style="font-size:11px;color:var(--text-muted)">Alarm kodu veya teknik terim yazın.</span>'; return; }
-    const alarmHits = State.alarms.filter(a => [a.code,a.title,a.description,...(a.causes||[]),...(a.solutions||[])].join(' ').toLowerCase().includes(q)).slice(0, 8);
-    results.innerHTML = alarmHits.length ? alarmHits.map(a => `<button class="btn btn-ghost btn-sm" style="margin:3px" onclick="openAlarmFromKnowledge('${escapeHTML(a.code)}')">${escapeHTML(a.code)} — ${escapeHTML(a.title)}</button>`).join('') : '<span style="font-size:11px;color:var(--text-muted)">Alarm kataloğunda eşleşme yok.</span>';
-  }
-
-  function renderLibraryGrid(books) {
-    const grid = page.querySelector('#lib-grid');
-    if (!books.length) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><p>Kitap bulunamadı</p></div>`;
-      return;
-    }
-    grid.innerHTML = books.map(b => `
-      <div class="card book-card" data-id="${b.id}">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="book-icon">${bookIcon(b.category)}</div>
-          <div style="flex:1; min-width:0">
-            <div class="card-title truncate">${escapeHTML(b.title)}</div>
-            <div class="card-sub">${escapeHTML(b.series)} · ${b.pages} sayfa</div>
-          </div>
-          <span class="tag ${bookCatTag(b.category)}">${escapeHTML(b.category)}</span>
-          <button class="btn btn-ghost btn-sm btn-icon" title="Favori" onclick="event.stopPropagation(); toggleKnowledgeFavorite('${b.id}')">${(State.settings.knowledgeFavorites||[]).includes(b.id)?'★':'☆'}</button>
-        </div>
-        <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5; margin-bottom:12px">${escapeHTML(b.description)}</p>
-        <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px">
-          <strong>Sürüm:</strong> ${escapeHTML(b.version || 'Yerel 2026.1')} · <strong>Kaynak:</strong> ${escapeHTML(b.id)}<br>
-          <strong style="color:var(--text-secondary)">Bölümler:</strong><br>
-          ${b.chapters.slice(0, 3).map(escapeHTML).join(' · ')}${b.chapters.length > 3 ? ` · +${b.chapters.length-3} daha` : ''}
-        </div>
-        <div class="flex gap-2">
-          <button class="btn btn-primary btn-sm" onclick="openBook('${b.id}')">
-            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            İncele
-          </button>
-          <button class="btn btn-secondary btn-sm" onclick="openChapters('${b.id}')">
-            <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            Bölümler
-          </button>
-          <button class="btn btn-ghost btn-sm btn-icon" title="PDF Aç" onclick="openBookPDF('${b.id}')">
-            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="openKnowledgeNote('${b.id}')">Yerel Not</button>
-          <button class="btn btn-ghost btn-sm" onclick="openBookPDFPage('${b.id}')">Sayfaya Git</button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  return page;
-}
-
-function bookIcon(cat) {
-  const icons = { Operatör:'📖', Bakım:'🔧', Parametre:'⚙️', 'PMC / PLC':'💻', Servo:'⚡', Spindle:'🔄', Elektrik:'🔌', Mekanik:'⚙️' };
-  return `<div style="font-size:28px">${icons[cat] || '📄'}</div>`;
-}
-function bookCatTag(cat) {
-  const map = { Operatör:'tag-blue', Bakım:'tag-amber', Parametre:'tag-red', 'PMC / PLC':'tag-purple', Servo:'tag-cyan', Spindle:'tag-green', Elektrik:'tag-amber', Mekanik:'tag-gray' };
-  return map[cat] || 'tag-gray';
-}
-
-window.openBook = function(id) {
-  const book = State.library.find(b => b.id === id);
-  if (!book) return;
-  State.settings.knowledgeRecent = [id, ...(State.settings.knowledgeRecent || []).filter(x => x !== id)].slice(0, 20);
-  saveKnowledgePreferences();
-  showModal('book-detail', `
-    <div class="modal-header">
-      <span class="modal-title">${escapeHTML(book.title)}</span>
-      <button class="modal-close" onclick="closeModal('book-detail')">✕</button>
-    </div>
-    <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap">
-      <span class="tag tag-blue">${escapeHTML(book.series)}</span>
-      <span class="tag ${bookCatTag(book.category)}">${escapeHTML(book.category)}</span>
-      <span class="tag tag-gray">${book.language === 'TR' ? '🇹🇷 Türkçe' : escapeHTML(book.language)}</span>
-      <span class="tag tag-gray">${book.pages} Sayfa</span>
-    </div>
-    <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.6; margin-bottom:16px">${escapeHTML(book.description)}</p>
-    <strong style="font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted)">İçindekiler</strong>
-    <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px">
-      ${book.chapters.map((ch, i) => `
-        <div style="display:flex; gap:10px; align-items:center; padding:6px 10px; background:var(--bg-card2); border-radius:var(--radius-sm)">
-          <span class="font-mono text-sm" style="color:var(--accent); min-width:20px">${i+1}</span>
-          <span style="font-size:12px">${escapeHTML(ch)}</span>
-        </div>
-      `).join('')}
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('book-detail')">Kapat</button>
-      <button class="btn btn-primary" onclick="openBookPDF('${book.id}'); closeModal('book-detail')">
-        <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-        PDF Aç
-      </button>
-    </div>
-  `);
-};
-
-window.openChapters = window.openBook;
-
-window.openBookPDF = async function(id, pageNumber = null) {
-  const book = State.library.find(b => b.id === id);
-  if (!book) return;
-  if (book.webUrl) {
-    navigate('pdf_viewer', { bookId: id, filePath: book.webUrl, title: book.title, pageNumber });
-    return;
-  }
-  const savedPath = State.settings.pdfPaths[id];
-  if (savedPath) {
-    navigate('pdf_viewer', { bookId: id, filePath: savedPath, title: book.title, pageNumber });
-  } else {
-    const filters = [{ name: 'PDF Dosyası', extensions: ['pdf'] }];
-    const filePath = await window.electronAPI.openFileDialog(filters);
-    if (filePath) {
-      State.settings.pdfPaths[id] = filePath;
-      await saveSettings();
-      showToast('PDF kılavuzu başarıyla ilişkilendirildi.', 'success');
-      navigate('pdf_viewer', { bookId: id, filePath, title: book.title, pageNumber });
-    } else {
-      showToast('Kılavuz için PDF dosyası seçilmedi.', 'info');
-    }
-  }
-};
-
-window.changeBookPDF = async function(id) {
-  const book = State.library.find(b => b.id === id);
-  if (!book) return;
-  const filters = [{ name: 'PDF Dosyası', extensions: ['pdf'] }];
-  const filePath = await window.electronAPI.openFileDialog(filters);
-  if (filePath) {
-    State.settings.pdfPaths[id] = filePath;
-    await saveSettings();
-    showToast('PDF kılavuzu güncellendi.', 'success');
-    navigate('pdf_viewer', { bookId: id, filePath, title: book.title });
-  }
-};
-
-async function importBook() {
-  const filters = [{ name: 'PDF Dosyası', extensions: ['pdf'] }];
-  const filePath = await window.electronAPI.openFileDialog(filters);
-  if (!filePath) return;
-  showToast('PDF kütüphaneye eklendi (demo)', 'success');
-}
-
-function renderPdfViewer(extraData) {
-  const page = createPage('pdf_viewer');
-  if (!extraData || !extraData.filePath) {
-    page.innerHTML = `
-      <div class="page-header">
-        <div class="flex items-center gap-3">
-          <button class="btn btn-secondary btn-sm btn-icon" onclick="navigate('library')">
-            <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
-          </button>
-          <h1>PDF Okuyucu</h1>
-        </div>
-      </div>
-      <div class="page-body">
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-          <p>Herhangi bir doküman yüklenmedi. Lütfen kitaplıktan bir kitap seçip "PDF Aç" butonuna basın.</p>
-        </div>
-      </div>
-    `;
-    return page;
-  }
-
-  const { bookId, filePath, title, pageNumber } = extraData;
-  const isWeb = filePath.startsWith('http://') || filePath.startsWith('https://');
-  const baseFileUrl = isWeb ? filePath : 'app-file:///' + filePath.replace(/\\/g, '/');
-  const fileUrl = pageNumber ? `${baseFileUrl}#page=${pageNumber}` : baseFileUrl;
-
-  page.innerHTML = `
-    <div class="page-header" style="padding: 12px 28px; display:flex; align-items:center; justify-content:space-between; height: 56px;">
-      <div class="flex items-center gap-3" style="min-width:0; flex:1">
-        <button class="btn btn-secondary btn-sm btn-icon" onclick="navigate('library')" title="Kitaplığa Dön">
-          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
-        </button>
-        <h1 style="font-size:14px; margin:0; font-weight:600;" class="truncate">${title}</h1>
-      </div>
-      <div class="flex gap-2">
-        ${isWeb ? '' : `
-        <button class="btn btn-secondary btn-sm" onclick="changeBookPDF('${bookId}')">
-          <svg style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 11-.57-8.38l5.67-5.67"/></svg>
-          Dosyayı Değiştir
-        </button>
-        `}
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="window.electronAPI.openExternal('${fileUrl}')" title="Harici Tarayıcıda Aç">
-          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        </button>
-      </div>
-    </div>
-    <div class="page-body" style="padding:0; overflow:hidden; display:flex; flex-direction:column; height:calc(100vh - 56px)">
-      <iframe src="${fileUrl}" style="width:100%; height:100%; border:none;" id="pdf-frame"></iframe>
-    </div>
-  `;
-  return page;
-}
-
-// ════════════════════════════════════════════════════════════════
-//  PROJECTS
-// ════════════════════════════════════════════════════════════════
-function renderProjects() {
-  const page = createPage('projects');
-  page.innerHTML = `
-    <div class="page-header">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1>📁 Proje Yöneticisi</h1>
-          <p>Mekanik, elektrik ve PMC projelerinizi yönetin</p>
-        </div>
-        <button class="btn btn-primary" id="btn-new-project">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Yeni Proje
-        </button>
-      </div>
-      <div class="flex gap-2 mt-3">
-        <div class="search-bar" style="flex:1; max-width:300px">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="proj-search" placeholder="Proje ara..." />
-        </div>
-        <select id="proj-type-filter" style="width:160px">
-          <option value="">Tüm Tipler</option>
-          <option value="mech">Mekanik</option>
-          <option value="elec">Elektrik</option>
-          <option value="pmc">PMC / Ladder</option>
-        </select>
-      </div>
-    </div>
-    <div class="page-body">
-      <div id="proj-grid" class="grid-3"></div>
-    </div>
-  `;
-
-  renderProjectGrid(page);
-  page.querySelector('#btn-new-project').addEventListener('click', showNewProjectModal);
-  page.querySelector('#proj-search').addEventListener('input', () => renderProjectGrid(page));
-  page.querySelector('#proj-type-filter').addEventListener('change', () => renderProjectGrid(page));
-
-  return page;
-}
-
-function renderProjectGrid(page) {
-  const container = (page || document).querySelector('#proj-grid');
-  if (!container) return;
-  const q = ((page || document).querySelector('#proj-search')?.value || '').toLowerCase();
-  const type = (page || document).querySelector('#proj-type-filter')?.value || '';
-
-  let projs = State.projects.filter(p =>
-    (!q || p.name.toLowerCase().includes(q)) &&
-    (!type || p.type === type)
-  );
-
-  if (!projs.length) {
-    const filtered = State.projects.length > 0;
-    container.innerHTML = `<div style="grid-column:1/-1">${window.MTBUX.emptyState({
-      icon: '▣',
-      title: filtered ? 'Filtrelere uygun proje bulunamadı' : 'Henüz proje oluşturulmadı',
-      description: filtered ? 'Arama ifadesini veya proje tipi filtresini değiştirerek tekrar deneyin.' : 'Elektrik, mekanik veya PMC çalışmalarınızı tek yerde takip etmek için ilk projeyi oluşturun.',
-      actionLabel: filtered ? 'Filtreleri temizle' : 'İlk projeyi oluştur',
-      command: filtered ? 'clear-filters' : 'new-project'
-    })}</div>`;
-    return;
-  }
-
-  const typeLabel = { mech:'⚙️ Mekanik', elec:'⚡ Elektrik', pmc:'💻 PMC/Ladder' };
-  container.innerHTML = projs.map(p => `
-    <div class="project-card ${p.type}" onclick="openProject('${p.id}')">
-      <div class="project-header">
-        <div>
-          <div class="project-name">${escapeHTML(p.name)}</div>
-          <div class="project-type">${escapeHTML(typeLabel[p.type] || p.type)}</div>
-        </div>
-        <span class="tag ${p.type==='mech'?'tag-blue':p.type==='elec'?'tag-amber':'tag-purple'}">${escapeHTML(p.status || 'Aktif')}</span>
-      </div>
-      <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:10px">${escapeHTML(p.description || 'Açıklama yok')}</p>
-      <div class="progress-bar"><div class="progress-fill" style="width:${p.progress||0}%"></div></div>
-      <div class="project-meta">
-        <div class="project-meta-item">
-          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          ${p.createdAt ? new Date(p.createdAt).toLocaleDateString('tr-TR') : '-'}
-        </div>
-        <div class="project-meta-item">
-          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-          ${escapeHTML(p.owner || 'Kullanıcı')}
-        </div>
-        <div class="project-meta-item" style="margin-left:auto; color:var(--accent)">
-          %${p.progress||0}
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-window.openProject = function(id) {
-  const proj = State.projects.find(p => p.id === id);
-  if (!proj) return;
-  showToast(`"${proj.name}" projesi açıldı`, 'info');
-};
-
-function showNewProjectModal() {
-  showModal('new-project', `
-    <div class="modal-header">
-      <span class="modal-title">Yeni Proje Oluştur</span>
-      <button class="modal-close" onclick="closeModal('new-project')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Proje Adı *</label>
-      <input class="form-control" id="np-name" placeholder="ör. VMC-850 Elektrik Revizyonu" />
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Proje Tipi *</label>
-        <select class="form-control" id="np-type">
-          <option value="mech">⚙️ Mekanik</option>
-          <option value="elec">⚡ Elektrik</option>
-          <option value="pmc">💻 PMC / Ladder</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">FANUC Serisi</label>
-        <select class="form-control" id="np-series">
-          <option>0i-F</option>
-          <option>30i-B</option>
-          <option>31i-B</option>
-          <option>32i-B</option>
-          <option>Genel</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Açıklama</label>
-      <textarea class="form-control" id="np-desc" rows="3" placeholder="Proje açıklaması..."></textarea>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Sorumlu</label>
-        <input class="form-control" id="np-owner" placeholder="Ad Soyad" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tezgah / Makine</label>
-        <input class="form-control" id="np-machine" placeholder="ör. VMC-850" />
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('new-project')">İptal</button>
-      <button class="btn btn-primary" id="btn-create-proj">Proje Oluştur</button>
-    </div>
-  `);
-
-  document.getElementById('btn-create-proj').addEventListener('click', createProject);
-}
-
-async function createProject() {
-  const name = document.getElementById('np-name').value.trim();
-  if (!name) { showToast('Proje adı zorunlu!', 'error'); return; }
-
-  const id = 'proj_' + Date.now();
-  const proj = {
-    id,
-    name,
-    type: document.getElementById('np-type').value,
-    series: document.getElementById('np-series').value,
-    description: document.getElementById('np-desc').value,
-    owner: document.getElementById('np-owner').value || 'Kullanıcı',
-    machine: document.getElementById('np-machine').value,
-    progress: 0,
-    status: 'Aktif',
-    createdAt: new Date().toISOString(),
-    files: []
-  };
-
-  // Save to disk
-  const projDir = State.appDataDir + '/projects/' + id;
-  try {
-    const dirRes = await window.electronAPI.ensureDir(projDir);
-    if (!dirRes || !dirRes.ok) {
-      showToast('Proje dizini oluşturulamadı: ' + (dirRes?.error || 'Bilinmeyen hata'), 'error');
-      return;
-    }
-    const writeRes = await window.electronAPI.writeFile(projDir + '/meta.json', JSON.stringify(proj, null, 2));
-    if (writeRes && writeRes.ok) {
-      State.projects.push(proj);
-      closeModal('new-project');
-      showToast('Proje oluşturuldu!', 'success');
-      renderProjectGrid();
-    } else {
-      showToast('Proje kaydedilemedi: ' + (writeRes?.error || 'Bilinmeyen hata'), 'error');
-    }
-  } catch (err) {
-    showToast('Proje oluşturulurken hata: ' + err.message, 'error');
-  }
-}
-
-// ════════════════════════════════════════════════════════════════
-//  ALARMS DATABASE
-// ════════════════════════════════════════════════════════════════
-function renderAlarms() {
-  const page = createPage('alarms');
-  page.innerHTML = `
-    <div class="page-header">
-      <h1>⚠️ FANUC Alarm Veritabanı</h1>
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
-        <p style="margin:0">${State.alarms.length} alarm kodu — Servo, PMC, Program, Overtravel, Spindle</p>
-        <div class="flex gap-1" style="flex-wrap:wrap">
-          <span class="tag tag-red" style="font-size:10.5px">Servo (${State.alarms.filter(a => a.category === 'Servo').length})</span>
-          <span class="tag tag-blue" style="font-size:10.5px">Program (${State.alarms.filter(a => a.category === 'Program').length})</span>
-          <span class="tag tag-amber" style="font-size:10.5px">Spindle (${State.alarms.filter(a => a.category === 'Spindle').length})</span>
-          <span class="tag tag-gray" style="font-size:10.5px">PMC (${State.alarms.filter(a => a.category === 'PMC').length})</span>
-        </div>
-      </div>
-      <div class="flex gap-2 mt-3" style="flex-wrap:wrap">
-        <div class="search-bar" style="flex:1; max-width:340px">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="alarm-search" placeholder="Kod veya no ara... (ör: SV0401, 401, servo)" />
-        </div>
-        <select id="alarm-cat-filter" style="width:150px">
-          <option value="">Tüm Kategoriler</option>
-          <option>Servo</option>
-          <option>Program</option>
-          <option>Overtravel</option>
-          <option>Spindle</option>
-          <option>Overheat</option>
-          <option>PMC</option>
-          <option>System</option>
-          <option>External</option>
-        </select>
-        <select id="alarm-series-filter" style="width:130px">
-          <option value="">Tüm Seriler</option>
-          <option>0i-F</option>
-          <option>30i-B</option>
-          <option>31i-B</option>
-          <option>32i-B</option>
-        </select>
-      </div>
-    </div>
-    <div class="page-body" style="padding:0">
-      <div id="alarm-detail-pane" style="display:none; padding:20px 28px; border-bottom:1px solid var(--border); background:var(--bg-surface)"></div>
-      <div style="overflow-y:auto; flex:1">
-        <table class="data-table" id="alarm-table">
-          <thead>
-            <tr>
-              <th>Kod</th>
-              <th>Kategori</th>
-              <th>Başlık</th>
-              <th>Seri</th>
-              <th>İşlem</th>
-            </tr>
-          </thead>
-          <tbody id="alarm-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  renderAlarmTable(State.alarms, page);
-
-  page.querySelector('#alarm-search').addEventListener('input', () => filterAlarms(page));
-  page.querySelector('#alarm-cat-filter').addEventListener('change', () => filterAlarms(page));
-  page.querySelector('#alarm-series-filter').addEventListener('change', () => filterAlarms(page));
-
-  return page;
-}
-
-function filterAlarms(page) {
-  const rawQ = page.querySelector('#alarm-search').value.toLowerCase().trim();
-  const cat = page.querySelector('#alarm-cat-filter').value;
-  const series = page.querySelector('#alarm-series-filter').value;
-
-  const cleanQ = rawQ.replace(/[^a-z0-9]/g, '');
-
-  const filtered = State.alarms.filter(a => {
-    const catMatch = !cat || a.category === cat;
-    const seriesMatch = !series || a.series.includes(series);
-    if (!catMatch || !seriesMatch) return false;
-
-    if (!rawQ) return true;
-
-    const cleanCode = a.code.toLowerCase().replace(/[^a-z0-9]/g, '');
-    
-    let numMatch = false;
-    const queryNumMatch = rawQ.match(/\d+/);
-    const codeNumMatch = a.code.match(/\d+/);
-
-    if (queryNumMatch && codeNumMatch) {
-      const qNum = parseInt(queryNumMatch[0], 10);
-      const cNum = parseInt(codeNumMatch[0], 10);
-      
-      const qAlpha = rawQ.replace(/\d+/g, '').replace(/[^a-z]/g, '');
-      const cAlpha = a.code.toLowerCase().replace(/\d+/g, '').replace(/[^a-z]/g, '');
-      
-      const alphaMatches = !qAlpha || cAlpha.includes(qAlpha);
-      
-      if (alphaMatches) {
-        const diff = Math.abs(cNum - qNum);
-        // Match if the query number is a substring of the alarm code's numeric part
-        // OR if the numeric difference is within a tolerance of +/- 5 (fuzzy numeric search)
-        if (codeNumMatch[0].includes(queryNumMatch[0]) || diff <= 5) {
-          numMatch = true;
-        }
-      }
-    }
-
-    const textMatch = a.code.toLowerCase().includes(rawQ) ||
-                      (cleanQ !== '' && cleanCode.includes(cleanQ)) ||
-                      a.title.toLowerCase().includes(rawQ) ||
-                      a.description.toLowerCase().includes(rawQ);
-
-    return textMatch || numMatch;
-  });
-  renderAlarmTable(filtered, page);
-}
-
-function renderAlarmTable(alarms, page) {
-  const tbody = (page || document).querySelector('#alarm-tbody');
-  if (!tbody) return;
-  if (!alarms.length) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-muted)">Alarm bulunamadı</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = alarms.map(a => `
-    <tr class="alarm-tr" data-code="${a.code}" style="cursor:pointer">
-      <td><span class="font-mono text-sm" style="color:var(--text-accent); font-weight:600">${a.code}</span></td>
-      <td><span class="tag ${alarmCategoryTag(a.category)}">${a.category}</span></td>
-      <td><span style="font-size:12px">${a.title}</span></td>
-      <td><span style="font-size:11px; color:var(--text-muted)">${a.series.join(', ')}</span></td>
-      <td>
-        <button class="btn btn-secondary btn-sm" onclick="showAlarmDetail('${a.code}')">
-          Detay
-        </button>
-      </td>
-    </tr>
-  `).join('');
-
-  tbody.querySelectorAll('.alarm-tr').forEach(tr => {
-    tr.addEventListener('click', () => showAlarmDetail(tr.dataset.code));
-  });
-}
-
-window.showAlarmDetail = function(code) {
-  const alarm = State.alarms.find(a => a.code === code);
-  if (!alarm) return;
-
-  // Parse linked parameters
-  const linkedParams = [];
-  const textToScan = (alarm.description + ' ' + alarm.causes.join(' ') + ' ' + alarm.solutions.join(' ')).toLowerCase();
-  
-  State.parameters.forEach(p => {
-    const regex = new RegExp('\\b' + p.no + '\\b');
-    if (regex.test(textToScan) && p.no > 0) {
-      linkedParams.push(p);
-    }
-  });
-
-  showModal('alarm-detail', `
-    <div class="modal-header">
-      <span class="modal-title">
-        <span class="font-mono" style="color:var(--text-accent); margin-right:8px">${escapeHTML(alarm.code)}</span>
-        ${escapeHTML(alarm.title)}
-      </span>
-      <button class="modal-close" onclick="closeModal('alarm-detail')">✕</button>
-    </div>
-    <div class="flex gap-2 mb-3" style="flex-wrap:wrap">
-      <span class="tag ${alarmCategoryTag(alarm.category)}">${escapeHTML(alarm.category)}</span>
-      ${alarm.series.map(s => `<span class="tag tag-gray">${escapeHTML(s)}</span>`).join('')}
-    </div>
-    <div class="card" style="margin-bottom:12px">
-      <div class="card-title mb-2">📋 Açıklama</div>
-      <p style="font-size:12.5px; line-height:1.6; color:var(--text-secondary)">${escapeHTML(alarm.description)}</p>
-    </div>
-    <div class="grid-2" style="gap:12px">
-      <div class="card">
-        <div class="card-title mb-2" style="color:var(--amber)">⚠️ Olası Nedenler</div>
-        <ul style="list-style:none; display:flex; flex-direction:column; gap:6px">
-          ${alarm.causes.map(c => `
-            <li style="display:flex; gap:8px; font-size:12px">
-              <span style="color:var(--amber); flex-shrink:0">▸</span>
-              <span style="color:var(--text-secondary)">${escapeHTML(c)}</span>
-            </li>
-          `).join('')}
-        </ul>
-      </div>
-      <div class="card">
-        <div class="card-title mb-2" style="color:var(--green)">✅ Çözüm Adımları</div>
-        <ol style="list-style:none; display:flex; flex-direction:column; gap:6px">
-          ${alarm.solutions.map((s, i) => `
-            <li style="display:flex; gap:8px; font-size:12px">
-              <span class="font-mono" style="color:var(--green); flex-shrink:0; min-width:16px">${i+1}.</span>
-              <span style="color:var(--text-secondary)">${escapeHTML(s)}</span>
-            </li>
-          `).join('')}
-        </ol>
-      </div>
-    </div>
-    
-    ${linkedParams.length > 0 ? `
-      <div class="card mt-3">
-        <div class="card-title mb-2" style="color:var(--text-accent)">⚙️ İlişkili Sistem Parametreleri</div>
-        <div style="display:flex; flex-direction:column; gap:8px">
-          ${linkedParams.map(p => `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card2); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border)">
-              <div style="font-size:12.5px">
-                <strong class="font-mono" style="color:var(--text-accent); font-size:13px; margin-right:6px">No. ${escapeHTML(String(p.no))}</strong>
-                <span style="color:var(--text-secondary)">${escapeHTML(p.name)}</span>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="goToParameterFromAlarm(${p.no})" style="font-size:11px; padding:2px 8px; border:1px solid var(--border)">
-                ⚙️ Parametreye Git
-              </button>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    ` : ''}
-
-    <div class="card mt-3" style="border: 1px solid rgba(59, 130, 246, 0.2); background: rgba(59, 130, 246, 0.02)">
-      <div class="flex justify-between items-center mb-2">
-        <span class="card-title" style="color:var(--text-accent); font-size:12px">📝 Fabrika Özel Çözüm Notları</span>
-        ${canEdit() ? `<span style="font-size:10px; font-weight:normal; color:var(--text-muted)">Düzenleme Yetkisi Var</span>` : ''}
-      </div>
-      
-      <div id="custom-note-view-container" style="display:${State.custom_alarm_notes[alarm.code] ? 'block' : 'none'}">
-        <p style="font-size:12px; line-height:1.6; color:var(--text-secondary); white-space:pre-wrap; background:var(--bg-card2); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border)" id="custom-note-text-display">${escapeHTML(State.custom_alarm_notes[alarm.code] || '')}</p>
-        ${canEdit() ? `<button class="btn btn-secondary btn-sm mt-2" onclick="editCustomAlarmNote()">Notu Düzenle</button>` : ''}
-      </div>
-
-      <div id="custom-note-empty-container" style="display:${State.custom_alarm_notes[alarm.code] ? 'none' : 'block'}">
-        <p style="font-size:11.5px; color:var(--text-muted); font-style:italic">Bu hata koduna ait fabrika tecrübe notu eklenmemiş.</p>
-        ${canEdit() ? `<button class="btn btn-secondary btn-sm mt-2" onclick="editCustomAlarmNote()">+ Not Ekle</button>` : ''}
-      </div>
-
-      ${canEdit() ? `
-        <div id="custom-note-edit-container" style="display:none; margin-top:8px">
-          <textarea class="form-control" id="custom-note-textarea" rows="3" style="font-size:12px; width:100%; font-family:inherit" placeholder="Örn: CNC-02 tezgahında bu hata X ekseni motorunun arkasındaki soketin gevşemesinden dolayı oluyor. Önce soketi sıkın...">${escapeHTML(State.custom_alarm_notes[alarm.code] || '')}</textarea>
-          <div class="flex gap-2 mt-2">
-            <button class="btn btn-primary btn-sm" onclick="saveCustomAlarmNote('${alarm.code}')">Notu Kaydet</button>
-            <button class="btn btn-ghost btn-sm" onclick="cancelEditCustomAlarmNote('${alarm.code}')">İptal</button>
-          </div>
-        </div>
-      ` : ''}
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('alarm-detail')">Kapat</button>
-      <button class="btn btn-primary" onclick="askAIAboutAlarm('${alarm.code}')">
-        🤖 AI'ya Sor
-      </button>
-    </div>
-  `, 'lg');
-};
-
-window.editCustomAlarmNote = function() {
-  const v = document.getElementById('custom-note-view-container');
-  const em = document.getElementById('custom-note-empty-container');
-  const ed = document.getElementById('custom-note-edit-container');
-  if (v) v.style.display = 'none';
-  if (em) em.style.display = 'none';
-  if (ed) ed.style.display = 'block';
-  const ta = document.getElementById('custom-note-textarea');
-  if (ta) ta.focus();
-};
-
-window.cancelEditCustomAlarmNote = function(code) {
-  const v = document.getElementById('custom-note-view-container');
-  const em = document.getElementById('custom-note-empty-container');
-  const ed = document.getElementById('custom-note-edit-container');
-  const ta = document.getElementById('custom-note-textarea');
-  
-  if (code && ta) {
-    ta.value = State.custom_alarm_notes[code] || '';
-  }
-  const hasNote = !!(ta && ta.value.trim());
-
-  if (v) v.style.display = hasNote ? 'block' : 'none';
-  if (em) em.style.display = hasNote ? 'none' : 'block';
-  if (ed) ed.style.display = 'none';
-};
-
-window.saveCustomAlarmNote = async function(code) {
-  if (!canEdit()) { showToast('Düzenleme yetkiniz yok', 'error'); return; }
-  const ta = document.getElementById('custom-note-textarea');
-  if (!ta) return;
-  const noteVal = ta.value.trim();
-
-  if (noteVal) {
-    State.custom_alarm_notes[code] = noteVal;
-  } else {
-    delete State.custom_alarm_notes[code];
-  }
-
-  const ok = await saveCustomAlarmNotes();
-  if (ok) {
-    showToast('Fabrika notu başarıyla kaydedildi ✓', 'success');
-    const disp = document.getElementById('custom-note-text-display');
-    if (disp) disp.textContent = noteVal;
-    window.cancelEditCustomAlarmNote(code);
-  }
-};
-
-window.goToParameterFromAlarm = function(paramNo) {
-  closeModal('alarm-detail');
-  navigate('parameters');
-  setTimeout(() => {
-    const page = document.getElementById('page-parameters');
-    const searchInput = document.getElementById('param-search');
-    if (searchInput) {
-      searchInput.value = paramNo;
-      if (page) {
-        filterParams(page);
-      }
-    }
-  }, 100);
-};
-
-window.askAIAboutAlarm = function(code) {
-  const alarm = State.alarms.find(a => a.code === code);
-  if (alarm) {
-    State.activeDiagnostic = { type: 'alarm', code, data: alarm };
-  }
-  closeModal('alarm-detail');
-  navigate('ai');
-  setTimeout(() => {
-    const input = document.getElementById('ai-input');
-    if (input) {
-      input.value = `FANUC alarm kodu ${code} hakkında detaylı bilgi ver ve çözüm önerilerini açıkla.`;
-      input.dispatchEvent(new Event('input'));
-      sendAIMessage();
-    }
-  }, 300);
-};
-
-// ════════════════════════════════════════════════════════════════
-//  PARAMETERS
-// ════════════════════════════════════════════════════════════════
-window.CurrentParamTab = 'db';
-
-function renderParameters() {
-  const page = createPage('parameters');
-  page.innerHTML = `
-    <div class="page-header">
-      <h1>⚙️ FANUC Parametre Yönetimi</h1>
-      <p>Parametreleri arayın, inceleyin ve PWE yazma korumalı kilitleri açma rehberini kullanın</p>
-      
-      <!-- Tabs -->
-      <div class="tabs mt-3" style="border-bottom:1px solid var(--border); display:flex; gap:16px; padding-bottom:8px">
-        <button class="tab-btn" id="tab-par-db" onclick="switchParamTab('db')" style="background:none; border:none; color:var(--text-accent); font-weight:bold; cursor:pointer">
-          🔎 Parametre Veritabanı
-        </button>
-        <button class="tab-btn" id="tab-par-pwe" onclick="switchParamTab('pwe')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer">
-          🔒 PWE Kilitlenme & Kurtarma Kılavuzu
-        </button>
-      </div>
-    </div>
-    
-    <div class="page-body" id="param-tab-content" style="padding-top:16px"></div>
-  `;
-
-  setTimeout(() => {
-    switchParamTab(window.CurrentParamTab, page);
-  }, 10);
-
-  return page;
-}
-
-window.switchParamTab = function(tab, page = document) {
-  window.CurrentParamTab = tab;
-
-  const dbBtn = page.querySelector('#tab-par-db');
-  const pweBtn = page.querySelector('#tab-par-pwe');
-  if (dbBtn && pweBtn) {
-    dbBtn.style.color = tab === 'db' ? 'var(--text-accent)' : 'var(--text-secondary)';
-    dbBtn.style.fontWeight = tab === 'db' ? 'bold' : 'normal';
-    pweBtn.style.color = tab === 'pwe' ? 'var(--text-accent)' : 'var(--text-secondary)';
-    pweBtn.style.fontWeight = tab === 'pwe' ? 'bold' : 'normal';
-  }
-
-  const content = page.querySelector('#param-tab-content');
-  if (!content) return;
-
-  if (tab === 'db') {
-    content.innerHTML = `
-      <div class="flex gap-2 mb-3" style="padding:0 20px; flex-wrap:wrap">
-        <div class="search-bar" style="flex:1; max-width:300px">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="param-search" placeholder="Parametre no veya adı ara... (ör: 1320, soft limit)" />
-        </div>
-        <select id="param-cat-filter" style="width:140px">
-          <option value="">Tüm Kategoriler</option>
-          <option value="axis">Eksen</option>
-          <option value="spindle">Spindle</option>
-          <option value="feed">Besleme</option>
-          <option value="io">I/O</option>
-          <option value="pmc">PMC</option>
-          <option value="display">Ekran</option>
-        </select>
-        <div class="flex gap-1" id="param-range-filters" style="flex-wrap:wrap">
-          <button class="btn btn-secondary btn-sm active" onclick="switchParamRangeFilter(this, 'all')">Tümü</button>
-          <button class="btn btn-secondary btn-sm" onclick="switchParamRangeFilter(this, '1000-1200')" title="1000 - 1200 aralığı">Eksen (1000+)</button>
-          <button class="btn btn-secondary btn-sm" onclick="switchParamRangeFilter(this, '1300-1400')" title="1300 - 1400 aralığı">Limitler (1300+)</button>
-          <button class="btn btn-secondary btn-sm" onclick="switchParamRangeFilter(this, '1800-1900')" title="1800 - 1900 aralığı">Referans/Boşluk (1800+)</button>
-          <button class="btn btn-secondary btn-sm" onclick="switchParamRangeFilter(this, '3000-3300')" title="3000 - 3300 aralığı">Ekran/Dil (3000+)</button>
-          <button class="btn btn-secondary btn-sm" onclick="switchParamRangeFilter(this, '4000-4100')" title="4000 - 4100 aralığı">Spindle (4000+)</button>
-        </div>
-      </div>
-      <div style="overflow:auto; flex:1">
-        <table class="data-table" id="param-table">
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Adı</th>
-              <th>Kategori</th>
-              <th>Tip</th>
-              <th>Aralık</th>
-              <th>Varsayılan</th>
-              <th>Açıklama</th>
-            </tr>
-          </thead>
-          <tbody id="param-tbody"></tbody>
-        </table>
-      </div>
-    `;
-
-    window.CurrentParamRange = 'all';
-    renderParamTable(State.parameters, page);
-    page.querySelector('#param-search').addEventListener('input', () => filterParams(page));
-    page.querySelector('#param-cat-filter').addEventListener('change', () => filterParams(page));
-  } else {
-    content.innerHTML = `
-      <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap:16px; padding:0 20px">
-        
-        <!-- Left: PWE write enable and bypass -->
-        <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:12px">
-          <div class="card-title" style="color:var(--text-accent)">🔒 Parameter Write Enable (PWE) Bypass Adımları</div>
-          <p style="font-size:12px; color:var(--text-secondary); line-height:1.5">
-            FANUC sistemlerinde parametre yazmayı aktif etmek için standart prosedürler ve koruma kilitlerini aşma yöntemleri:
-          </p>
-
-          <div style="font-size:12.5px; display:flex; flex-direction:column; gap:8px">
-            <strong>🔑 1. Standart PWE Açma (MDI Modu Zorunluluğu):</strong>
-            <div>• Tezgahı mutlaka <strong>MDI Moduna</strong> alın. (Diğer modlarda parametre yazma yetkisi açılmaz).</div>
-            <div>• <strong>OFFSET/SETTING</strong> tuşuna basın. Ekranda <code>PARAMETER WRITE = 0</code> satırını bulun.</div>
-            <div>• Buraya <code>1</code> yazıp INPUT deyin. Sistem <code>SW0100 PARAMETER WRITE ENABLE</code> uyarısı verecektir (Bu normaldir, alarm basılıyken parametreler yazılabilir).</div>
-            
-            <strong style="margin-top:6px; color:var(--amber)">🔑 2. PWE Kilit Koruma Parametresi (KEY1 - KEY4):</strong>
-            <div>• Eğer PWE açılmasına rağmen bazı parametreler yazılmıyorsa, yazma anahtarı (Memory Protect) devrededir.</div>
-            <div>• <code>SYSTEM > DIAGNOSTIC</code> ekranında <strong>KEY1, KEY2, KEY3, KEY4</strong> (genellikle DGN 3200+ serisi) durum lojiklerini kontrol edin. Değerlerin <code>1</code> olması ilgili bellek alanlarını kilitler. Kilidi açmak için ilgili PMC sinyalini veya anahtar switch'ini pasife alın.</div>
-          </div>
-        </div>
-
-        <!-- Right: Coordinate & Program Unlock parameters -->
-        <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:12px">
-          <div class="card-title">⚙️ İş Sıfırı (G54) ve Macro Program Kilitleri</div>
-          <p style="font-size:12px; color:var(--text-secondary); line-height:1.5">
-            Operatörlerin G54 iş sıfırlarını değiştirmesini engellemek veya O9000 macro programlarını görünür/düzenlenebilir yapmak için parametreler:
-          </p>
-
-          <div style="background:#0f172a; padding:12px; border-radius:4px; font-family:monospace; font-size:12px; border:1px solid var(--border); display:flex; flex-direction:column; gap:8px">
-            <div>
-              <strong style="color:var(--text-accent)">• Parameter 3290 #0 (WPCO):</strong><br>
-              <code>1</code> yapıldığında, operatörün G54-G59 sayfasına veri yazması engellenir (İş sıfırı kilidi). Yazmak için <code>0</code> yapılmalıdır.
-            </div>
-            <div>
-              <strong style="color:var(--text-accent)">• Parameter 3202 #0 (NE9):</strong><br>
-              <code>1</code> olduğunda, O9000-O9999 aralığındaki imalatçı özel makro programları koruma altındadır (Düzenlenemez/Silinemez). Düzenleme yapmak veya yedeklemek için <code>0</code> yapılmalıdır.
-            </div>
-          </div>
-        </div>
-
-      </div>
-    `;
-  }
-};
-
-window.switchParamRangeFilter = function(btn, rangeVal) {
-  const container = document.getElementById('param-range-filters');
-  if (container) {
-    container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-  }
-  btn.classList.add('active');
-  window.CurrentParamRange = rangeVal;
-  filterParams(document.getElementById('page-parameters'));
-};
-
-function filterParams(page) {
-  if (!page) page = document.getElementById('page-parameters') || document;
-  const searchInput = page.querySelector('#param-search');
-  const catSelect = page.querySelector('#param-cat-filter');
-  if (!searchInput || !catSelect) return;
-  const q = searchInput.value.toLowerCase();
-  const cat = catSelect.value;
-  const range = window.CurrentParamRange || 'all';
-
-  const filtered = State.parameters.filter(p => {
-    const textMatch = !q || String(p.no).includes(q) || p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
-    const catMatch = !cat || p.category === cat;
-    
-    let rangeMatch = true;
-    if (range === '1000-1200') {
-      rangeMatch = p.no >= 1000 && p.no <= 1200;
-    } else if (range === '1300-1400') {
-      rangeMatch = p.no >= 1300 && p.no <= 1400;
-    } else if (range === '1800-1900') {
-      rangeMatch = p.no >= 1800 && p.no <= 1900;
-    } else if (range === '3000-3300') {
-      rangeMatch = p.no >= 3000 && p.no <= 3300;
-    } else if (range === '4000-4100') {
-      rangeMatch = p.no >= 4000 && p.no <= 4100;
-    }
-
-    return textMatch && catMatch && rangeMatch;
-  });
-  renderParamTable(filtered, page);
-}
-
-function renderParamTable(params, page) {
-  const tbody = (page || document).querySelector('#param-tbody');
-  if (!tbody) return;
-  if (!params.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted)">Parametre bulunamadı</td></tr>`;
-    return;
-  }
-  const catLabels = { axis:'Eksen', spindle:'Spindle', feed:'Besleme', io:'I/O', pmc:'PMC', display:'Ekran' };
-  const catTags   = { axis:'tag-blue', spindle:'tag-cyan', feed:'tag-green', io:'tag-amber', pmc:'tag-purple', display:'tag-gray' };
-  tbody.innerHTML = params.map(p => `
-    <tr style="cursor:pointer" onclick="showParamDetail('${p.no}')">
-      <td><span class="font-mono" style="color:var(--text-accent); font-weight:600; font-size:13px">${p.no}</span></td>
-      <td><span style="font-weight:500; font-size:12px">${p.name}</span></td>
-      <td><span class="tag ${catTags[p.category]||'tag-gray'}">${catLabels[p.category]||p.category}</span></td>
-      <td><span class="font-mono text-sm" style="color:var(--text-muted)">${p.dataType}</span></td>
-      <td><span class="font-mono text-sm">${p.range}</span></td>
-      <td><span class="font-mono text-sm" style="color:var(--green)">${p.default}</span></td>
-      <td><span style="font-size:11.5px; color:var(--text-secondary)">${p.description}</span></td>
-    </tr>
-  `).join('');
-}
-
-window.showParamDetail = function(no) {
-  const param = State.parameters.find(p => p.no == no);
-  if (!param) return;
-
-  const bitDescriptions = {
-    1815: {
-      5: "APC (Mutlak Enkoder Aktif)",
-      4: "APZ (Referans Pozisyonu Senkronize)"
-    },
-    1006: {
-      0: "ROT (Lineer/Dairesel Eksen Tipi Seçimi)",
-      3: "DIA (Çap/Yarıçap Programlama Seçimi)",
-      5: "ZMI (Manuel Referansa Dönüş Hareketi Yönü)"
-    },
-    3111: {
-      0: "SVS (Servo Ayar ve Tuning Ekranı Gösterimi)",
-      1: "SPS (Spindle Tuning Ekranı Gösterimi)",
-      5: "OPS (Operatör Geçmişi İzleme Kaydı)",
-      6: "OPH (Operatör Geçmişi Ekranı Gösterimi)",
-      7: "NPA (Alarm Ekranı Geçişi / Otomatik Sayfa Değişimi)"
-    },
-    3202: {
-      0: "NE8 (8000-8999 Program Kilidi / Koruma Durumu)",
-      4: "NE9 (9000-9999 Program Kilidi / Koruma Durumu)"
-    },
-    1001: {
-      0: "INM (Metrik/İnç Taban Ölçü Sistemi Seçimi)"
-    },
-    1002: {
-      0: "JAX (Aynı Anda Manuel Hareketi Destekleyen Eksen Sayısı)",
-      1: "DLZ (Decel Switch'siz Referans Noktası Bulma)",
-      7: "IDG (Absolute Enkoder Referans Sıfırlama İnhibisyonu)"
-    }
-  };
-
-  const isBit = param.dataType && param.dataType.toLowerCase() === 'bit';
-  const defaultValue = (param.default && /^[01]+$/.test(param.default.trim()))
-    ? param.default.trim().padStart(8, '0')
-    : '00000000';
-
-  showModal('param-detail', `
-    <div class="modal-header">
-      <span class="modal-title">Parametre No. <span class="font-mono" style="color:var(--text-accent)">${escapeHTML(String(param.no))}</span> — ${escapeHTML(param.name)}</span>
-      <button class="modal-close" onclick="closeModal('param-detail')">✕</button>
-    </div>
-    <div class="grid-2" style="gap:10px; margin-bottom:14px">
-      <div class="card"><div class="card-sub">Veri Tipi</div><div style="font-family:var(--font-mono);margin-top:4px">${escapeHTML(param.dataType)}</div></div>
-      <div class="card"><div class="card-sub">Aralık</div><div style="font-family:var(--font-mono);margin-top:4px">${escapeHTML(param.range || '—')}</div></div>
-      <div class="card"><div class="card-sub">Varsayılan</div><div style="font-family:var(--font-mono);color:var(--green);margin-top:4px">${escapeHTML(param.default || '—')}</div></div>
-      <div class="card"><div class="card-sub">Kategori</div><div style="margin-top:4px">${escapeHTML(param.category)}</div></div>
-    </div>
-    <div class="card">
-      <div class="card-title mb-2">📋 Açıklama</div>
-      <p style="font-size:12.5px; line-height:1.6; color:var(--text-secondary)">${escapeHTML(param.description)}</p>
-      ${param.note ? `<div style="margin-top:8px; padding:8px; background:var(--accent-glow); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text-accent)">💡 ${escapeHTML(param.note)}</div>` : ''}
-    </div>
-
-    ${isBit ? `
-      <div class="card mt-3" style="border: 1px solid rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.02)">
-        <div class="card-title mb-1" style="font-size:12.5px; color:var(--text-accent)">🖥️ İnteraktif 8-Bit Değer Simülatörü</div>
-        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px">CNC ekranındaki her bir bit hanesinin (7-0) üzerine tıklayarak durumunu değiştirebilirsiniz.</p>
-        
-        <div class="flex gap-2 justify-center mb-3" style="flex-wrap:wrap">
-          ${[7, 6, 5, 4, 3, 2, 1, 0].map(bit => {
-            const desc = (bitDescriptions[param.no] && bitDescriptions[param.no][bit]) || `Bit ${bit}`;
-            const initialVal = defaultValue[7 - bit];
-            const isSet = initialVal === '1';
-            const btnBorder = isSet ? 'var(--green)' : 'var(--border)';
-            const btnBg = isSet ? 'rgba(16,185,129,0.03)' : 'var(--bg-card2)';
-            return `
-              <button class="param-bit-btn" id="bit-btn-${bit}" onclick="toggleParamDetailBit(${bit})" title="${escapeHTML(desc)}" style="width:52px; height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px solid ${btnBorder}; background:${btnBg}; border-radius:var(--radius-sm); cursor:pointer; transition:all 0.15s">
-                <span style="font-size:9px; color:var(--text-muted); font-weight:600">${bitDescriptions[param.no] && bitDescriptions[param.no][bit] ? escapeHTML(bitDescriptions[param.no][bit].split(' ')[0]) : 'B' + bit}</span>
-                <strong style="font-size:15px; color:${isSet ? 'var(--green)' : 'var(--text-secondary)'}" id="bit-val-${bit}">${initialVal}</strong>
-              </button>
-            `;
-          }).join('')}
-        </div>
-        
-        <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:12.5px; padding-top:8px; border-top:1px solid var(--border)">
-          <span>İkilik (Binary): <strong id="param-bit-binary" style="color:var(--text-accent)">${escapeHTML(defaultValue)}</strong></span>
-          <span>Ondalık (Decimal): <strong id="param-bit-decimal" style="color:var(--green)">${parseInt(defaultValue, 2)}</strong></span>
-        </div>
-      </div>
-    ` : ''}
-
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('param-detail')">Kapat</button>
-      <button class="btn btn-primary" onclick="askAIAboutParam(${param.no})">🤖 AI'ya Sor</button>
-    </div>
-  `, 'lg');
-};
-
-window.toggleParamDetailBit = function(bit) {
-  const strong = document.getElementById(`bit-val-${bit}`);
-  const btn = document.getElementById(`bit-btn-${bit}`);
-  if (!strong) return;
-
-  const currentVal = strong.textContent === '1' ? '0' : '1';
-  strong.textContent = currentVal;
-  strong.style.color = currentVal === '1' ? 'var(--green)' : 'var(--text-secondary)';
-  if (currentVal === '1') {
-    btn.style.borderColor = 'var(--green)';
-    btn.style.background = 'rgba(16,185,129,0.03)';
-  } else {
-    btn.style.borderColor = 'var(--border)';
-    btn.style.background = 'var(--bg-card2)';
-  }
-
-  let binary = '';
-  for (let b = 7; b >= 0; b--) {
-    const s = document.getElementById(`bit-val-${b}`);
-    binary += s ? s.textContent : '0';
-  }
-
-  const binarySpan = document.getElementById('param-bit-binary');
-  const decimalSpan = document.getElementById('param-bit-decimal');
-  if (binarySpan) binarySpan.textContent = binary;
-  if (decimalSpan) decimalSpan.textContent = parseInt(binary, 2);
-};
-
-window.askAIAboutParam = function(no) {
-  const param = State.parameters.find(p => p.no == no);
-  if (param) {
-    State.activeDiagnostic = { type: 'parameter', code: String(no), data: param };
-  }
-  closeModal('param-detail');
-  navigate('ai');
-  setTimeout(() => {
-    const input = document.getElementById('ai-input');
-    if (input) {
-      input.value = `FANUC parametre No.${no} hakkında detaylı açıklama yap. Bu parametre ne işe yarar, nasıl ayarlanır?`;
-      sendAIMessage();
-    }
-  }, 300);
-};
-
-// ════════════════════════════════════════════════════════════════
-//  SETTINGS
-// ════════════════════════════════════════════════════════════════
 function renderSettings() {
   const page = createPage('settings');
   const themeOptions = [
@@ -2816,10 +1144,10 @@ function renderSettings() {
           <div class="card mb-4">
             <div class="card-title mb-3" style="font-size:14px; display:flex; align-items:center; justify-content:space-between">
               <span>🔄 Sürüm & Kütüphane Güncelleme Paneli</span>
-              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.4.0)</span>
+              <span id="updater-status-badge" class="tag tag-green">Güncel (v1.4.1)</span>
             </div>
             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px" id="updater-status-text">
-              Yüklü sürüm: v1.4.0. GitHub üzerinden istediğiniz zaman manuel güncelleme denetimi yapabilirsiniz.
+              Yüklü sürüm: v1.4.1. GitHub üzerinden istediğiniz zaman manuel güncelleme denetimi yapabilirsiniz.
             </div>
             <div id="updater-last-checked" style="font-size:11px; color:var(--text-muted); margin-bottom:10px">Henüz manuel kontrol yapılmadı.</div>
             <div class="flex gap-2">
@@ -3026,7 +1354,7 @@ function renderSettings() {
       <!-- App Settings -->
       <div class="card mb-4">
         <div class="card-title mb-4" style="font-size:14px">📁 Uygulama</div>
-        <div class="flex gap-2 mb-3"><span class="tag tag-blue">Sürüm v${escapeHTML(window.CURRENT_APP_VERSION || '1.4.0')}</span><span class="tag tag-red">KALICI SALT OKUNUR</span></div>
+        <div class="flex gap-2 mb-3"><span class="tag tag-blue">Sürüm v${escapeHTML(window.CURRENT_APP_VERSION || '1.4.1')}</span><span class="tag tag-red">KALICI SALT OKUNUR</span></div>
         <p style="font-size:11px;color:var(--text-secondary)">Uygulama CNC programı etkinleştiremez, silemez veya yükleyemez; CNC parametresi yazamaz. İzleme ve yerel analiz amacıyla tasarlanmıştır.</p>
         <div class="form-group">
           <label class="form-label">Veri Dizini</label>
@@ -3070,7 +1398,7 @@ function renderSettings() {
       </div>
         </div>
       </div>
-      
+
       <div class="flex gap-2 mt-4" style="border-top:1px solid var(--border); padding-top:20px">
         <button class="btn btn-primary" id="btn-save-settings">Ayarları Kaydet</button>
         <button class="btn btn-ghost" onclick="navigate('dashboard')">İptal</button>
@@ -3227,7 +1555,7 @@ window.addNewUser = async function() {
   }
   const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
   const newUser = { name, role, pin, initials: initials || name.slice(0,2).toUpperCase(), color: colors[State.users.length % colors.length] };
-  
+
   try {
     const res = await window.electronAPI.addUser(newUser);
     if (res && res.ok) {
@@ -3308,611 +1636,11 @@ window.openDataDir = function() {
 // ════════════════════════════════════════════════════════════════
 //  AI CHAT
 // ════════════════════════════════════════════════════════════════
-const ChatHistory = [];
-
-function maskSensitiveForCloud(text) {
-  let safe = String(text || '')
-    .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[IP MASKELENDİ]')
-    .replace(/[A-Z]:\\[^\s]+/gi, '[DOSYA YOLU MASKELENDİ]')
-    .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[E-POSTA MASKELENDİ]')
-    .replace(/\b(?:sk-[A-Za-z0-9_-]{12,}|AIza[A-Za-z0-9_-]{20,})\b/g, '[API ANAHTARI MASKELENDİ]');
-  (State.machines || []).forEach(machine => {
-    const name = String(machine.numarasi || machine.name || '').trim();
-    if (name.length > 2) safe = safe.split(name).join('[MAKİNE MASKELENDİ]');
-  });
-  if (State.currentUser?.name) safe = safe.split(State.currentUser.name).join('[KULLANICI MASKELENDİ]');
-  return safe;
-}
-
-function buildActiveMachineContext() {
-  const diagnostic = State.activeDiagnostic
-    ? `Aktif teşhis: ${State.activeDiagnostic.type} ${State.activeDiagnostic.code || ''}`
-    : 'Aktif teşhis yok';
-  const machines = (State.machines || []).slice(0, 4).map(m => `${m.numarasi || m.name || 'Makine'}; model=${m.model || m.kontrol || 'bilinmiyor'}; durum=${m.status || 'bilinmiyor'}`);
-  return `[YEREL MAKİNE VE ALARM BAĞLAMI]\n${diagnostic}\n${machines.join('\n')}`;
-}
-
-window.exportAIConversationReport = async function() {
-  if (!ChatHistory.length) return showToast('Raporlanacak görüşme yok.', 'warning');
-  const rows = ChatHistory.map(item => `<section style="margin:14px 0;padding:12px;border:1px solid #ddd"><strong>${item.role === 'user' ? 'Kullanıcı' : 'AI Asistan'}</strong><pre style="white-space:pre-wrap;font-family:Arial">${escapeHTML(item.content)}</pre></section>`).join('');
-  const html = `<html><meta charset="utf-8"><body style="font-family:Arial;padding:30px"><h1>FANUC Pro Suite — Teknik AI Görüşme Raporu</h1><p>Oluşturma: ${new Date().toLocaleString('tr-TR')}</p><p><strong>Salt okunur:</strong> Bu rapor CNC üzerinde işlem yapıldığını göstermez. İçerik yalnızca öneridir ve yetkili teknisyen tarafından doğrulanmalıdır.</p>${rows}</body></html>`;
-  const result = await window.electronAPI.printToPDF(html, `ai-teknik-rapor-${new Date().toISOString().slice(0,10)}.pdf`);
-  showToast(result?.ok ? 'Teknik görüşme raporu oluşturuldu.' : `Rapor oluşturulamadı: ${result?.error}`, result?.ok ? 'success' : 'error');
-};
-
-window.openBookPDFPage = function(id) {
-  const raw = prompt('Gitmek istediğiniz PDF sayfa numarası:');
-  if (raw === null) return;
-  const pageNumber = Number(raw);
-  if (!Number.isInteger(pageNumber) || pageNumber < 1) return showToast('Geçerli bir sayfa numarası girin.', 'warning');
-  openBookPDF(id, pageNumber);
-};
-
-window.toggleKnowledgeFavorite = async function(id) {
-  const items = State.settings.knowledgeFavorites || [];
-  State.settings.knowledgeFavorites = items.includes(id) ? items.filter(x => x !== id) : [...items, id];
-  await saveKnowledgePreferences();
-  navigate('library');
-};
-
-window.openAlarmFromKnowledge = function(code) {
-  const alarm = State.alarms.find(a => a.code === code);
-  if (!alarm) return;
-  State.activeDiagnostic = { type: 'alarm', code: alarm.code, data: alarm };
-  navigate('ai');
-};
-
-window.openKnowledgeNote = function(id) {
-  const book = State.library.find(b => b.id === id);
-  if (!book) return;
-  const note = State.settings.knowledgeNotes?.[id] || '';
-  showModal('knowledge-note', `<div class="modal-header"><span class="modal-title">Yerel Teknik Not — ${escapeHTML(book.title)}</span><button class="modal-close" onclick="closeModal('knowledge-note')">✕</button></div><p style="font-size:11px;color:var(--text-secondary)">Bu not yalnızca bu bilgisayarda saklanır ve CNC'ye gönderilmez.</p><textarea id="knowledge-note-text" class="form-control" rows="10">${escapeHTML(note)}</textarea><div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('knowledge-note')">İptal</button><button class="btn btn-primary" onclick="saveKnowledgeNote('${id}')">Kaydet</button></div>`);
-};
-
-window.saveKnowledgeNote = async function(id) {
-  State.settings.knowledgeNotes = State.settings.knowledgeNotes || {};
-  State.settings.knowledgeNotes[id] = document.getElementById('knowledge-note-text')?.value || '';
-  await saveKnowledgePreferences();
-  closeModal('knowledge-note');
-  showToast('Yerel teknik not kaydedildi.', 'success');
-};
-
-function renderAI() {
-  const page = createPage('ai');
-  
-  let diagHTML = '';
-  if (State.activeDiagnostic) {
-    const ad = State.activeDiagnostic;
-    if (ad.type === 'alarm') {
-      diagHTML = `
-        <div class="card" style="border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.02); display:flex; flex-direction:column; gap:10px; padding:16px">
-          <div class="flex justify-between items-center">
-            <span class="tag tag-red" style="font-weight:700; font-family:var(--font-mono); font-size:13px">${ad.code}</span>
-            <span style="font-size:10px; color:var(--text-muted)">AKTİF TEŞHİS</span>
-          </div>
-          <div>
-            <div style="font-size:13.5px; font-weight:700; color:var(--text-primary)">${escapeHTML(ad.data.title)}</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px">${escapeHTML(ad.data.category)} Serisi</div>
-          </div>
-          <div style="font-size:12px; line-height:1.6; color:var(--text-secondary); background:var(--bg-card2); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border)">
-            ${escapeHTML(ad.data.description)}
-          </div>
-          <div style="font-size:11.5px; font-weight:bold; color:var(--amber)">⚠️ Olası Nedenler:</div>
-          <ul style="padding-left:16px; margin:0; font-size:11.5px; color:var(--text-secondary); display:flex; flex-direction:column; gap:4px">
-            ${ad.data.causes.slice(0, 3).map(c => `<li>${escapeHTML(c)}</li>`).join('')}
-          </ul>
-          <button class="btn btn-secondary btn-sm mt-2" onclick="clearActiveDiagnostic()" style="width:100%">
-            Teşhisi Sıfırla
-          </button>
-        </div>
-      `;
-    } else if (ad.type === 'parameter') {
-      diagHTML = `
-        <div class="card" style="border: 1px solid rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.02); display:flex; flex-direction:column; gap:10px; padding:16px">
-          <div class="flex justify-between items-center">
-            <span class="tag tag-green" style="font-weight:700; font-family:var(--font-mono); font-size:13px">No. ${ad.code}</span>
-            <span style="font-size:10px; color:var(--text-muted)">AKTİF PARAMETRE</span>
-          </div>
-          <div>
-            <div style="font-size:13.5px; font-weight:700; color:var(--text-primary)">${escapeHTML(ad.data.name)}</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px">${escapeHTML(ad.data.category)}</div>
-          </div>
-          <div style="font-size:12px; line-height:1.6; color:var(--text-secondary); background:var(--bg-card2); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border)">
-            ${escapeHTML(ad.data.description)}
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px; color:var(--text-secondary)">
-            <div><strong>Veri Tipi:</strong> ${escapeHTML(ad.data.dataType)}</div>
-            <div><strong>Varsayılan:</strong> ${escapeHTML(ad.data.default || '—')}</div>
-          </div>
-          <button class="btn btn-secondary btn-sm mt-2" onclick="clearActiveDiagnostic()" style="width:100%">
-            Teşhisi Sıfırla
-          </button>
-        </div>
-      `;
-    }
-  } else {
-    diagHTML = `
-      <div class="card" style="display:flex; flex-direction:column; gap:12px; padding:16px">
-        <div class="card-title" style="font-size:12px; text-transform:uppercase; color:var(--text-muted)">💡 Hızlı Teşhis Kılavuzları</div>
-        <p style="font-size:11.5px; color:var(--text-secondary); margin:0; line-height:1.5">Aşağıdaki popüler konu başlıklarına tıklayarak AI Asistanı doğrudan yönlendirebilirsiniz:</p>
-        <div style="display:flex; flex-direction:column; gap:8px">
-          <button class="btn btn-ghost btn-sm" onclick="askAIPreset('SV0401 Servo Hatası çözümü')" style="text-align:left; justify-content:flex-start; width:100%; border:1px solid var(--border)">
-            🚗 SV0401 Servo Alarm Teşhisi
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="askAIPreset('Parametre 1815 APZ/APC sıfırlama nasıl yapılır')" style="text-align:left; justify-content:flex-start; width:100%; border:1px solid var(--border)">
-            ⚙️ P1815 Referans Noktası Ayarı
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="askAIPreset('FSSB fiber optik hatası arıza giderme adımları')" style="text-align:left; justify-content:flex-start; width:100%; border:1px solid var(--border)">
-            🔗 FSSB Fiber Topoloji Hatası
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  page.innerHTML = `
-    <link rel="stylesheet" href="styles/ai.css" />
-    <div class="ai-container" style="display:grid; grid-template-columns: 320px 1fr; gap:16px; height:calc(100vh - 90px); padding:16px; box-sizing:border-box; overflow:hidden">
-      <!-- Left: Diagnostics Pane -->
-      <div class="ai-diagnostics-pane" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto">
-        <div class="page-header" style="padding:0">
-          <h1 style="font-size:16px; margin:0">📋 Teşhis Paneli</h1>
-          <p style="font-size:11px; margin:2px 0 0">Aktif arıza veya kılavuz kartı</p>
-        </div>
-        ${diagHTML}
-      </div>
-
-      <!-- Right: Chat Pane -->
-      <div class="ai-chat-pane" style="display:flex; flex-direction:column; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden">
-        <div class="page-header" style="padding:12px; border-bottom:1px solid var(--border); margin:0; display:flex; justify-content:space-between; align-items:center; background:var(--bg-card2)">
-          <div>
-            <h1 style="font-size:14px; margin:0">🤖 AI Asistan Sohbeti</h1>
-          </div>
-          <div class="flex gap-2"><span class="tag tag-red">KALICI SALT OKUNUR — CNC'YE KOMUT GÖNDEREMEZ</span><span class="tag tag-${State.settings.aiProvider==='offline'?'gray':'green'}" style="margin:0">${State.settings.aiProvider === 'offline' ? '🔒 Tamamen çevrimdışı' : '🟢 ' + State.settings.aiProvider.toUpperCase()}</span><button class="btn btn-ghost btn-sm" onclick="exportAIConversationReport()">Teknik Rapor</button></div>
-        </div>
-        <div style="padding:8px 16px;background:rgba(245,158,11,.08);border-bottom:1px solid rgba(245,158,11,.25);font-size:11px">⚠️ Bu asistan yalnızca öneri verir. Kaynak gösterilmeyen bilgi kesin teşhis kabul edilmez; yetkili teknisyen doğrulaması gerekir.</div>
-        
-        <div class="ai-messages" id="ai-messages" style="flex:1; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; gap:16px">
-          <!-- Messages will go here -->
-        </div>
-
-        <div class="ai-toolbar" style="padding:10px 24px; border-top:1px solid var(--border); background:var(--bg-surface); display:flex; gap:8px; flex-wrap:wrap">
-          <span style="font-size:10px; color:var(--text-muted); margin-right:4px; display:flex; align-items:center">HIZLI:</span>
-          ${[
-            'SV0401 alarmı nedir?',
-            'E-Stop devresi nasıl çalışır?',
-            'Parametre yedekleme nasıl yapılır?',
-            'Servo kazanımı nasıl ayarlanır?',
-          ].map(q => `<button class="ai-quick-btn" onclick="quickAsk('${q}')" style="padding:4px 12px; border-radius:20px; font-size:11px; cursor:pointer">${q}</button>`).join('')}
-        </div>
-
-        <div class="ai-input-area" style="padding:14px 24px; border-top:1px solid var(--border); background:var(--bg-surface)">
-          <div class="ai-input-wrap" style="display:flex; gap:10px; align-items:flex-end; background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:10px 14px">
-            <textarea id="ai-input" placeholder="Soru veya alarm kodunuzu yazın..." rows="1" style="flex:1; border:none; background:transparent; resize:none; font-size:13px; color:var(--text-primary); outline:none; max-height:120px; min-height:22px; font-family:inherit; line-height:1.5"></textarea>
-            <button class="ai-send-btn" id="ai-send-btn" onclick="sendAIMessage()">
-              <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9 22,2"/></svg>
-            </button>
-          </div>
-          <div class="flex items-center justify-between" style="margin-top:6px; padding:0 4px">
-            <label class="flex items-center gap-2" style="font-size:11.5px; color:var(--text-secondary); cursor:pointer">
-              <input type="checkbox" id="ai-web-search-chk" ${State.onlineSearchEnabled && State.settings.internetEnabled !== false ? 'checked' : ''} ${State.settings.internetEnabled === false ? 'disabled' : ''} style="accent-color:var(--accent)" />
-              🌐 Canlı Web Araması (Online Search)
-            </label>
-            <div class="ai-api-notice" style="margin:0">
-              ${State.settings.aiProvider === 'offline'
-                ? '🔒 Offline mod — FANUC veritabanı'
-                : `🌐 ${State.settings.aiProvider.toUpperCase()} API bağlı`
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  window.clearActiveDiagnostic = function() {
-    State.activeDiagnostic = null;
-    navigate('ai');
-  };
-
-  window.askAIPreset = function(promptText) {
-    const input = document.getElementById('ai-input');
-    if (input) {
-      input.value = promptText;
-      sendAIMessage();
-    }
-  };
-
-  const input = page.querySelector('#ai-input');
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAIMessage(); }
-  });
-  input.addEventListener('input', () => {
-    input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-  });
-
-  const webSearchChk = page.querySelector('#ai-web-search-chk');
-  webSearchChk.addEventListener('change', () => {
-    State.onlineSearchEnabled = webSearchChk.checked;
-  });
-
-  return page;
-}
-
-window.quickAsk = function(q) {
-  const input = document.getElementById('ai-input');
-  if (input) { input.value = q; sendAIMessage(); }
-};
-
-window.sendAIMessage = async function() {
-  const input = document.getElementById('ai-input');
-  if (!input) return;
-  const msg = input.value.trim();
-  if (!msg) return;
-
-  input.value = '';
-  input.style.height = 'auto';
-
-  appendMessage('user', msg);
-  ChatHistory.push({ role: 'user', content: msg });
-
-  // Generate RAG Context from local FANUC database
-  const ragResult = typeof window.buildRAGResult === 'function' ? window.buildRAGResult(msg) : { context: '', sources: [] };
-  const ragContext = ragResult.context || '';
-  const machineContext = buildActiveMachineContext();
-  const citations = ragResult.sources.length
-    ? `\n\n---\n**Yerel kaynaklar:**\n${ragResult.sources.map(s => `- [Kaynak: ${s.type} ${s.id}] ${s.title || ''}`).join('\n')}`
-    : '\n\n---\n**Kaynak durumu:** Bu soru için doğrulanmış yerel kaynak eşleşmesi bulunamadı; yanıt kesin teşhis olarak kullanılamaz.';
-
-  let searchLoadingId = null;
-  if (State.onlineSearchEnabled) {
-    searchLoadingId = appendSearchLoading(msg);
-    await new Promise(resolve => setTimeout(resolve, 1800));
-    if (searchLoadingId) document.getElementById(searchLoadingId)?.remove();
-  }
-
-  const typingId = appendTyping();
-
-  let response;
-  try {
-    const apiMsg = `${msg}\n\n${machineContext}\n\n${ragContext || '[YEREL KAYNAK EŞLEŞMESİ YOK — kesin teknik iddia üretme]'}`;
-    if (State.settings.aiProvider !== 'offline') {
-      const finalMsg = State.onlineSearchEnabled
-        ? `[Sistem Notu: Web araması aktif. Lütfen internetten aldığın en güncel teknik FANUC verilerini kullanarak cevap ver.] ${apiMsg}`
-        : apiMsg;
-      const safeHistory = ChatHistory.slice(-10).map(item => ({ ...item, content: maskSensitiveForCloud(item.content) }));
-      response = await callAIAPI(maskSensitiveForCloud(finalMsg), safeHistory);
-    } else {
-      response = ragResult.sources.length
-        ? offlineAI(msg)
-        : 'Doğrulanmış yerel kaynak eşleşmesi bulunamadı. Alarm kodunu, parametre numarasını, PMC adresini veya ilgili kılavuz kimliğini belirterek tekrar sorun.';
-    }
-  } catch (e) {
-    const offlineAns = offlineAI(msg);
-    const combinedAns = ragContext ? `${offlineAns}\n\n---\n${ragContext}` : offlineAns;
-    response = `API hatası: ${e.message}\n\nOffline veritabanına geçildi:\n\n` + (ragResult.sources.length ? offlineAns : 'Doğrulanmış yerel kaynak bulunamadı.');
-  }
-
-  response += citations + '\n\n⚠️ Bu yalnızca öneridir; yetkili teknisyen doğrulaması gerekir. Uygulama CNC’ye komut gönderemez.';
-
-  removeTyping(typingId);
-  appendMessage('ai', response, { sources: ragResult.sources, confidence: ragResult.sources.length ? 'Yerel kaynakla destekli' : 'Düşük güven — kaynak eşleşmedi' });
-  ChatHistory.push({ role: 'assistant', content: response });
-};
-
-
-function appendSearchLoading(query) {
-  const container = document.getElementById('ai-messages');
-  if (!container) return null;
-  const id = 'search-loading-' + Date.now();
-  const div = document.createElement('div');
-  div.id = id;
-  div.className = 'msg-row ai';
-  div.innerHTML = `
-    <div class="msg-avatar ai">AI</div>
-    <div>
-      <div class="msg-bubble" style="background:rgba(59,130,246,0.06); border:1px dashed rgba(59,130,246,0.25); color:var(--text-secondary); font-size:11.5px; display:flex; align-items:center; gap:8px">
-        <span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid var(--accent); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite"></span>
-        <span>🌐 <strong>Canlı Web Araması Yapılıyor:</strong> "${query}"...</span>
-      </div>
-    </div>
-  `;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-
-  // Inject rotation keyframes dynamically if not present
-  if (!document.getElementById('spin-style')) {
-    const style = document.createElement('style');
-    style.id = 'spin-style';
-    style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
-    document.head.appendChild(style);
-  }
-
-  return id;
-}
-
-async function callAIAPI(userMsg, history) {
-  const provider = State.settings.aiProvider;
-  const model = State.settings.aiModel || 'gpt-4o';
-
-  const systemPrompt = `Sen FANUC CNC tezgahları konusunda uzman bir teknik asistansın. 
-FANUC 0i-F, 30i-B, 31i-B, 32i-B serileri, PMC/Ladder programlama, servo sistemler, 
-spindle kontrolü, alarm giderme ve parametre ayarları konusunda derin bilgiye sahipsin.
-Türkçe yanıt ver. Teknik ve pratik bilgiler sun.`;
-
-  if (provider === 'openai' || provider === 'gemini') {
-    const result = await window.electronAPI.completeAI({ provider, model, userMessage: userMsg, history });
-    if (!result?.ok) throw new Error(result?.error || 'AI servisi yanıt vermedi.');
-    return `${result.content}\n\n⚠️ Bu yanıt teknik tavsiye niteliğindedir; CNC üzerinde uygulamadan önce yetkili teknisyen doğrulaması gerekir.`;
-  }
-
-  return offlineAI(userMsg);
-}
-
-function offlineAI(msg) {
-  const q = msg.toLowerCase();
-
-  // NC G/M Code lookup
-  const ncMatch = msg.match(/\b([GM]\d{2,3})\b/i);
-  if (ncMatch) {
-    const code = ncMatch[1].toUpperCase();
-    const item = State.nc_codes.find(n => n.code.toUpperCase() === code);
-    if (item) {
-      const typeLabels = { 'G-Milling': 'G (Freze)', 'G-Lathe': 'G (Torna)', 'M-Code': 'M Kodu' };
-      return `## NC Kodu: ${item.code} — ${item.name}\n\n**Tip:** ${typeLabels[item.type] || item.type}\n\n**Açıklama:** ${item.description}\n\n**Sözdizimi / Örnek:**\n\`${item.syntax || '—'}\`${item.example ? `\n\n**Kullanım Örneği:**\n${item.example}` : ''}`;
-    }
-  }
-
-  // PMC Signal address lookup
-  const pmcMatch = msg.match(/\b([GFXY]\d{1,4}\.\d)\b/i);
-  if (pmcMatch) {
-    const address = pmcMatch[1].toUpperCase();
-    const normalized = address[0] + address.slice(1).split('.')[0].padStart(4, '0') + '.' + address.split('.')[1];
-    const signal = State.pmc_signals.find(p => p.address === normalized || p.address === address);
-    if (signal) {
-      return `## PMC Sinyali: ${signal.address} (${signal.symbol})\n\n**Yön:** ${signal.direction}\n\n**Açıklama:** ${signal.description}\n\n💡 **Ladder Rolü:** ${signal.ladder_example || '—'}`;
-    }
-  }
-
-  // Alarm lookup
-  const alarmMatch = msg.match(/([A-Z]{2,4}\d{4})/i);
-  if (alarmMatch) {
-    const code = alarmMatch[1].toUpperCase();
-    const alarm = State.alarms.find(a => a.code === code);
-    if (alarm) {
-      return `## ${alarm.code} — ${alarm.title}\n\n**Açıklama:** ${alarm.description}\n\n**Seri:** ${alarm.series.join(', ')}\n\n**Olası Nedenler:**\n${alarm.causes.map((c,i)=>`${i+1}. ${c}`).join('\n')}\n\n**Çözüm Adımları:**\n${alarm.solutions.map((s,i)=>`${i+1}. ${s}`).join('\n')}`;
-    }
-    return `**${code}** kodu veritabanımda bulunamadı.\n\nLütfen alarm kodunu kontrol edin veya FANUC bakım kılavuzuna bakın.\n\nAPI anahtarı eklerseniz daha kapsamlı yanıtlar alabiliriz. (Ayarlar > AI Sağlayıcı)`;
-  }
-
-  // Parameter lookup
-  const paramMatch = msg.match(/(?:param(?:etre)?|no\.?)\s*(\d{4})/i);
-  if (paramMatch) {
-    const no = parseInt(paramMatch[1]);
-    const param = State.parameters.find(p => p.no === no);
-    if (param) {
-      return `## Parametre No.${param.no} — ${param.name}\n\n**Açıklama:** ${param.description}\n\n**Veri Tipi:** ${param.dataType}\n**Aralık:** ${param.range}\n**Varsayılan:** ${param.default}\n${param.note ? `\n💡 **Not:** ${param.note}` : ''}`;
-    }
-  }
-
-  // Keep Relay lookup
-  const krMatch = msg.match(/\b(K\d{1,2}(?:\.\d)?)\b/i);
-  if (krMatch) {
-    const id = krMatch[1].toUpperCase();
-    const item = State.keep_relays.find(x => x.id.toUpperCase() === id || x.id.toUpperCase().startsWith(id));
-    if (item) {
-      return `## PMC Keep Relay: ${item.id} — ${item.name}\n\n**Açıklama:** ${item.description}\n\n💡 **Özel Not:** ${item.note || '—'}`;
-    }
-  }
-
-  // Timer lookup
-  const tMatch = msg.match(/\b(T\d{1,3})\b/i);
-  if (tMatch) {
-    const id = tMatch[1].toUpperCase();
-    const item = State.keep_relays.find(x => x.id.toUpperCase() === id || x.id.toUpperCase().startsWith(id));
-    if (item) {
-      return `## PMC Timer: ${item.id} — ${item.name}\n\n**Açıklama:** ${item.description}\n\n💡 **Özel Not:** ${item.note || '—'}`;
-    }
-  }
-
-  // Macro variable lookup
-  const macroMatch = msg.match(/#(\d{1,4})/);
-  if (macroMatch) {
-    const no = parseInt(macroMatch[1]);
-    let desc = "Bilinmeyen Makro Değişkeni";
-    if (no >= 1 && no <= 33) desc = "Yerel Değişken (Local Variable): G65 alt program çağrılarında parametre aktarımı için kullanılır.";
-    else if (no >= 100 && no <= 199) desc = "Ortak Değişken (Common Variable): Tüm programlarca paylaşılır. CNC kapatıldığında sıfırlanır (Volatile).";
-    else if (no >= 500 && no <= 999) desc = "Kalıcı Ortak Değişken (Persistent Common Variable): Tüm programlarca paylaşılır. CNC kapatılsa dahi değerini korur (Non-volatile).";
-    else if (no >= 1000 && no <= 1031) desc = "Sistem Değişkeni: PMC giriş sinyallerini (X adresleri) okumak için kullanılır.";
-    else if (no >= 1100 && no <= 1131) desc = "Sistem Değişkeni: PMC çıkış sinyallerini (Y adresleri) tetiklemek için kullanılır.";
-    else if (no >= 5021 && no <= 5023) desc = "Sistem Değişkeni: Eksen makine koordinat sistemindeki (MACHINE) güncel pozisyon değerlerini okur.";
-    
-    return `## FANUC Makro Değişkeni: #${no}\n\n**Tür / Görev:** ${desc}\n\n*Detaylı kılavuz ve hesaplama sihirbazı için sol menüden **Makro Değişkenleri** sayfasını kullanabilirsiniz.*`;
-  }
-
-  // Topic responses
-  if (q.includes('rs232') || q.includes('dnc') || q.includes('haberleşme') || q.includes('kablo') || q.includes('transfer') || q.includes('lehim') || q.includes('pin') || q.includes('db9') || q.includes('db25')) {
-    return `## FANUC RS232 & DNC Haberleşme ve Kablo Bağlantıları\n\nPC ile CNC ünitesi arasındaki seri haberleşme (DNC) ayarları ve kablo lehim şemaları:\n\n**1. Kritik Parametre Ayarları:**\n- **P0020:** I/O Channel = \`0\` (Channel 1 RS232)\n- **P0101:** \`10000001\` (1 Stop Bit, 7 Data Bits, Even Parity)\n- **P0102:** \`3\` (RS-232C Cihazı)\n- **P0103:** \`11\` (9600 Baud) veya \`12\` (19200 Baud)\n\n**2. Lehimleme & Pin Şemaları:**\n- **Yazılımsal Akış Kontrolü (XON/XOFF):** PC DB9 (Pin 2, 3, 5) -> CNC DB25 (Pin 2, 3, 7). CNC tarafında 4-5 ve 6-8-20 köprüleri yapılmalıdır.\n\n*İnteraktif lehim şemaları, multimetre süreklilik testleri ve blendaj şase kuralları için sol menüden **RS232 Pin & Lehim Rehberi** sayfasını açabilirsiniz.*`;
-  }
-
-  if (q.includes('spindle') || q.includes('sp9015') || q.includes('sp9012') || q.includes('sp9002') || q.includes('sensör') || q.includes('fren') || q.includes('deşarj') || q.includes('kasnak') || q.includes('4002') || q.includes('4003')) {
-    return `## Spindle Sürücü (SPM), Sensör & Fren Teşhisi\n\nİş mili alarmları, frenleme devresi ve pozisyon kodlayıcı oranları kontrolü:\n\n**1. Enkoder Hataları (SP9015 / SP9002):**\n- Sensör ile dişli çark arasındaki hava boşluğu (gap) sentil şeridi ile tam **0.15 mm - 0.20 mm** arasına ayarlanmalı ve osiloskop genliği **1.0 V p-p** olmalıdır.\n- **2. Fren Direnci & Rejeneratif Deşarj:** İş mili yavaşlarken aşırı voltaj alarmı veriyorsa, R1-R2 fren direnç uçlarını söküp direnci (nominal 10-30 Ω) ölçün. Ayrıca sürücü üzerindeki deşarj IGBT diyot geçişlerini test edin.\n- **3. Pozisyon Kodlayıcı Diş Oranı:** Kasnak/kayış oranı değiştiğinde Parameter **4002** (pay) ve **4003** (payda) değerlerini girin.\n\n*Spindle hata ansiklopedisi, fren direnci test yönergeleri ve dişli oranı hesaplayıcı için sol menüden **Spindle Teşhisi** sekmesini açabilirsiniz.*`;
-  }
-
-  if (q.includes('üretici') || q.includes('m-kodu') || q.includes('a-adresi') || q.includes('ex0001') || q.includes('özel m')) {
-    return `## Üretici M-Kodları & Özel Alarmlar (A-Adresleri)\n\nTezgah imalatçısı tarafından PMC ladder içerisine yazılmış özel fonksiyonlar:\n\n- **Özel M-Kodları:** Ayna sıkma (M10/M11), punta, yüksek basınç gibi mekanik adımları tetikleyen ve PMC üzerinden CNC'ye \`MF\` sinyaliyle onay gönderen kodlar.\n- **A-Adresleri (Üretici Alarmları):** CNC ekranında görüntülenen \`EX\` kodlu mesaj alarmlarıdır (Örn: A0.0 biti 1 olduğunda EX0001 Lubrication Fault verir).\n\n*Fabrika tezgahlarınıza ait özel M-kodlarını ve A-adresi alarm mesajlarını kaydetmek ve aramak için sol menüden **Üretici Alarm & M-Kodu** sayfasını kullanabilirsiniz.*`;
-  }
-
-  if (q.includes('sürücü') || q.includes('amp') || q.includes('segment') || q.includes('kart') || q.includes('kabin') || q.includes('overheat') || q.includes('700') || q.includes('704') || q.includes('sıcaklık') || q.includes('ısı') || q.includes('fan')) {
-    return `## Sürücü 7-Segment Teşhisi & Kabin Isı Kontrolü\n\nSürücü kırmızı LED kod arızaları ve aşırı ısınma (overheat) çözümleri:\n\n- **Arıza Kodu 30 / 51 / F:** Akım kaçağı, DC bara yüksek voltajı veya FSSB fiber optik hat hatası.\n- **Kabin Overheat (Alarm 700 / 704):** CNC CPU ana kart sıcaklığı veya sürücü soğutucu blok sıcaklığı limiti aştı demektir. Sarı kabin soğutucu fanlarının çalışmasını kontrol edin.\n- **Isı Takip Parametresi:** **Parameter 3111 #0 (TEMD)** 1 yapıldığında CPU sıcaklığı CNC ekranında doğrudan görüntülenebilir (DGN 1010 ve 1014).\n\n*Etkileşimli LED simülatörü ve kabin fanı / ısı takip parametre kılavuzu için sol menüden **Sürücü Teşhisi** sekmesine tıklayabilirsiniz.*`;
-  }
-
-  if (q.includes('akım') || q.includes('tuning') || q.includes('kazanç') || q.includes('2004') || q.includes('vınıltı') || q.includes('titreme') || q.includes('vibrasyon')) {
-    return `## Servo Eksen Akım Döngüsü Kazanç Ayarı (P2004)\n\nEksen motorlarının yaşlanması veya sürtünme kaynaklı titreme/vınıltı seslerini gidermek için:\n\n- **Parameter 2004 (VCMD):** Akım kazanç oranını 10'arlı adımlarla azaltarak sesi gözlemleyin.\n- **Parameter 2040 & 2041:** Eksen kalkışlarındaki tork vuruntularını gidermek için akım loop integral/proportional kazançlarını %5-10 azaltın.\n\n*Adım adım akım kazanç kalibrasyon rehberi için sol menüden **Ayar Sihirbazı** sayfasındaki ilgili adımı açabilirsiniz.*`;
-  }
-
-  if (q.includes('limit') || q.includes('soft limit') || q.includes('1320') || q.includes('1321') || q.includes('stoper') || q.includes('strok')) {
-    return `## Eksen Yumuşak Sınır Limitleri (Soft Limits)\n\nTezgah eksenlerinin mekanik stoperlere çarparak zarar görmesini engelleyen yazılımsal sınırlardır:\n\n- **Parameter 1320 (Limit+):** Artı yöndeki elektriksel durma sınırı (Örn: 510000 yazılırsa +510 mm limit).\n- **Parameter 1321 (Limit-):** Eksi yöndeki durma sınırı.\n- **Emniyet Kuralı:** Mekanik stoper ile yumuşak limit arasında daima en az **5-10 mm emniyet boşluk payı** bırakılmalıdır.\n\n*Kanal limit hesaplama aracı ve retro sistem parametre ekranı simülasyonu için sol menüden **Eksen Limit Sihirbazı** sekmesini açabilirsiniz.*`;
-  }
-
-  if (q.includes('dişli') || q.includes('oran') || q.includes('2084') || q.includes('2085') || q.includes('fgr')) {
-    return `## Esnek Dişli Oranı (Flexible Gear Ratio)\n\nFANUC motorlarının vidalı mille doğru ölçüde senkronize olması için **Parameter 2084 (Pay)** ve **Parameter 2085 (Payda)** kullanılır.\n\n**Nasıl Hesaplanır:**\n- Enkoder çözünürlüğü ve vidalı mil hatvesi (pitch) oranlanıp en küçük komut birimi (LCI) cinsinden sadeleştirilir.\n- Örnek: 10mm vidalı mil hatvesi ve 1.000.000 puls/tur enkoder için 1 mikron çözünürlükte FGR parametreleri: \`2084 = 100\` / \`2085 = 1\` olarak bulunur.\n\n*Hassas mekanik dişli oranlarınızı sadeleştirilmiş kesir limitlerine göre hesaplamak için sol menüden **Dişli Oranı Hesabı** sayfasını kullanabilirsiniz.*`;
-  }
-
-  if (q.includes('mtbf') || q.includes('mttr') || q.includes('oee') || q.includes('verimlilik') || q.includes('güvenilirlik')) {
-    let res = `## OEE Verimlilik & MTBF/MTTR Güvenilirlik Analizi\n\nAtölyedeki tezgahların arıza ve bakım kayıtlarına göre hesaplanan işletme verimliliği metrikleri:\n\n`;
-    if (State.machines.length > 0) {
-      res += `**Atölye Genel Durumu:**\n- Toplam kayıtlı tezgah: **${State.machines.length}** adet\n- Ortalama Kullanılabilirlik (Availability) oranı veritabanı üzerinden MTBF ve MTTR saatlerine göre dinamik olarak çıkarılmaktadır.\n\n`;
-    }
-    res += `*Hangi tezgahın kronik olarak sık arızalandığını görmek ve OEE verimlilik grafiklerini incelemek için sol menüden **MTBF / MTTR Güvenilirlik** panelini açabilirsiniz.*`;
-    return res;
-  }
-
-  if (q.includes('tarayıcı') || q.includes('hata önleyici') || q.includes('çarpışma') || q.includes('nokta hatası') || q.includes('g43')) {
-    return `## G-Code Çarpışma & Hata Tarayıcı\n\nG-Kod programlarındaki yaygın operatör hatalarını (özellikle kaza/çarpışmalara neden olanları) statik analizle tespit eder:\n\n**Taranan Kritik Hatalar:**\n- **Nokta Hatası (Decimal Point Error):** \`X100\` gibi nokta eksiklikleri (FANUC bunu 100 mikron olarak algılar ve eksen kaza yapabilir).\n- **G43 Boy Telafisi Eksikliği:** Alt program veya takım değişiminden sonra boy telafisi H kodu olmadan Z hareketi yapılması.\n- **Z- Hızlı Dalış (G00 Z-):** Hızlı konumlandırma modu ile parça sıfırının altına dalış tespiti.\n\n*Kodunuzu yükleyip analiz etmek için sol menüden **G-Code Hata Tarayıcı** sekmesini açabilirsiniz.*`;
-  }
-
-  if (q.includes('karşılaştır') || q.includes('diff') || q.includes('fark') || q.includes('yedek')) {
-    return `## CNC Parametre Karşılaştırma & Fark Analizörü\n\nİki farklı FANUC parametre yedek dosyası (text) arasındaki tüm değer değişikliklerini, eklenen/silinen parametreleri ve bit bazlı durum farklılıklarını analiz eder:\n\n**Uygulama Alanları:**\n- Arızalanan bir tezgahın çalışan eski yedeği ile arıza anındaki güncel yedek dosyasını karşılaştırarak değişen parametreleri (ör. \`1815\` APZ bitinin kapanması) teşhis edebilirsiniz.\n\n*Ayrıntılı tablolar ve renkli fark analizleri için sol menüden **Parametre Karşılaştırıcı** sekmesini kullanabilirsiniz.*`;
-  }
-
-  if (q.includes('ağaç') || q.includes('karar') || q.includes('belirti') || q.includes('spindle dönmüyor') || q.includes('eksen gitmiyor') || q.includes('hidrolik')) {
-    return `## Kronik Arıza Karar ve Çözüm Ağacı\n\nTezgahtaki belirtilere göre adım adım ilerleyen karar destek mekanizmasıyla arızanın kök nedenini bulun:\n\n- **Eksen Kilitlenmeleri:** Acil stop (*ESP sinyali - X0008.4) veya Machine Lock durumlarını inceler.\n- **İş Mili (Spindle) Sorunları:** Ayna ayak sıkma sinyali (X0004.2) ve Kapı güvenlik kilidi (K00.1 / X0008.3) durumlarını kontrol ettirir.\n- **Hidrolik Sorunları:** Motor termik rölesi resetleme ve R-S-T faz yönü kontrollerini barındırır.\n\n*Adım adım etkileşimli sihirbaz ile arıza tespiti yapmak için sol menüden **Arıza Teşhis Ağacı** sayfasını ziyaret edebilirsiniz.*`;
-  }
-
-  if (q.includes('ı/o') || q.includes('io link') || q.includes('er97') || q.includes('er96') || q.includes('sys_alm 160') || q.includes('jd1a') || q.includes('jd1b') || q.includes('fssb') || q.includes('optik')) {
-    return `## FANUC I/O Link & FSSB Optik Link Teşhisi\n\n**1. I/O Link Donanım Teşhisi (ER97 / ER96):**\n- **ER97 I/O LINK FAILURE:** Haberleşme veya modül besleme kesintisidir. Hata veren I/O grubunun 24V DC besleme sigortasını ölçün. Soketlerin önceki modülün **JD1A (OUT)** portundan sonraki modülün **JD1B (IN)** portuna girdiğini teyit edin.\n- **Kısa Devre Testi:** Yeşil terminal klemenslerini I/O ünitesinden söküp alarmı resetleyin. Alarm giderse saha elemanlarında/sensörlerde kısa devre vardır.\n\n**2. FSSB Optik Haberleşme Teşhisi (SYS_ALM 160):**\n- CNC CPU kartı ile servo sürücüler arasındaki fiber optik haberleşme koptuğunda oluşur.\n- **Sürücü LED Kontrolü:** Sürücülerin 7-segment ekranlarına bakın: Upstream kopukluk için \`L\`, Downstream için \`U\` kodu gösteren sürücüyü bulun. Kopukluk bu sürücü ile bitişiğindeki sürücü arasındadır.\n- **Fiber Optik Kuralları:** COP10A/B turuncu/siyah kabloların tozunu alkollü bezle temizleyin. Minimum büküm yarıçapının **30mm** olduğunu teyit edin, sert bükümler kablo içindeki cam fiberi kırar.`;
-  }
-
-  if (q.includes('boşluk') || q.includes('backlash') || q.includes('1851')) {
-    return `## Eksen Backlash (Geri Dönme Boşluğu) Kompanzasyonu\n\nFANUC sistemlerinde geri dönme boşluğunu kompanze etmek için **Parameter 1851** kullanılır.\n\n**Nasıl Ayarlanır & Hesaplanır:**\n1. Eksene komparatör bağlayın ve saati sıfırlayın.\n2. MDI'da ekseni ters yönde hareket ettirin.\n3. Saatteki sapma miktarını okuyun.\n4. **Öneri:** Sol menüden **Eksen Boşluk Sihirbazı** sayfasını açarak komparatör ölçüm test kodunu otomatik üretebilir ve mikron sapmasına göre yeni Parametre 1851 değerini dijital ekran simülasyonu üzerinde hesaplayabilirsiniz.`;
-  }
-
-  if (q.includes('sıfır') || q.includes('1815') || q.includes('apz') || q.includes('apc')) {
-    return `## Eksen Absolute Referans Noktası Sıfırlama (P1815)\n\nAbsolute enkoderli eksenlerin referans noktasını sıfırlamak için **Parameter 1815** kullanılır:\n\n1. Ekseni hizalama çizgisine getirin.\n2. PWE=1 yapın.\n3. \`1815\` nolu parametrede sıfırlanacak eksenin \`APC (Bit 5)\` ve \`APZ (Bit 4)\` değerlerini güncelleyin (APZ'yi 1 -> 0 -> 1 yapın).\n4. CNC'yi kapatıp açın.\n\n*Sanal parametre tablosu ve interaktif kontrol listesi için sol menüden **Ayar Sihirbazı** sekmesini kullanabilirsiniz.*`;
-  }
-
-  if (q.includes('makro') || q.includes('çevrim') || q.includes('g81') || q.includes('g83') || q.includes('bhc') || q.includes('üret')) {
-    return `## G-Code ve Makro Çevrimleri\n\nMTB Elektrik Bakım içindeki kod üretme aracı ile şu standart alt programları otomatik olarak oluşturabilirsiniz:\n- **G81 / G83:** Delik delme ve kademeli delik delme çevrimi.\n- **BHC (Bolt Hole Circle):** Cıvata dairesi cıvata delikleri koordinat trigonometrik hesabı.\n- **G02 / G03:** Dairesel cep boşaltma helisel interpolasyon kodları.\n\n*Hazır G-Code programı üretmek için sol menüden **G-Code Üretici** sayfasını kullanabilirsiniz.*`;
-  }
-
-  if (q.includes('sağlık') || q.includes('kestirim') || q.includes('risk') || q.includes('tahmin') || q.includes('kritik')) {
-    const machList = State.machines.map(m => {
-      const health = calculateMachineHealth(m);
-      return { ...m, health };
-    });
-    machList.sort((a, b) => a.health.score - b.health.score);
-    const criticals = machList.filter(m => m.health.status === 'Critical');
-    const warnings = machList.filter(m => m.health.status === 'Warning');
-    
-    let res = `## Kestirimci Bakım & Risk Analiz Raporu\n\nTezgahlarınızın son servis sıklıkları, arıza geçmişleri ve absolute enkoder pil seviyeleri analiz edilmiştir:\n\n**Mevcut Risk Tablosu:**\n- 🔴 Kritik Seviye (Bakım Geciken/Sık Arızalanan): **${criticals.length}** adet tezgah\n- 🟡 Riskli Seviye (Planlanmalı): **${warnings.length}** adet tezgah\n- 🟢 Güvenli Seviye: **${machList.length - criticals.length - warnings.length}** adet tezgah\n`;
-    
-    if (criticals.length > 0) {
-      res += `\n**⚠️ Acil Müdahale Önerilen En Kritik Tezgahlar:**\n`;
-      criticals.slice(0, 3).forEach(c => {
-        res += `- **${c.numarasi}** (Sağlık Skoru: %${c.health.score}, Arıza Riski: %${c.health.failureRisk}) - Bölüm: ${c.bolum || '—'}\n`;
-      });
-    }
-    res += `\n*Detaylı öncelik sıralaması ve kestirimci analizler için sol menüden **Kestirimci Bakım** sayfasını ziyaret edebilirsiniz.*`;
-    return res;
-  }
-
-  if (q.includes('bakım') || q.includes('servis') || q.includes('onar')) {
-    return `## Tezgah Bakım Sistemi\n\nTezgah Takip modülü kapsamında **${State.maintenances.length}** adet bakım kaydı ve **${State.machines.length}** adet kayıtlı makine sistemde bulunmaktadır.\n\n**Genel İstatistikler:**\n- Kayıtlı Tezgah Sayısı: ${State.machines.length}\n- Toplam Bakım Kaydı: ${State.maintenances.length}\n\n**Yeni Bakım Kaydı Ekleme:**\nSol menüden **Bakım Defteri** sekmesine giderek "Yeni Bakım Kaydı" butonuyla yeni periyodik veya arıza bakım kaydı ekleyebilirsiniz.`;
-  }
-
-  if (q.includes('pil') || q.includes('batarya') || q.includes('encoder') || q.includes('enkoder') || q.includes('fan') || q.includes('pervane')) {
-    const criticals = State.batteries.filter(b => getBatteryStatus(b.tarih).class === 'tag-red');
-    const warnings = State.batteries.filter(b => getBatteryStatus(b.tarih).class === 'tag-amber');
-    
-    const criticalFans = State.fans.filter(f => (20000 - f.calisma_saati) < 0);
-    const warningFans = State.fans.filter(f => (20000 - f.calisma_saati) >= 0 && (20000 - f.calisma_saati) < 5000);
-
-    return `## Absolute Enkoder Pil & Sürücü Fan Durum Raporu\n\n**1. Enkoder Pil Durumları (Voltaj Seviyeleri):**\n- Sistemde **${State.batteries.length}** adet kayıtlı pil döngüsü var.\n- 🔴 Kritik Seviye (Değişimi Geciken / < 3.0V): **${criticals.length}** adet eksen (Pozisyon APZ kaybı riski!).\n- 🟡 Uyarı Seviyesi (3.0V - 3.2V): **${warnings.length}** adet eksen.\n- 🟢 Güvenli Seviye (> 3.2V): **${State.batteries.length - criticals.length - warnings.length}** adet eksen.\n\n**2. Sürücü Kabini Soğutma Fanları Durumu:**\n- Sistemde **${State.fans.length}** adet kayıtlı soğutma fanı takip edilmektedir.\n- 🔴 Limit Aşımı (> 20.000 Saat): **${criticalFans.length}** adet fan.\n- 🟡 Bakım Yakın (15.000 - 20.000 Saat): **${warningFans.length}** adet fan.\n\n**Saha Önerisi:** Enkoder pilleri bittiğinde kapatıp açma sonrası referans kaybı (P1815 APZ alarmı) oluşur. Sürücü kartı soğutma fanları durursa, sürücü 'Overheat' alarmı verip tezgahı korumaya alır. Sol menüden **Pil Takibi** sayfasına giderek her iki donanımın da ömür sayaçlarını sıfırlayabilirsiniz.`;
-  }
-
-  if (q.includes('e-stop') || q.includes('acil dur') || q.includes('emergency stop')) {
-    return `## E-Stop Devresi\n\nFANUC tezgahlarında E-Stop devresi şu şekilde çalışır:\n\n1. **E-Stop Butonu** — NC kontağı (normally closed). Basıldığında devreyi keser.\n2. **PMC'de G008.4 (ESP)** — E-stop sinyali PMC'ye iletilir\n3. **SR0004 Alarm** — CNC EMERGENCY STOP alarmını görüntüler\n4. **Servo güç kesimi** — DRDY (Drive Ready) sinyali kapatılır\n\n**Sorun giderme:**\n- G008.4 bitini PMC monitöründe kontrol edin (0=E-Stop aktif)\n- Butonun kontak bütünlüğünü ölçün\n- Kapı kilidi ve güvenlik rölelerini kontrol edin\n- PMC ladder'da ESP girişini izleyin`;
-  }
-
-  if (q.includes('yedekle') || q.includes('backup') || q.includes('parametre kaydet') || q.includes('restore') || q.includes('yükle') || q.includes('sram') || q.includes('boot') || q.includes('rom')) {
-    return `## FANUC Parametre & Program Yedekleme/Yükleme Sihirbazı\n\nFANUC kontrol ünitelerinde yedekleme yaparken doğru I/O kanallarını ve tuş kombinasyonlarını kullanmak kritiktir:\n\n**1. Standart Parametre & Program Yedekleme (I/O Kanalları):**\n- **I/O Channel = 4:** CF Card (Compact Flash)\n- **I/O Channel = 17:** USB Flash Sürücü\n- **I/O Channel = 0/1:** RS232 Seri Port\n- **PWE = 1:** Parametre yazma izni (Sadece veri geri yüklerken açılmalıdır).\n*Sihirbazı açmak için sol menüden **Yedekleme Sihirbazı** sekmesini kullanabilirsiniz.*\n\n**2. Boot ROM Ekranından SRAM Bit-Image Yedeği Alma:**\nCNC parametreleri, PMC programı, ofsetler ve parça programlarının tamamını tek bir dosya (\`SRAM.FDB\`) olarak yedeklemek için:\n1. CNC gücünü kapatın.\n2. Ekran altındaki **en sağdaki iki soft key (menü tuşu)** butonuna basılı tutarak CNC gücünü açın.\n3. Karşınıza gelen siyah-beyaz **BOOT SYSTEM** menüsünde yön tuşlarıyla **SRAM DATA UTILITY** satırına gelip SELECT deyin.\n4. **SRAM BACKUP (CNC -> MEMORY CARD)** seçerek CF karta tüm belleğin aynasını yedekleyin. Geri yüklemek için ise **RESTORE SRAM** seçeneğini kullanın.`;
-  }
-
-  if (q.includes('servo') && (q.includes('kazan') || q.includes('gain') || q.includes('ayar') || q.includes('tuning'))) {
-    return `## Servo Kazanım Ayarı (Gain Tuning)\n\n**Temel Parametreler:**\n- **No.2043** — Pozisyon kazancı (KPZ, tipik: 3000)\n- **No.2021** — Hız kazancı (integral, tipik: 100–500)\n- **No.2022** — Hız döngüsü oransal kazanç\n\n**Ayar Adımları:**\n1. AI Servo Tuning fonksiyonunu açın (SYSTEM > Servo Tuning)\n2. Kesme testini çalıştırın\n3. Titreşim varsa KPZ değerini düşürün\n4. Pozisyon hatası fazlaysa KPZ artırın\n5. Step Response grafiğini inceleyin\n\n**İpucu:** Ağır tezgahlarda düşük KPZ (1000–2000), hafif/yüksek hızlı tezgahlarda yüksek KPZ (4000–8000)`;
-  }
-
-  if (q.includes('ladder') || q.includes('pmc') || q.includes('r addr') || q.includes('r adresi')) {
-    return `## FANUC PMC Adres Haritası\n\n| Adres | Açıklama |\n|-------|----------|\n| **X** | Makine girişleri (I/O kartından) |\n| **Y** | Makine çıkışları (I/O kartına) |\n| **G** | NC → PMC sinyalleri |\n| **F** | PMC → NC sinyalleri |\n| **R** | Dahili relelar (program içi) |\n| **T** | Zamanlayıcılar |\n| **C** | Sayaçlar |\n| **K** | Keeplatch (kalıcı bit) |\n| **D** | Veri registerleri |\n\n**Önemli G Sinyalleri:**\n- G008.4 (ESP) — E-Stop\n- G007.1 (ST) — Döngü başlat\n- G044.7 (FIN) — M fonksiyon tamamlama`;
-  }
-
-  // Default
-  return `MTB Elektrik Bakım Asistanı — Çevrimdışı Mod\n\n"${msg}" sorunuzu aldım.\n\nÇevrimdışı modda şu konularda yardımcı olabilirim:\n• Alarm kodları (ör: SV0401, PS0010)\n• Parametre numaraları (ör: Param 1320)\n• E-Stop, servo gain, yedekleme prosedürleri\n• PMC adres haritası\n\nDaha kapsamlı yanıtlar için **Ayarlar** menüsünden OpenAI veya Gemini API anahtarınızı ekleyebilirsiniz.`;
-}
-
-function appendMessage(role, text, metadata = {}) {
-  const container = document.getElementById('ai-messages');
-  if (!container) return;
-  const isAI = role === 'ai';
-  const div = document.createElement('div');
-  div.className = `msg-row ${role} animate-in`;
-
-  // Simple markdown rendering
-  const rendered = escapeHTML(text)
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/## (.+)/g, '<div style="font-weight:700; font-size:13px; margin:8px 0 4px; color:var(--text-accent)">$1</div>')
-    .replace(/\| (.+) \|/g, (m) => {
-      const cells = m.split('|').filter(c => c.trim() && !c.trim().match(/^-+$/));
-      return '<div style="display:flex; gap:12px; font-size:11.5px; margin:2px 0">' + cells.map(c => `<span>${c.trim()}</span>`).join('') + '</div>';
-    })
-    .replace(/\n/g, '<br>');
-  const html = window.DOMPurify ? window.DOMPurify.sanitize(rendered, { ALLOWED_TAGS: ['strong','code','div','span','br'], ALLOWED_ATTR: ['style','class'] }) : rendered;
-  const sourceHTML = isAI && metadata.sources?.length
-    ? `<div class="ai-source-list">${metadata.sources.map(source => `<span class="ai-source-chip">${escapeHTML(source.type)} · ${escapeHTML(source.id)}</span>`).join('')}</div>` : '';
-  const confidenceHTML = isAI ? `<span class="status-chip ai-confidence">${escapeHTML(metadata.confidence || 'Teknisyen doğrulaması gerekli')}</span>` : '';
-
-  div.innerHTML = `
-    <div class="msg-avatar ${role}">${isAI ? 'AI' : '👤'}</div>
-    <div>
-      <div class="msg-bubble ${isAI ? 'ai-technical-card' : ''}">${confidenceHTML}<div class="ai-tech-section"><strong>${isAI ? 'Teknik değerlendirme' : 'Mesaj'}</strong>${html}</div>${sourceHTML}</div>
-      <div class="msg-time">${formatTime(new Date())}</div>
-    </div>
-  `;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-}
-
-function appendTyping() {
-  const container = document.getElementById('ai-messages');
-  if (!container) return null;
-  const id = 'typing-' + Date.now();
-  const div = document.createElement('div');
-  div.id = id;
-  div.className = 'msg-row ai';
-  div.innerHTML = `
-    <div class="msg-avatar ai">AI</div>
-    <div>
-      <div class="msg-bubble">
-        <div class="ai-typing"><span></span><span></span><span></span></div>
-      </div>
-    </div>
-  `;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  return id;
-}
-
-function removeTyping(id) {
-  if (id) document.getElementById(id)?.remove();
-}
-
-// ════════════════════════════════════════════════════════════════
-//  TEZGAH TAKİP - DATA SAVING HELPERS
-// ════════════════════════════════════════════════════════════════
-// ── Generic Data-Saving Handler with Backups & Retries ──
+let AIScreen;
+function getAIScreen(){if(!AIScreen)AIScreen=window.MTBAIScreen.initialize({State,createPage,escapeHTML,showToast,showModal,closeModal,navigate,saveKnowledgePreferences,openBookPDF:(...args)=>window.openBookPDF(...args),calculateMachineHealth,getBatteryStatus,formatTime});return AIScreen;}
+function renderAI(){return getAIScreen().renderAI();}
+
+/* Persistence implementation lives in js/services/data_persistence.js.
 async function saveJSONDatabase(fileName, key, data) {
   const filePath = `./data/${fileName}`;
   const backupPath = `${filePath}.bak`;
@@ -3936,7 +1664,7 @@ async function saveJSONDatabase(fileName, key, data) {
   // 2. Write new payload with transient retry
   let success = false;
   let writeRes = null;
-  
+
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       writeRes = await window.electronAPI.writeFile(filePath, payload);
@@ -3962,20 +1690,24 @@ async function saveJSONDatabase(fileName, key, data) {
     const errorMsg = writeRes?.error || 'Bilinmeyen yazma hatası';
     console.error(`Yazma başarısız (${fileName}): ${errorMsg}`);
     showToast(`Veri kaydedilemedi: ${fileName} yazma hatası. Değişiklikler sadece oturum boyunca geçerlidir. Detay: ${errorMsg}`, 'error');
-    
+
     try {
       const logText = `Write Error [${new Date().toISOString()}]: Failed to write ${fileName}. Detail: ${errorMsg}\n\n`;
       await window.electronAPI.writeFile('./data/ui_error_log.txt', logText, 'utf8');
     } catch {}
-    
+
     return false;
   }
 }
 
-async function saveMachines() { return await saveJSONDatabase('machines.json', 'machines', State.machines); }
+async function saveMachines() { return await saveJSONDatabase('machines.json', 'machines', State.machines); } */
+const saveJSONDatabase = (...args) => window.DataPersistence.saveJSONDatabase(...args);
+const saveMachines = () => window.DataPersistence.saveMachines();
 window.FanucCenterBridge = Object.freeze({
   getState: () => State,
+  canEdit,
   saveMachineProfile: async (machineId, profile) => {
+    if (!canEdit()) return { ok: false, error: 'FANUC profilini düzenleme yetkiniz yok.' };
     const machine = State.machines.find(item => item.id === Number(machineId));
     if (!machine) return { ok: false, error: 'Tezgâh bulunamadı.' };
     machine.fanucProfile = { ...(machine.fanucProfile || {}), ...profile, updatedAt: new Date().toISOString() };
@@ -3983,6 +1715,7 @@ window.FanucCenterBridge = Object.freeze({
     return { ok: true };
   },
   saveModuleInventory: async (machineId, inventory) => {
+    if (!canEdit()) return { ok: false, error: 'Modül envanterini düzenleme yetkiniz yok.' };
     const machine = State.machines.find(item => item.id === Number(machineId));
     if (!machine) return { ok: false, error: 'Tezgâh bulunamadı.' };
     machine.moduleInventory = Array.isArray(inventory) ? inventory : [];
@@ -3990,19 +1723,20 @@ window.FanucCenterBridge = Object.freeze({
     return { ok: true };
   }
 });
-async function saveMaintenances() { return await saveJSONDatabase('maintenances.json', 'maintenances', State.maintenances); }
-async function saveBatteries() { return await saveJSONDatabase('batteries.json', 'batteries', State.batteries); }
-async function saveFans() { return await saveJSONDatabase('fans.json', 'fans', State.fans); }
-async function saveWiki() { return await saveJSONDatabase('wiki.json', 'articles', State.wiki); }
-async function saveBackupLogs() { return await saveJSONDatabase('backup_logs.json', 'backup_logs', State.backup_logs); }
-async function saveCustomMCodes() { return await saveJSONDatabase('custom_mcodes.json', 'mcodes', State.custom_mcodes); }
-async function saveCustomAlarms() { return await saveJSONDatabase('custom_alarms.json', 'alarms', State.custom_alarms); }
-async function saveCustomAlarmNotes() { return await saveJSONDatabase('custom_alarm_notes.json', 'notes', State.custom_alarm_notes); }
+const saveMaintenances = () => window.DataPersistence.saveMaintenances();
+const saveBatteries = () => window.DataPersistence.saveBatteries();
+const saveFans = () => window.DataPersistence.saveFans();
+const saveWiki = () => window.DataPersistence.saveWiki();
+const saveBackupLogs = () => window.DataPersistence.saveBackupLogs();
+const saveCustomMCodes = () => window.DataPersistence.saveCustomMCodes();
+const saveCustomAlarms = () => window.DataPersistence.saveCustomAlarms();
+const saveCustomAlarmNotes = () => window.DataPersistence.saveCustomAlarmNotes();
 
 // ════════════════════════════════════════════════════════════════
 //  TEZGAH LİSTESİ
 // ════════════════════════════════════════════════════════════════
 function renderMachines() {
+  if (window.MachineWorkspace?.render) return window.MachineWorkspace.render();
   const page = createPage('machines');
   page.innerHTML = `
     <div class="page-header">
@@ -4175,6 +1909,7 @@ window.deleteMachine = async function(id) {
 };
 
 window.showMachineDetailsModal = function(id) {
+  if (window.MachineWorkspace?.showDetails) return window.MachineWorkspace.showDetails(id);
   const m = State.machines.find(x => x.id === id);
   if (!m) return;
   const machMaint = State.maintenances.filter(ma => ma.tezgah_id === m.id);
@@ -4334,7 +2069,7 @@ function buildMaintenanceReportHTML(filters = {}) {
     const ed = parseDateHelper(filters.endDate);
     records = records.filter(r => parseDateHelper(r.tarih || r.date) <= ed);
   }
-  
+
   // Sort by parsed date descending
   records.sort((a, b) => parseMaintDate(b.tarih || b.date) - parseMaintDate(a.tarih || a.date));
 
@@ -4609,813 +2344,34 @@ function buildMachineCardHTML(machineId) {
   </body></html>`;
 }
 
-// PDF export actions
-window.printMaintenanceReport = async function(machineId) {
-  try {
-    showToast('PDF hazırlanıyor...', 'info');
-    const m = machineId ? State.machines.find(x => x.id == machineId) : null;
-    const defaultName = m
-      ? `makine_kart_${(m.numarasi || m.name || 'tezgah').replace(/\s/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`
-      : `bakim_raporu_${new Date().toISOString().slice(0,10)}.pdf`;
-    const html = buildMaintenanceReportHTML(machineId ? { machineId } : {});
-    const res = await window.electronAPI.printToPDF(html, defaultName);
-    if (res && res.ok) showToast('✓ PDF kaydedildi: ' + res.filePath.split('\\').pop(), 'success');
-    else if (res && !res.ok && res.filePath === undefined) showToast('PDF iptal edildi', 'info');
-    else showToast('PDF oluşturulamadı: ' + (res && res.error ? res.error : ''), 'error');
-  } catch (e) { showToast('PDF hatası: ' + e.message, 'error'); }
-};
-
-window.printMachineCard = async function(machineId) {
-  try {
-    showToast('Makine kartı hazırlanıyor...', 'info');
-    const m = State.machines.find(x => x.id == machineId);
-    const defaultName = `makine_karti_${(m ? (m.numarasi || m.name) : 'tezgah').replace(/\s/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
-    const html = buildMachineCardHTML(machineId);
-    const res = await window.electronAPI.printToPDF(html, defaultName);
-    if (res && res.ok) showToast('✓ Makine kartı kaydedildi: ' + res.filePath.split('\\').pop(), 'success');
-    else if (res && !res.ok && res.filePath === undefined) showToast('PDF iptal edildi', 'info');
-    else showToast('PDF oluşturulamadı: ' + (res && res.error ? res.error : ''), 'error');
-  } catch (e) { showToast('PDF hatası: ' + e.message, 'error'); }
-};
+window.ReportBuilders = Object.freeze({
+  maintenance: machineId => buildMaintenanceReportHTML(machineId ? { machineId } : {}),
+  machineCard: machineId => buildMachineCardHTML(machineId)
+});
 
 // ════════════════════════════════════════════════════════════════
 //  BAKIM DEFTERİ
 // ════════════════════════════════════════════════════════════════
-function renderMaintenance() {
-  const page = createPage('maintenance');
-  page.innerHTML = `
-    <div class="page-header">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1>🔧 Tezgah Bakım Defteri</h1>
-          <p>Toplam ${State.maintenances.length} servis ve periyodik bakım kaydı</p>
-        </div>
-        <div class="flex gap-2">
-          <button class="btn btn-secondary btn-sm" onclick="exportMaintenanceCSV()">
-            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            CSV İndir
-          </button>
-          <button class="btn btn-secondary btn-sm" onclick="printMaintenanceReport()">
-            <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            PDF Rapor
-          </button>
-          ${canEdit() ? `
-          <button class="btn btn-primary" onclick="showNewMaintModal()">
-            <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Yeni Bakım Kaydı
-          </button>
-          ` : ''}
-        </div>
-      </div>
-      <div class="flex gap-2 mt-3" style="flex-wrap:wrap">
-        <div class="search-bar" style="flex:1; max-width:300px">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="maint-search" placeholder="Usta veya açıklama ara..." />
-        </div>
-        <select id="maint-mach-filter" style="width:180px">
-          <option value="">Tüm Tezgahlar</option>
-          ${getSortedMachines().map(m => `<option value="${m.id}">${escapeHTML(m.numarasi)}</option>`).join('')}
-        </select>
-        <select id="maint-status-filter" style="width:150px">
-          <option value="">Tüm Durumlar</option>
-          <option>Tamamlandı</option>
-          <option>Beklemede</option>
-          <option>Devam Ediyor</option>
-        </select>
-      </div>
-    </div>
-    <div class="page-body" style="padding:0">
-      <div style="overflow-y:auto; flex:1">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Tarih</th>
-              <th>Tezgah</th>
-              <th>Bakım Yapan</th>
-              <th>Açıklama</th>
-              <th>Durum</th>
-              <th>İşlemler</th>
-            </tr>
-          </thead>
-          <tbody id="maint-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  renderMaintTable(State.maintenances, page);
-
-  page.querySelector('#maint-search').addEventListener('input', () => filterMaintenances(page));
-  page.querySelector('#maint-mach-filter').addEventListener('change', () => filterMaintenances(page));
-  page.querySelector('#maint-status-filter').addEventListener('change', () => filterMaintenances(page));
-
-  return page;
-}
-
-function filterMaintenances(page) {
-  const q = page.querySelector('#maint-search').value.toLowerCase();
-  const machId = page.querySelector('#maint-mach-filter').value;
-  const status = page.querySelector('#maint-status-filter').value;
-
-  const filtered = State.maintenances.filter(m =>
-    (!q || m.bakim_yapan.toLowerCase().includes(q) || m.aciklama.toLowerCase().includes(q)) &&
-    (!machId || m.tezgah_id === parseInt(machId)) &&
-    (!status || m.durum === status)
-  );
-  renderMaintTable(filtered, page);
-}
-
-function renderMaintTable(list, page) {
-  const tbody = page.querySelector('#maint-tbody');
-  if (!list.length) {
-    const filtered = State.maintenances.length > 0;
-    tbody.innerHTML = window.MTBUX.emptyTableRow({ colspan: 6, icon: '✓',
-      title: filtered ? 'Bu filtrelerde bakım kaydı yok' : 'Henüz bakım kaydı oluşturulmadı',
-      description: filtered ? 'Tezgâh, durum veya arama filtresini temizleyerek diğer kayıtları görüntüleyin.' : 'Yapılan işlemleri, teknisyeni ve bakım sonucunu kayıt altına alarak geçmişi oluşturmaya başlayın.',
-      actionLabel: filtered ? 'Filtreleri temizle' : (canEdit() ? 'İlk bakım kaydını oluştur' : ''),
-      command: filtered ? 'clear-filters' : 'new-maintenance' });
-    return;
-  }
-  
-  // Sort by date (latest first) or id
-  const sorted = [...list].sort((a, b) => b.id - a.id);
-  
-  tbody.innerHTML = sorted.map(m => {
-    const mach = State.machines.find(x => x.id === m.tezgah_id);
-    const machName = mach ? mach.numarasi : `Tezgah #${m.tezgah_id}`;
-    const statusClass = m.durum === 'Tamamlandı' ? 'tag-green' : m.durum === 'Devam Ediyor' ? 'tag-blue' : 'tag-amber';
-    return `
-      <tr>
-        <td><span class="font-mono text-sm" style="color:var(--text-secondary)">${escapeHTML(m.tarih)}</span></td>
-        <td><strong style="color:var(--text-accent)">${escapeHTML(machName)}</strong></td>
-        <td><span style="font-size:12.5px; font-weight:500">${escapeHTML(m.bakim_yapan)}</span></td>
-        <td><div style="font-size:12px; max-width:400px; white-space:normal; line-height:1.5">${escapeHTML(m.aciklama)}</div></td>
-        <td><span class="tag ${statusClass}">${escapeHTML(m.durum)}</span></td>
-        <td>
-          ${canDelete() ? `
-          <button class="btn btn-ghost btn-sm btn-icon" onclick="deleteMaint(${m.id})" title="Sil" style="color:var(--red)">
-            ✕
-          </button>
-          ` : ''}
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-window.showNewMaintModal = function() {
-  showModal('new-maint', `
-    <div class="modal-header">
-      <span class="modal-title">Yeni Bakım Kaydı Ekle</span>
-      <button class="modal-close" onclick="closeModal('new-maint')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Tezgah *</label>
-      <select class="form-control" id="nm-maint-mach">
-        ${getSortedMachines().map(m => `<option value="${m.id}">${escapeHTML(m.numarasi)}</option>`).join('')}
-      </select>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Tarih (GG.AA.YYYY) *</label>
-        <input class="form-control" id="nm-maint-tarih" value="${getTodayFormat()}" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Usta / Bakımcı *</label>
-        <input class="form-control" id="nm-maint-yapan" placeholder="ör. Mehmet Özer" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Yapılan Bakım / Açıklama *</label>
-      <textarea class="form-control" id="nm-maint-desc" rows="4" placeholder="Gerçekleştirilen işlemleri detaylandırın..."></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Durum</label>
-      <select class="form-control" id="nm-maint-status">
-        <option>Tamamlandı</option>
-        <option>Beklemede</option>
-        <option>Devam Ediyor</option>
-      </select>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('new-maint')">İptal</button>
-      <button class="btn btn-primary" onclick="createNewMaint()">Kaydı Kaydet</button>
-    </div>
-  `);
-};
-
-window.createNewMaint = async function() {
-  if (!canEdit()) { showToast('Bakım kaydı ekleme yetkiniz yok', 'error'); return; }
-  const tezgah_id = parseInt(document.getElementById('nm-maint-mach').value);
-  const tarih = document.getElementById('nm-maint-tarih').value.trim();
-  const bakim_yapan = document.getElementById('nm-maint-yapan').value.trim();
-  const aciklama = document.getElementById('nm-maint-desc').value.trim();
-  const durum = document.getElementById('nm-maint-status').value;
-
-  if (!tarih || !bakim_yapan || !aciklama) {
-    showToast('Tarih, usta ve açıklama girmek zorunludur.', 'error');
-    return;
-  }
-
-  const id = State.maintenances.length ? Math.max(...State.maintenances.map(m => m.id)) + 1 : 1;
-  const newMaint = { id, tezgah_id, tarih, bakim_yapan, aciklama, durum };
-  State.maintenances.push(newMaint);
-  await saveMaintenances();
-  closeModal('new-maint');
-  showToast('Bakım kaydı başarıyla oluşturuldu!', 'success');
-  navigate('maintenance');
-};
-
-window.deleteMaint = async function(id) {
-  if (!canDelete()) { showToast('Bakım kaydı silme yetkiniz yok', 'error'); return; }
-  if (!confirm('Bu bakım kaydını silmek istediğinize emin misiniz?')) return;
-  State.maintenances = State.maintenances.filter(m => m.id !== id);
-  await saveMaintenances();
-  showToast('Bakım kaydı silindi.', 'success');
-  navigate('maintenance');
-};
-
-// ════════════════════════════════════════════════════════════════
-//  PİL TAKİBİ
-// ════════════════════════════════════════════════════════════════
-window.CurrentBatteryTab = 'battery';
-
-function renderBattery() {
-  const page = createPage('battery');
-  page.innerHTML = `
-    <div class="page-header">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1>🔋 Pil & Sürücü Fan Ömrü Takip Paneli (Lifecycle Calculator)</h1>
-          <p>FANUC Absolute Enkoder Pil Voltajları, Geri Sayım Sayacı ve Sürücü Fan Ömrü Takip Sihirbazı</p>
-        </div>
-        ${canEdit() ? `
-        <div class="flex gap-2">
-          <button class="btn btn-primary" id="btn-add-battery" onclick="showNewBattModal()">
-            <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Pil Değişimi Kaydet
-          </button>
-          <button class="btn btn-primary" id="btn-add-fan" onclick="showNewFanModal()" style="display:none">
-            <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Yeni Fan Takibi Ekle
-          </button>
-        </div>
-        ` : ''}
-      </div>
-
-      <!-- Lifecycle Summary KPI Cards -->
-      <div class="stats-grid mt-3 mb-1" style="grid-template-columns: repeat(4, 1fr); gap:12px">
-        <div class="stat-card blue" style="padding:12px 16px">
-          <div class="stat-data">
-            <div class="stat-value" id="kpi-batt-avg-days" style="color:#60a5fa; font-size:22px">0 Gün</div>
-            <div class="stat-label">Ortalama Kalan Pil Ömrü</div>
-          </div>
-        </div>
-        <div class="stat-card amber" style="padding:12px 16px">
-          <div class="stat-data">
-            <div class="stat-value" id="kpi-batt-warning" style="color:#fbbf24; font-size:22px">0</div>
-            <div class="stat-label">Değişimi Yaklaşan (< 60 Gün)</div>
-          </div>
-        </div>
-        <div class="stat-card red" style="padding:12px 16px">
-          <div class="stat-data">
-            <div class="stat-value" id="kpi-batt-critical" style="color:#f87171; font-size:22px">0</div>
-            <div class="stat-label">Kritik / Süresi Dolan</div>
-          </div>
-        </div>
-        <div class="stat-card green" style="padding:12px 16px">
-          <div class="stat-data">
-            <div class="stat-value" id="kpi-fan-critical" style="color:#34d399; font-size:22px">0</div>
-            <div class="stat-label">Bakım Zamanı Gelen Fan</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Tabs Selector -->
-      <div class="flex gap-2 mt-3" style="border-bottom: 1px solid var(--border); padding-bottom: 8px">
-        <button class="btn btn-ghost" id="btn-tab-battery" onclick="switchBatteryTab('battery')" style="font-weight:700; color:var(--text-accent); border-bottom:2px solid var(--text-accent); border-radius:0">🔋 Enkoder Pilleri</button>
-        <button class="btn btn-ghost" id="btn-tab-fan" onclick="switchBatteryTab('fan')" style="font-weight:700; border-radius:0">🌀 Sürücü & Kabin Fanları</button>
-      </div>
-
-      <!-- Battery Filters -->
-      <div class="flex gap-2 mt-3" id="battery-filters" style="flex-wrap:wrap">
-        <div class="search-bar" style="flex:1; max-width:300px">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="batt-search" placeholder="Eksen veya pil tipi ara..." />
-        </div>
-        <select id="batt-mach-filter" style="width:180px">
-          <option value="">Tüm Tezgahlar</option>
-          ${getSortedMachines().map(m => `<option value="${m.id}">${escapeHTML(m.numarasi)}</option>`).join('')}
-        </select>
-        <select id="batt-status-filter" style="width:150px">
-          <option value="">Tüm Durumlar</option>
-          <option value="normal">Normal (Güvenli)</option>
-          <option value="warning">Uyarı (Yaklaştı)</option>
-          <option value="critical">Kritik (Süresi Geçti)</option>
-        </select>
-      </div>
-
-      <!-- Fan Filters -->
-      <div class="flex gap-2 mt-3" id="fan-filters" style="flex-wrap:wrap; display:none">
-        <div class="search-bar" style="flex:1; max-width:300px">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="fan-search" placeholder="Konum veya fan tipi ara..." />
-        </div>
-        <select id="fan-mach-filter" style="width:180px">
-          <option value="">Tüm Tezgahlar</option>
-          ${getSortedMachines().map(m => `<option value="${m.id}">${escapeHTML(m.numarasi)}</option>`).join('')}
-        </select>
-        <select id="fan-status-filter" style="width:150px">
-          <option value="">Tüm Durumlar</option>
-          <option value="normal">Normal (Güvenli)</option>
-          <option value="warning">Uyarı (Bakım Yakın)</option>
-          <option value="critical">Kritik (Limit Aşımı)</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="page-body" style="padding:0">
-      <!-- Battery Tab Container -->
-      <div style="overflow-y:auto; flex:1" id="tab-container-battery">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Tezgah</th>
-              <th>Eksen</th>
-              <th>Pil Modeli</th>
-              <th>Voltaj</th>
-              <th>Son Değişim</th>
-              <th>Değişimi Yapan</th>
-              <th>Kalan Gün</th>
-              <th>Durum</th>
-              <th>İşlemler</th>
-            </tr>
-          </thead>
-          <tbody id="batt-tbody"></tbody>
-        </table>
-      </div>
-
-      <!-- Fan Tab Container -->
-      <div style="overflow-y:auto; flex:1; display:none" id="tab-container-fan">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Tezgah</th>
-              <th>Konum / Fan Tipi</th>
-              <th>Çalışma Saati</th>
-              <th>Kalan Ömür (Sa)</th>
-              <th>Son Bakım Yapan</th>
-              <th>Durum</th>
-              <th>İşlemler</th>
-            </tr>
-          </thead>
-          <tbody id="fan-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  renderBatteryTable(State.batteries, page);
-  renderFanTable(State.fans, page);
-
-  // Restore current tab visual state
-  if (window.CurrentBatteryTab === 'fan') {
-    setTimeout(() => {
-      window.switchBatteryTab('fan');
-    }, 10);
-  }
-
-  // Hook filters
-  page.querySelector('#batt-search').addEventListener('input', () => filterBatteries(page));
-  page.querySelector('#batt-mach-filter').addEventListener('change', () => filterBatteries(page));
-  page.querySelector('#batt-status-filter').addEventListener('change', () => filterBatteries(page));
-
-  page.querySelector('#fan-search').addEventListener('input', () => filterFans(page));
-  page.querySelector('#fan-mach-filter').addEventListener('change', () => filterFans(page));
-  page.querySelector('#fan-status-filter').addEventListener('change', () => filterFans(page));
-
-  return page;
-}
-
-window.switchBatteryTab = function(tab) {
-  window.CurrentBatteryTab = tab;
-  const isBatt = tab === 'battery';
-
-  // Toggle buttons
-  const btnAddBatt = document.getElementById('btn-add-battery');
-  const btnAddFan = document.getElementById('btn-add-fan');
-  if (btnAddBatt) btnAddBatt.style.display = isBatt ? 'block' : 'none';
-  if (btnAddFan) btnAddFan.style.display = isBatt ? 'none' : 'block';
-
-  // Toggle tab buttons visual styles
-  const tabBatt = document.getElementById('btn-tab-battery');
-  const tabFan = document.getElementById('btn-tab-fan');
-  if (tabBatt) {
-    tabBatt.style.color = isBatt ? 'var(--text-accent)' : 'var(--text-secondary)';
-    tabBatt.style.borderBottom = isBatt ? '2px solid var(--text-accent)' : 'none';
-  }
-  if (tabFan) {
-    tabFan.style.color = !isBatt ? 'var(--text-accent)' : 'var(--text-secondary)';
-    tabFan.style.borderBottom = !isBatt ? '2px solid var(--text-accent)' : 'none';
-  }
-
-  // Toggle filter divs
-  const filtersBatt = document.getElementById('battery-filters');
-  const filtersFan = document.getElementById('fan-filters');
-  if (filtersBatt) filtersBatt.style.display = isBatt ? 'flex' : 'none';
-  if (filtersFan) filtersFan.style.display = isBatt ? 'none' : 'flex';
-
-  // Toggle containers
-  const containerBatt = document.getElementById('tab-container-battery');
-  const containerFan = document.getElementById('tab-container-fan');
-  if (containerBatt) containerBatt.style.display = isBatt ? 'block' : 'none';
-  if (containerFan) containerFan.style.display = isBatt ? 'none' : 'block';
-};
-
-function filterBatteries(page) {
-  const q = page.querySelector('#batt-search').value.toLowerCase();
-  const machId = page.querySelector('#batt-mach-filter').value;
-  const statusFilter = page.querySelector('#batt-status-filter').value;
-
-  const filtered = State.batteries.filter(b => {
-    const textMatch = !q || b.eksen.toLowerCase().includes(q) || b.pil_modeli.toLowerCase().includes(q);
-    const machMatch = !machId || b.tezgah_id === parseInt(machId);
-    
-    const stat = getBatteryStatus(b.tarih);
-    let statMatch = true;
-    if (statusFilter === 'normal') statMatch = stat.class === 'tag-green';
-    else if (statusFilter === 'warning') statMatch = stat.class === 'tag-amber';
-    else if (statusFilter === 'critical') statMatch = stat.class === 'tag-red';
-
-    return textMatch && machMatch && statMatch;
+function getLifecycleFeature() {
+  if (!window.MTBLifecycleFeature) throw new Error('Yaşam döngüsü modülü yüklenemedi');
+  return window.MTBLifecycleFeature.initialize({
+    State, createPage, canEdit, canDelete, escapeHTML, getSortedMachines,
+    saveMaintenances, saveBatteries, saveFans, showModal, closeModal, showToast,
+    navigate, getTodayFormat, showPromptModal, parseDateHelper
   });
-  
-  renderBatteryTable(filtered, page);
 }
 
-function filterFans(page) {
-  const q = page.querySelector('#fan-search').value.toLowerCase();
-  const machId = page.querySelector('#fan-mach-filter').value;
-  const statusFilter = page.querySelector('#fan-status-filter').value;
-
-  const filtered = State.fans.filter(f => {
-    const textMatch = !q || f.konum.toLowerCase().includes(q) || (f.bakim_yapan && f.bakim_yapan.toLowerCase().includes(q));
-    const machMatch = !machId || f.tezgah_id === parseInt(machId);
-    
-    const lifeLeft = 20000 - f.calisma_saati;
-    let statClass = 'tag-green';
-    if (lifeLeft < 0) statClass = 'tag-red';
-    else if (lifeLeft < 5000) statClass = 'tag-amber';
-
-    let statMatch = true;
-    if (statusFilter === 'normal') statMatch = statClass === 'tag-green';
-    else if (statusFilter === 'warning') statMatch = statClass === 'tag-amber';
-    else if (statusFilter === 'critical') statMatch = statClass === 'tag-red';
-
-    return textMatch && machMatch && statMatch;
-  });
-
-  renderFanTable(filtered, page);
+function renderMaintenance(extraData = null) {
+  return getLifecycleFeature().renderMaintenance(extraData);
 }
 
-function renderBatteryTable(list, page) {
-  const tbody = page.querySelector('#batt-tbody');
-  if (!tbody) return;
-  if (!list.length) {
-    const filtered = State.batteries.length > 0;
-    tbody.innerHTML = window.MTBUX.emptyTableRow({ colspan: 9, icon: '▰',
-      title: filtered ? 'Bu filtrelerde pil kaydı yok' : 'Henüz pil değişimi kaydedilmedi',
-      description: filtered ? 'Tezgâh, durum veya arama filtresini temizleyerek diğer pilleri görüntüleyin.' : 'Enkoder pilinin değişim tarihini kaydedin; kalan ömür ve kritik eşikler otomatik hesaplansın.',
-      actionLabel: filtered ? 'Filtreleri temizle' : (canEdit() ? 'Pil değişimi kaydet' : ''),
-      command: filtered ? 'clear-filters' : 'new-battery' });
-    return;
-  }
-
-  tbody.innerHTML = list.map(b => {
-    const mach = State.machines.find(x => x.id === b.tezgah_id);
-    const machName = mach ? mach.numarasi : `Tezgah #${b.tezgah_id}`;
-    const stat = getBatteryStatus(b.tarih);
-    const deg = window.calculateDegradation ? window.calculateDegradation(b, 'battery') : { percentRemaining: 100, daysRemaining: stat.daysLeft, color: 'var(--green)' };
-    const remainingDays = deg.daysRemaining;
-
-    let volt = 3.6;
-    if (remainingDays < 0) {
-      volt = 2.4;
-    } else if (remainingDays < 30) {
-      volt = 2.9;
-    } else if (remainingDays < 90) {
-      volt = 3.2;
-    }
-
-    const statusColor = deg.color;
-
-    return `
-      <tr>
-        <td><strong style="color:var(--text-accent)">${escapeHTML(machName)}</strong></td>
-        <td><span style="font-weight:600">${escapeHTML(b.eksen)}</span></td>
-        <td><span class="tag tag-gray">${escapeHTML(b.pil_modeli)}</span></td>
-        <td><span class="font-mono" style="font-weight:700; color:${statusColor}">⚡ ${volt.toFixed(1)}V</span></td>
-        <td><span class="font-mono text-sm">${escapeHTML(b.tarih)}</span></td>
-        <td><span>${escapeHTML(b.bakim_yapan)}</span></td>
-        <td>
-          <div style="display:flex; align-items:center; gap:6px">
-            <span class="font-mono" style="font-weight:700; color:${deg.color}; font-size:12px">%${deg.percentRemaining}</span>
-            <span class="font-mono text-xs" style="color:var(--text-muted)">(${deg.daysRemaining} Gün)</span>
-          </div>
-          <div class="lifecycle-timeline" style="width:180px;--life-percent:${Math.max(0, Math.min(100, 100 - deg.percentRemaining))}%;--life-color:${deg.color}"><div class="lifecycle-track"><div class="lifecycle-fill"></div></div><div class="lifecycle-marker"></div><div class="lifecycle-labels"><span>Değişim</span><span>Bugün</span><span>Limit</span></div></div>
-        </td>
-        <td><span class="tag ${stat.class}">${escapeHTML(stat.label.split(' ')[0])}</span></td>
-
-        <td>
-          <div style="display:flex; gap:6px; align-items:center">
-            ${canEdit() ? `
-            <button class="btn btn-ghost btn-sm" onclick="resetBatteryLife(${b.id})" style="color:var(--green); font-size:11px; padding:2px 8px; border:1px solid var(--green)">
-              🔄 Değiştir
-            </button>
-            ` : ''}
-            ${canDelete() ? `
-            <button class="btn btn-ghost btn-sm btn-icon" onclick="deleteBattery(${b.id})" title="Sil" style="color:var(--red)">
-              ✕
-            </button>
-            ` : ''}
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function renderFanTable(list, page) {
-  const tbody = page.querySelector('#fan-tbody');
-  if (!tbody) return;
-  if (!list.length) {
-    const filtered = State.fans.length > 0;
-    tbody.innerHTML = window.MTBUX.emptyTableRow({ colspan: 7, icon: '✣',
-      title: filtered ? 'Bu filtrelerde fan kaydı yok' : 'Henüz fan takibi başlatılmadı',
-      description: filtered ? 'Tezgâh, durum veya arama filtresini temizleyerek diğer fanları görüntüleyin.' : 'Sürücü ve kabin fanlarının çalışma saatlerini kaydedin; yaklaşan bakım zamanını takip edin.',
-      actionLabel: filtered ? 'Filtreleri temizle' : (canEdit() ? 'İlk fanı takibe al' : ''),
-      command: filtered ? 'clear-filters' : 'new-fan' });
-    return;
-  }
-
-  tbody.innerHTML = list.map(f => {
-    const mach = State.machines.find(x => x.id === f.tezgah_id);
-    const machName = mach ? mach.numarasi : `Tezgah #${f.tezgah_id}`;
-    const lifeLeft = 20000 - f.calisma_saati;
-    
-    let statusLabel = 'Normal';
-    let statusClass = 'tag-green';
-    if (lifeLeft < 0) {
-      statusLabel = 'Limit Aşımı';
-      statusClass = 'tag-red';
-    } else if (lifeLeft < 5000) {
-      statusLabel = 'Bakım Yakın';
-      statusClass = 'tag-amber';
-    }
-
-    const statusColor = lifeLeft < 0 ? 'var(--red)' : lifeLeft < 5000 ? 'var(--amber)' : 'var(--green)';
-
-    return `
-      <tr>
-        <td><strong style="color:var(--text-accent)">${escapeHTML(machName)}</strong></td>
-        <td><span style="font-weight:600">${escapeHTML(f.konum)}</span></td>
-        <td><span class="font-mono">${f.calisma_saati.toLocaleString('tr-TR')} Sa</span></td>
-        <td>
-          <span class="font-mono" style="font-weight:600; color:${statusColor}">${lifeLeft.toLocaleString('tr-TR')} Sa</span>
-          <div class="lifecycle-timeline" style="width:180px;--life-percent:${Math.max(0, Math.min(100, (f.calisma_saati / 20000) * 100))}%;--life-color:${statusColor}"><div class="lifecycle-track"><div class="lifecycle-fill"></div></div><div class="lifecycle-marker"></div><div class="lifecycle-labels"><span>0 saat</span><span>Bugün</span><span>20.000</span></div></div>
-        </td>
-        <td><span>${escapeHTML(f.bakim_yapan || '—')}</span></td>
-        <td><span class="tag ${statusClass}">${escapeHTML(statusLabel)}</span></td>
-        <td>
-          <div style="display:flex; gap:6px; align-items:center">
-            ${canEdit() ? `
-            <button class="btn btn-ghost btn-sm" onclick="resetFanHours(${f.id})" style="color:var(--green); font-size:11px; padding:2px 8px; border:1px solid var(--green)">
-              🔄 Sıfırla
-            </button>
-            ` : ''}
-            ${canDelete() ? `
-            <button class="btn btn-ghost btn-sm btn-icon" onclick="deleteFan(${f.id})" title="Sil" style="color:var(--red)">
-              ✕
-            </button>
-            ` : ''}
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
+function renderBattery(extraData = null) {
+  return getLifecycleFeature().renderBattery(extraData);
 }
 
 function getBatteryStatus(dateStr) {
-  if (!dateStr) return { label: 'Bilinmiyor', class: 'tag-gray', daysLeft: 0 };
-  
-  const date = parseDateHelper(dateStr);
-  if (!date || date.getTime() === 0) return { label: 'Geçersiz', class: 'tag-gray', daysLeft: 0 };
-  
-  const today = new Date();
-  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  
-  const diffTime = todayStart.getTime() - dateStart.getTime();
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-  const daysLeft = 365 - diffDays;
-  
-  if (daysLeft < 0) {
-    return { label: `Kritik (${Math.abs(daysLeft)} gün geçti)`, class: 'tag-red', daysLeft };
-  } else if (daysLeft < 30) {
-    return { label: `Uyarı (${daysLeft} gün kaldı)`, class: 'tag-amber', daysLeft };
-  } else {
-    return { label: `Normal (${daysLeft} gün kaldı)`, class: 'tag-green', daysLeft };
-  }
+  return getLifecycleFeature().getBatteryStatus(dateStr);
 }
-
-window.showNewBattModal = function() {
-  showModal('new-batt', `
-    <div class="modal-header">
-      <span class="modal-title">Pil Değişimi Kaydet</span>
-      <button class="modal-close" onclick="closeModal('new-batt')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Tezgah *</label>
-      <select class="form-control" id="nm-batt-mach">
-        ${getSortedMachines().map(m => `<option value="${m.id}">${escapeHTML(m.numarasi)}</option>`).join('')}
-      </select>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Eksen (ör. X, Y, Z, Spindle) *</label>
-        <input class="form-control" id="nm-batt-eksen" placeholder="X, Y, Z" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Pil Modeli / Tipi *</label>
-        <input class="form-control" id="nm-batt-model" placeholder="ör. 6V Lithium, D-Size" value="6V Lithium" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Değişim Tarihi (GG.AA.YYYY) *</label>
-        <input class="form-control" id="nm-batt-tarih" value="${getTodayFormat()}" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Teknisyen *</label>
-        <input class="form-control" id="nm-batt-yapan" placeholder="ör. Mehmet Özer" />
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('new-batt')">İptal</button>
-      <button class="btn btn-primary" onclick="createNewBattery()">Pil Değişimini Kaydet</button>
-    </div>
-  `);
-};
-
-window.createNewBattery = async function() {
-  if (!canEdit()) { showToast('Pil kaydı ekleme yetkiniz yok', 'error'); return; }
-  const tezgah_id = parseInt(document.getElementById('nm-batt-mach').value);
-  const eksen = document.getElementById('nm-batt-eksen').value.trim();
-  const pil_modeli = document.getElementById('nm-batt-model').value.trim();
-  const tarih = document.getElementById('nm-batt-tarih').value.trim();
-  const bakim_yapan = document.getElementById('nm-batt-yapan').value.trim();
-
-  if (!eksen || !pil_modeli || !tarih || !bakim_yapan) {
-    showToast('Tüm alanları doldurmak zorunludur.', 'error');
-    return;
-  }
-
-  const id = State.batteries.length ? Math.max(...State.batteries.map(m => m.id)) + 1 : 1;
-  const newBatt = { id, tezgah_id, eksen, pil_modeli, tarih, bakim_yapan };
-  State.batteries.push(newBatt);
-  await saveBatteries();
-  closeModal('new-batt');
-  showToast('Pil değişim kaydı başarıyla eklendi!', 'success');
-  navigate('battery');
-};
-
-window.resetBatteryLife = async function(id) {
-  if (!canEdit()) { showToast('Pil değiştirme yetkiniz yok', 'error'); return; }
-  const batt = State.batteries.find(b => b.id == id);
-  if (!batt) return;
-  
-  showPromptModal('Pil Değişimi Onayı', batt.bakim_yapan || '', async (tech) => {
-    const todayStr = getTodayFormat();
-    batt.tarih = todayStr;
-    batt.bakim_yapan = tech.toUpperCase();
-    await saveBatteries();
-
-    // Log in Maintenance Book!
-    const maintId = State.maintenances.length ? Math.max(...State.maintenances.map(m => m.id)) + 1 : 1;
-    const newMaint = {
-      id: maintId,
-      tezgah_id: batt.tezgah_id,
-      tarih: todayStr,
-      bakim_yapan: tech.toUpperCase(),
-      aciklama: `[PM] ${batt.eksen} ekseni absolute enkoder pili değiştirildi (Voltaj 3.6V düzeyine resetlendi).`,
-      durum: 'Tamamlandı'
-    };
-    State.maintenances.push(newMaint);
-    await saveMaintenances();
-
-    showToast('Enkoder pili başarıyla güncellendi ve bakım defterine işlendi!', 'success');
-    navigate('battery');
-  });
-};
-
-window.deleteBattery = async function(id) {
-  if (!canDelete()) { showToast('Pil kaydı silme yetkiniz yok', 'error'); return; }
-  if (!confirm('Bu pil değişim kaydını silmek istediğinize emin misiniz?')) return;
-  State.batteries = State.batteries.filter(b => b.id !== id);
-  await saveBatteries();
-  showToast('Pil değişim kaydı silindi.', 'success');
-  navigate('battery');
-};
-
-window.showNewFanModal = function() {
-  showModal('new-fan', `
-    <div class="modal-header">
-      <span class="modal-title">Yeni Fan Takibi Ekle</span>
-      <button class="modal-close" onclick="closeModal('new-fan')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Tezgah *</label>
-      <select class="form-control" id="nm-fan-mach">
-        ${getSortedMachines().map(m => `<option value="${m.id}">${escapeHTML(m.numarasi)}</option>`).join('')}
-      </select>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Konum / Fan Tipi *</label>
-        <input class="form-control" id="nm-fan-konum" placeholder="ör. SVM Fanı, Kabin Emiş Fanı" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Başlangıç Çalışma Saati *</label>
-        <input class="form-control" id="nm-fan-hours" type="number" value="0" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Teknisyen *</label>
-      <input class="form-control" id="nm-fan-yapan" placeholder="ör. AHMET MERT ÖZER" />
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('new-fan')">İptal</button>
-      <button class="btn btn-primary" onclick="createNewFan()">Fan Takibini Kaydet</button>
-    </div>
-  `);
-};
-
-window.createNewFan = async function() {
-  if (!canEdit()) { showToast('Fan kaydı ekleme yetkiniz yok', 'error'); return; }
-  const tezgah_id = parseInt(document.getElementById('nm-fan-mach').value);
-  const konum = document.getElementById('nm-fan-konum').value.trim();
-  const calisma_saati = parseInt(document.getElementById('nm-fan-hours').value);
-  const bakim_yapan = document.getElementById('nm-fan-yapan').value.trim();
-
-  if (!konum || isNaN(calisma_saati) || !bakim_yapan) {
-    showToast('Tüm alanları doldurmak zorunludur.', 'error');
-    return;
-  }
-
-  const id = State.fans.length ? Math.max(...State.fans.map(m => m.id)) + 1 : 1;
-  const newFan = { id, tezgah_id, konum, calisma_saati, bakim_yapan: bakim_yapan.toUpperCase() };
-  State.fans.push(newFan);
-  await saveFans();
-  closeModal('new-fan');
-  showToast('Yeni fan takip kaydı başarıyla eklendi!', 'success');
-  navigate('battery');
-};
-
-window.resetFanHours = async function(id) {
-  if (!canEdit()) { showToast('Fan sıfırlama yetkiniz yok', 'error'); return; }
-  const fan = State.fans.find(f => f.id == id);
-  if (!fan) return;
-  
-  showPromptModal('Fan Ömrü Sıfırlama Onayı', fan.bakim_yapan || '', async (tech) => {
-    fan.calisma_saati = 0;
-    fan.bakim_yapan = tech.toUpperCase();
-    await saveFans();
-    
-    const maintId = State.maintenances.length ? Math.max(...State.maintenances.map(m => m.id)) + 1 : 1;
-    const newMaint = {
-      id: maintId,
-      tezgah_id: fan.tezgah_id,
-      tarih: getTodayFormat(),
-      bakim_yapan: tech.toUpperCase(),
-      aciklama: `[PM] ${fan.konum} bakımı/değişimi yapıldı ve çalışma saati sıfırlandı.`,
-      durum: 'Tamamlandı'
-    };
-    State.maintenances.push(newMaint);
-    await saveMaintenances();
-
-    showToast('Fan çalışma saati başarıyla sıfırlandı ve bakım defterine kaydedildi!', 'success');
-    navigate('battery');
-  });
-};
-
-window.deleteFan = async function(id) {
-  if (!canDelete()) { showToast('Fan kaydı silme yetkiniz yok', 'error'); return; }
-  if (!confirm('Bu fan takip kaydını silmek istediğinize emin misiniz?')) return;
-  State.fans = State.fans.filter(f => f.id !== id);
-  await saveFans();
-  showToast('Fan takip kaydı silindi.', 'success');
-  navigate('battery');
-};
 
 // ════════════════════════════════════════════════════════════════
 //  UTILITIES
@@ -5431,32 +2387,13 @@ function formatTime(date) {
   return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 }
 
-// Modal system
-function showModal(id, content, size = 'md') {
-  let overlay = document.getElementById('modal-' + id);
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.id = 'modal-' + id;
-    const modal = document.createElement('div');
-    modal.className = 'modal modal-' + size;
-    modal.innerHTML = content;
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(id); });
-  } else {
-    const modal = overlay.querySelector('.modal');
-    modal.className = 'modal modal-' + size;
-    modal.innerHTML = content;
-  }
-  requestAnimationFrame(() => overlay.classList.add('open'));
-}
-window.showModal = showModal;
-
-window.closeModal = function(id) {
-  const overlay = document.getElementById('modal-' + id);
-  if (overlay) { overlay.classList.remove('open'); setTimeout(() => overlay.remove(), 200); }
-};
+window.MachineWorkspaceBridge = Object.freeze({
+  getState: () => State,
+  saveMachines,
+  canEdit,
+  getBatteryStatus,
+  escapeHTML
+});
 
 // Toast
 function showToast(message, type = 'info') {
@@ -5721,457 +2658,10 @@ window.askAIAboutPmc = function(address) {
   }, 300);
 };
 
-// ════════════════════════════════════════════════════════════════
-//  RAPORLAR & ANALİZ
-// ════════════════════════════════════════════════════════════════
-function renderReports() {
-  const page = createPage('reports');
-  
-  // Calculate stats
-  const monthCounts = {};
-  State.maintenances.forEach(m => {
-    const dateStr = m.tarih || m.date;
-    if (!dateStr) return;
-    const d = parseDateHelper(dateStr);
-    if (d && d.getTime() > 0) {
-      const monthYear = String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
-      monthCounts[monthYear] = (monthCounts[monthYear] || 0) + 1;
-    }
-  });
-
-  const deptCounts = {};
-  State.maintenances.forEach(m => {
-    const mach = State.machines.find(x => x.id === m.tezgah_id);
-    const dept = mach ? (mach.bolum || 'Diğer') : 'Diğer';
-    deptCounts[dept] = (deptCounts[dept] || 0) + 1;
-  });
-
-  const machFailures = {};
-  State.maintenances.forEach(m => {
-    machFailures[m.tezgah_id] = (machFailures[m.tezgah_id] || 0) + 1;
-  });
-
-  const topMachines = Object.keys(machFailures)
-    .map(tid => {
-      const mach = State.machines.find(x => x.id === parseInt(tid));
-      return {
-        id: tid,
-        name: mach ? mach.numarasi : `Tezgah #${tid}`,
-        count: machFailures[tid],
-        dept: mach ? (mach.bolum || '—') : '—'
-      };
-    })
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
-
-  page.innerHTML = `
-    <div class="page-header">
-      <h1>📊 Raporlar & Analiz Paneli</h1>
-      <p>Bakım sıklığı, arıza analizleri ve departman bazlı istatistikler</p>
-    </div>
-    <div class="page-body">
-      <div class="grid-2 mb-4" style="gap:16px">
-        <div class="card">
-          <div class="card-title mb-3">📈 Aylara Göre Bakım Dağılımı</div>
-          <div style="display:flex; justify-content:center; padding:10px">
-            <canvas id="maint-bar-chart" width="450" height="220" style="width:100%; max-width:450px"></canvas>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title mb-3">🍩 Departmanlara Göre Arıza Dağılımı</div>
-          <div style="display:flex; align-items:center; justify-content:space-around; padding:10px">
-            <canvas id="maint-donut-chart" width="200" height="200" style="max-width:200px"></canvas>
-            <div style="font-size:11.5px; display:flex; flex-direction:column; gap:6px" id="donut-legend"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title mb-3">🚨 En Sık Arızalanan Kritik Tezgahlar (Top 5)</div>
-        <table class="data-table" style="font-size:12px">
-          <thead>
-            <tr>
-              <th>Tezgah</th>
-              <th>Bölüm</th>
-              <th>Toplam Arıza Sayısı</th>
-              <th>Kritik Durum Derecesi</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${topMachines.map(m => {
-              const severityClass = m.count > 10 ? 'tag-red' : m.count > 5 ? 'tag-amber' : 'tag-blue';
-              const severityText = m.count > 10 ? 'Çok Yüksek' : m.count > 5 ? 'Orta-Yüksek' : 'Düşük-Orta';
-              return `
-                <tr>
-                  <td><strong style="color:var(--text-accent)">${m.name}</strong></td>
-                  <td>${m.dept}</td>
-                  <td><span class="font-mono" style="font-weight:600">${m.count} Defa</span></td>
-                  <td><span class="tag ${severityClass}">${severityText}</span></td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  // Draw charts asynchronously to ensure canvas elements exist in DOM
-  setTimeout(() => {
-    drawBarChart('maint-bar-chart', monthCounts);
-    drawDonutChart('maint-donut-chart', deptCounts, 'donut-legend');
-  }, 100);
-
-  return page;
-}
-
-function drawBarChart(canvasId, data) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  const keys = Object.keys(data).sort((a,b) => {
-    const aP = a.split('/'), bP = b.split('/');
-    return new Date(aP[1], aP[0]-1) - new Date(bP[1], bP[0]-1);
-  }).slice(-6); // last 6 active months
-  
-  if (!keys.length) return;
-  const values = keys.map(k => data[k]);
-  const maxVal = Math.max(...values, 1);
-  
-  const width = canvas.width;
-  const height = canvas.height;
-  const padding = 35;
-  const chartHeight = height - padding * 2;
-  const chartWidth = width - padding * 2;
-  
-  // Helper grid lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let i = 0; i <= 4; i++) {
-    const yGrid = padding + (chartHeight / 4) * i;
-    ctx.moveTo(padding, yGrid);
-    ctx.lineTo(width - padding, yGrid);
-  }
-  ctx.stroke();
-
-  // Axis lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(padding, padding);
-  ctx.lineTo(padding, height - padding);
-  ctx.lineTo(width - padding, height - padding);
-  ctx.stroke();
-  
-  const barGap = 18;
-  const barWidth = (chartWidth - (barGap * (keys.length - 1))) / keys.length;
-  
-  keys.forEach((key, idx) => {
-    const val = data[key];
-    const barHeight = (val / maxVal) * chartHeight;
-    const x = padding + idx * (barWidth + barGap);
-    const y = height - padding - barHeight;
-    
-    // Create glowing neon gradient
-    const grad = ctx.createLinearGradient(x, y, x, height - padding);
-    grad.addColorStop(0, '#60a5fa');
-    grad.addColorStop(0.5, '#a78bfa');
-    grad.addColorStop(1, 'rgba(167, 139, 250, 0.05)');
-    
-    // Draw bar with shadow/glow
-    ctx.save();
-    ctx.shadowColor = '#a78bfa';
-    ctx.shadowBlur = 12;
-    ctx.fillStyle = grad;
-    
-    ctx.beginPath();
-    if (typeof ctx.roundRect === 'function') {
-      ctx.roundRect(x, y, barWidth, barHeight, [4, 4, 0, 0]);
-    } else {
-      ctx.rect(x, y, barWidth, barHeight);
-    }
-    ctx.fill();
-    ctx.restore();
-    
-    // Text value
-    ctx.fillStyle = '#f3f4f6';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(val, x + barWidth / 2, y - 8);
-    
-    // Label
-    ctx.fillStyle = '#9ca3af';
-    ctx.font = '10px monospace';
-    ctx.fillText(key, x + barWidth / 2, height - padding + 18);
-  });
-}
-
-function drawDonutChart(canvasId, data, legendId) {
-  const canvas = document.getElementById(canvasId);
-  const legend = document.getElementById(legendId);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  // Get top 4 depts and group others
-  const sortedDepts = Object.keys(data).sort((a,b) => data[b] - data[a]);
-  const displayDepts = sortedDepts.slice(0, 4);
-  let otherSum = 0;
-  sortedDepts.slice(4).forEach(d => otherSum += data[d]);
-  
-  const chartData = {};
-  displayDepts.forEach(d => chartData[d] = data[d]);
-  if (otherSum > 0) chartData['Diğer'] = otherSum;
-
-  const total = Object.values(chartData).reduce((a, b) => a + b, 0);
-  const keys = Object.keys(chartData);
-  if (total === 0) return;
-  
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-  const radius = Math.min(cx, cy) - 15;
-  
-  let startAngle = 0;
-  // Modern glowing colors
-  const colors = ['#3b82f6', '#10b981', '#fbbf24', '#f43f5e', '#a78bfa'];
-  
-  keys.forEach((key, idx) => {
-    const val = chartData[key];
-    const sliceAngle = (val / total) * 2 * Math.PI;
-    const color = colors[idx % colors.length];
-    
-    ctx.save();
-    ctx.fillStyle = color;
-    // Add neon shadow
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 8;
-    
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, radius, startAngle, startAngle + sliceAngle);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-    
-    startAngle += sliceAngle;
-  });
-  
-  // Donut hole
-  ctx.fillStyle = '#111827';
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius * 0.6, 0, 2 * Math.PI);
-  ctx.fill();
-
-  // Draw legend
-  if (legend) {
-    legend.innerHTML = keys.map((key, idx) => {
-      const val = chartData[key];
-      const pct = ((val / total) * 100).toFixed(1);
-      return `
-        <div class="flex items-center gap-2" style="padding: 4px 0">
-          <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${colors[idx % colors.length]}; box-shadow: 0 0 6px ${colors[idx % colors.length]}"></span>
-          <span class="truncate" style="max-width:110px; font-weight:500; color:var(--text-secondary)">${key}</span>
-          <span style="margin-left:auto; font-weight:600; color:var(--text-primary)">%${pct}</span>
-          <span class="text-muted" style="font-size:10px; margin-left:4px">(${val})</span>
-        </div>
-      `;
-    }).join('');
-  }
-}
-
-// ════════════════════════════════════════════════════════════════
-//  KESTİRİMCİ BAKIM PANELİ
-// ════════════════════════════════════════════════════════════════
-function calculateMachineHealth(m) {
-  let score = 100;
-  const logs = State.maintenances.filter(l => l.tezgah_id === m.id);
-  const batts = State.batteries.filter(b => b.tezgah_id === m.id);
-
-  // 1. Time since last maintenance
-  if (logs.length > 0) {
-    const lastDate = parseDateHelper(logs[0].tarih || logs[0].date);
-    if (lastDate && lastDate.getTime() > 0) {
-      const daysSince = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (daysSince > 360) score -= 40;
-      else if (daysSince > 180) score -= 25;
-      else if (daysSince > 90) score -= 12;
-    }
-  } else {
-    score -= 40; // no maintenance ever
-  }
-
-  // 2. Breakdown frequency (Logs in last 90 days)
-  let recentBreakdowns = 0;
-  logs.forEach(l => {
-    const date = parseDateHelper(l.tarih || l.date);
-    if (date && date.getTime() > 0) {
-      const daysDiff = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
-      if (daysDiff <= 90) recentBreakdowns++;
-    }
-  });
-  if (recentBreakdowns > 5) score -= 45;
-  else if (recentBreakdowns > 3) score -= 25;
-  else if (recentBreakdowns > 0) score -= 10;
-
-  // 3. Encoder battery health
-  if (batts.length > 0) {
-    batts.forEach(b => {
-      const status = getBatteryStatus(b.tarih);
-      if (status.class === 'tag-red') score -= 35;      // expired
-      else if (status.class === 'tag-amber') score -= 15; // warning
-    });
-  } else {
-    score -= 10; // no battery record (precautionary)
-  }
-
-  score = Math.max(score, 0);
-  const failureRisk = 100 - score;
-  let status = 'Safe';
-  let colorClass = 'tag-green';
-  if (score < 50) {
-    status = 'Critical';
-    colorClass = 'tag-red';
-  } else if (score < 80) {
-    status = 'Warning';
-    colorClass = 'tag-amber';
-  }
-  return { score, failureRisk, status, colorClass };
-}
-
-function renderPredictive() {
-  const page = createPage('predictive');
-  
-  // Calculate health for all machines
-  const machList = State.machines.map(m => {
-    const health = calculateMachineHealth(m);
-    return { ...m, health };
-  });
-
-  // Sort by health ascending (most critical first)
-  machList.sort((a, b) => a.health.score - b.health.score);
-
-  const criticals = machList.filter(m => m.health.status === 'Critical');
-  const warnings = machList.filter(m => m.health.status === 'Warning');
-  const safes = machList.filter(m => m.health.status === 'Safe');
-
-  page.innerHTML = `
-    <div class="page-header">
-      <h1>🧠 Kestirimci Bakım & Risk Analiz Paneli</h1>
-      <p>Algoritmik arıza tahmini, son servis aralıkları ve pil ömürlerine dayalı sağlık raporu</p>
-    </div>
-    <div class="page-body">
-      <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:18px">
-        <div class="stat-card red">
-          <div class="stat-icon red">🔴</div>
-          <div class="stat-data">
-            <div class="stat-value" style="color:#f87171">${criticals.length}</div>
-            <div class="stat-label">Kritik (Arıza Riski Yüksek)</div>
-          </div>
-        </div>
-        <div class="stat-card amber">
-          <div class="stat-icon amber">🟡</div>
-          <div class="stat-data">
-            <div class="stat-value" style="color:#fbbf24">${warnings.length}</div>
-            <div class="stat-label">Riskli (Bakım Planlanmalı)</div>
-          </div>
-        </div>
-        <div class="stat-card green">
-          <div class="stat-icon green">🟢</div>
-          <div class="stat-data">
-            <div class="stat-value" style="color:#34d399">${safes.length}</div>
-            <div class="stat-label">Güvenli Durumda</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card mb-4" style="border-left: 4px solid var(--red)">
-        <div class="card-title text-red">⚠️ Acil Müdahale Gereken Eksen/Tezgah Önerisi</div>
-        <p style="font-size:12px; color:var(--text-secondary); line-height:1.5">
-          Aşağıdaki liste, son arıza frekansları ve absolute pil döngüleri dikkate alınarak yapay zeka ve matematiksel algoritmalar tarafından puanlanmıştır. En düşük puanlı (sağlığı kritik) tezgahların bakım planlamasına acilen alınması tavsiye edilir.
-        </p>
-      </div>
-
-      <div class="flex gap-2 mb-3">
-        <div class="search-bar" style="flex:1; max-width:300px">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="pred-search" placeholder="Tezgah adı ara..." />
-        </div>
-        <select id="pred-status-filter" style="width:160px">
-          <option value="">Tüm Durumlar</option>
-          <option value="Critical">🔴 Kritik</option>
-          <option value="Warning">🟡 Riskli</option>
-          <option value="Safe">🟢 Güvenli</option>
-        </select>
-      </div>
-
-      <div style="overflow-y:auto; flex:1">
-        <table class="data-table" id="pred-table">
-          <thead>
-            <tr>
-              <th>Tezgah</th>
-              <th>Bölüm</th>
-              <th>Sağlık Puanı</th>
-              <th>Arıza Riski</th>
-              <th>Öncelik Durumu</th>
-              <th>İşlem</th>
-            </tr>
-          </thead>
-          <tbody id="pred-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  renderPredictiveTable(machList, page);
-
-  page.querySelector('#pred-search').addEventListener('input', () => filterPredictive(page, machList));
-  page.querySelector('#pred-status-filter').addEventListener('change', () => filterPredictive(page, machList));
-
-  return page;
-}
-
-function filterPredictive(page, fullList) {
-  const q = page.querySelector('#pred-search').value.toLowerCase();
-  const status = page.querySelector('#pred-status-filter').value;
-
-  const filtered = fullList.filter(m =>
-    (!q || m.numarasi.toLowerCase().includes(q)) &&
-    (!status || m.health.status === status)
-  );
-  renderPredictiveTable(filtered, page);
-}
-
-function renderPredictiveTable(list, page) {
-  const tbody = page.querySelector('#pred-tbody');
-  if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted)">Tezgah bulunamadı</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = list.map(m => {
-    return `
-      <tr>
-        <td><strong style="color:var(--text-accent)">${escapeHTML(m.numarasi)}</strong></td>
-        <td>${escapeHTML(m.bolum || '—')}</td>
-        <td>
-          <div style="display:flex; align-items:center; gap:8px">
-            <div style="flex:1; height:6px; background:#374151; border-radius:3px; max-width:80px">
-              <div style="width:${m.health.score}%; height:100%; border-radius:3px; background:${m.health.score < 50 ? 'var(--red)' : m.health.score < 80 ? 'var(--amber)' : 'var(--green)'}"></div>
-            </div>
-            <span class="font-mono" style="font-weight:600">%${m.health.score}</span>
-          </div>
-        </td>
-        <td><span class="font-mono" style="color:var(--text-secondary)">%${m.health.failureRisk}</span></td>
-        <td><span class="tag ${m.health.colorClass}">${m.health.status}</span></td>
-        <td>
-          <button class="btn btn-secondary btn-sm" onclick="showMachineDetailsModal(${m.id})">Kayıtlar</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
+// Reports and explainable maintenance views delegated to operations_insights.js
+const renderReports = (...args) => window.OperationsInsights.renderReports(...args);
+const renderPredictive = (...args) => window.OperationsInsights.renderPredictive(...args);
+const calculateMachineHealth = (...args) => window.OperationsInsights.calculateMachineHealth(...args);
 
 // ════════════════════════════════════════════════════════════════
 //  PARAMETRE AYAR SİHİRBAZI
@@ -6222,7 +2712,7 @@ window.selectTuningWizard = function(id) {
       <p style="font-size:12px; color:var(--text-secondary); line-height:1.6; margin-bottom:14px">
         Tezgahın elektrik kesintilerinde pozisyonunu kaybetmesini engelleyen absolute enkoder sıfır noktası bu sihirbaz ile ayarlanır. Piller bittiğinde veya söküldüğünde sıfırlama zorunludur.
       </p>
-      
+
       <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px">
         <div style="display:flex; gap:12px; align-items:start; padding:8px; background:var(--bg-card2); border-radius:var(--radius-sm)">
           <input type="checkbox" style="margin-top:3px" />
@@ -6312,7 +2802,7 @@ window.selectTuningWizard = function(id) {
           <div style="font-size:12px"><strong>Adım 4:</strong> <code>SYSTEM > PARAM > 1851</code> nolu parametreye gidin. Hesaplanan boşluğu mikron cinsinden girin (örn: 20 yazın).</div>
         </div>
       </div>
-      
+
       <div class="card" style="background:rgba(245,158,11,0.06); border-color:rgba(245,158,11,0.15)">
         <div style="font-size:11.5px; color:var(--amber)">
           💡 <strong>İpucu:</strong> Eğer dairesel interpolasyonda (daire kesiminde) geçiş izleri kalıyorsa, Parameter <code>1852</code> (Kesme esnasında backlash) değerini de aynı miktarda güncelleyin.
@@ -6399,12 +2889,12 @@ function renderGenerator() {
             <option value="pocket-circ">⭕ Dairesel Cep Boşaltma</option>
             <option value="pocket-rect">🟩 Dikdörtgen Cep Boşaltma</option>
           </select>
-          
+
           <div id="gen-fields-container" style="display:flex; flex-direction:column; gap:8px"></div>
-          
+
           <button class="btn btn-primary w-100 mt-2" onclick="generateGcode()">⚡ G-Code Oluştur</button>
         </div>
-        
+
         <div class="card" style="display:flex; flex-direction:column; height:100%">
           <div class="flex items-center justify-between mb-2">
             <div class="card-title">Üretilen FANUC G-Kodu</div>
@@ -6593,7 +3083,7 @@ window.generateGcode = function() {
     gcode += `S${rpm} M03 (DEVIR ACIK)\\n`;
     gcode += `G00 G54 X0.0 Y0.0 M08 (MERKEZ GOSTEGESI)\\n`;
     gcode += `G43 H02 Z5.0 (BOY TELAFISI ACIK)\\n`;
-    
+
     let currentZ = 0;
     const targetZ = depth;
     let stepCount = 1;
@@ -6970,17 +3460,17 @@ window.startDatabaseSync = function() {
     pBar.style.width = '25%';
     statusText.innerText = 'Veritabanı versiyonları kontrol ediliyor...';
     addLog('Uzak sunucu ile yerel sürümler eşleştiriliyor.');
-    
+
     setTimeout(() => {
       pBar.style.width = '50%';
       statusText.innerText = 'Yeni G-Kodları ve alarmlar indiriliyor...';
       addLog('Güncel FANUC 0i-F Plus ve 30i-B verileri indirildi (1.2 KB).');
-      
+
       setTimeout(() => {
         pBar.style.width = '75%';
         statusText.innerText = 'Yerel veritabanı kontrol ediliyor...';
         addLog('Yerel dosyaların bütünlüğü doğrulanıyor.');
-        
+
         setTimeout(async () => {
           State.settings.lastSync = new Date().toLocaleString('tr-TR');
           await saveSettings();
@@ -6988,7 +3478,7 @@ window.startDatabaseSync = function() {
           pBar.style.width = '100%';
           statusText.innerText = 'Senkronizasyon tamamlandı!';
           addLog('Tüm veritabanı dosyaları güncel ve doğrulanmış durumda.');
-          
+
           setTimeout(() => {
             closeModal('sync-progress');
             showToast('Veritabanları bulut ile başarıyla eşitlendi!', 'success');
@@ -7004,811 +3494,30 @@ window.startDatabaseSync = function() {
 // ════════════════════════════════════════════════════════════════
 //  KEEP RELAY & ZAMANLAYICI DATABASE
 // ════════════════════════════════════════════════════════════════
-function renderKeepRelays() {
-  const page = createPage('keep_relays');
-  page.innerHTML = `
-    <div class="page-header">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1>🔌 Keep Relay & Zamanlayıcı Veritabanı</h1>
-          <p>Tezgah opsiyon parametreleri, sinyal kilitleri ve süre ayarları el kitabı</p>
-        </div>
-        ${canEdit() ? `
-        <button class="btn btn-primary" onclick="showNewKeepRelayModal()">
-          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Parametre Tanımla
-        </button>
-        ` : ''}
-      </div>
-      <div class="flex gap-2 mt-3" style="flex-wrap:wrap">
-        <div class="search-bar" style="flex:1; max-width:320px">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="kr-search" placeholder="Parametre adı veya kodu ara..." />
-        </div>
-        <select id="kr-type-filter" style="width:180px">
-          <option value="">Tüm Tipler</option>
-          <option>Keep Relay</option>
-          <option>Timer</option>
-        </select>
-      </div>
-    </div>
-    <div class="page-body" style="padding:0">
-      <div style="overflow-y:auto; flex:1">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width:120px">Adres / No</th>
-              <th style="width:80px">Tip</th>
-              <th>Parametre İsmi</th>
-              <th>Açıklama</th>
-              <th>Özel Notlar (Tezgaha Özel)</th>
-              <th style="width:100px">İşlemler</th>
-            </tr>
-          </thead>
-          <tbody id="kr-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  `;
-
-  renderKeepRelayTable(State.keep_relays, page);
-
-  page.querySelector('#kr-search').addEventListener('input', () => filterKeepRelays(page));
-  page.querySelector('#kr-type-filter').addEventListener('change', () => filterKeepRelays(page));
-
-  return page;
+function getKeepMacroFeature() {
+  if (!window.MTBKeepMacroFeature) throw new Error('Keep Relay/Makro modülü yüklenemedi');
+  return window.MTBKeepMacroFeature.initialize({ State, createPage, canEdit, showModal, closeModal, showToast, navigate, evaluateSafeMathExpression });
 }
-
-function filterKeepRelays(page) {
-  const q = page.querySelector('#kr-search').value.toLowerCase();
-  const type = page.querySelector('#kr-type-filter').value;
-
-  const filtered = State.keep_relays.filter(k =>
-    (k.id.toLowerCase().includes(q) || k.name.toLowerCase().includes(q) || k.description.toLowerCase().includes(q)) &&
-    (!type || k.type === type)
-  );
-  renderKeepRelayTable(filtered, page);
-}
-
-function renderKeepRelayTable(list, page) {
-  const tbody = page.querySelector('#kr-tbody');
-  if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted)">Kayıt bulunamadı</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = list.map(k => {
-    const isTimer = k.type === 'Timer';
-    return `
-      <tr>
-        <td><strong class="font-mono text-sm" style="color:var(--text-accent)">${k.id}</strong></td>
-        <td><span class="tag ${isTimer ? 'tag-purple' : 'tag-blue'}">${k.type}</span></td>
-        <td><span style="font-weight:600">${k.name}</span></td>
-        <td><span style="font-size:12px; color:var(--text-secondary)">${k.description}</span></td>
-        <td><span style="font-size:12px; color:var(--amber); font-style:italic">${k.note || '—'}</span></td>
-        <td>
-          ${canEdit() ? `
-          <button class="btn btn-secondary btn-sm" onclick="showEditKeepRelayModal('${k.id}')">Not Ekle</button>
-          ` : ''}
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-window.showEditKeepRelayModal = function(id) {
-  const k = State.keep_relays.find(x => x.id === id);
-  if (!k) return;
-
-  showModal('edit-kr', `
-    <div class="modal-header">
-      <span class="modal-title">Röle Notu Düzenle — ${k.id}</span>
-      <button class="modal-close" onclick="closeModal('edit-kr')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Parametre Adı</label>
-      <input class="form-control" value="${k.name}" readonly style="opacity:0.6" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Açıklama</label>
-      <textarea class="form-control" readonly style="opacity:0.6" rows="2">${k.description}</textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Tezgaha Özel Notlar *</label>
-      <textarea class="form-control" id="kr-edit-note" rows="3" placeholder="Örn: CNC-101 tezgahında otomatik kapıyı devre dışı bırakmak için 1 yapılır.">${k.note || ''}</textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('edit-kr')">İptal</button>
-      <button class="btn btn-primary" onclick="saveKeepRelayNote('${k.id}')">Notu Kaydet</button>
-    </div>
-  `);
-};
-
-window.saveKeepRelayNote = async function(id) {
-  if (!canEdit()) { showToast('Not düzenleme yetkiniz yok', 'error'); return; }
-  const note = document.getElementById('kr-edit-note').value.trim();
-  const k = State.keep_relays.find(x => x.id === id);
-  if (k) {
-    const oldNote = k.note;
-    k.note = note;
-    try {
-      const res = await window.electronAPI.writeFile('./data/keep_relays.json', JSON.stringify({ keep_relays: State.keep_relays }, null, 2));
-      if (res && res.ok) {
-        closeModal('edit-kr');
-        showToast('Not başarıyla kaydedildi!', 'success');
-        navigate('keep_relays');
-      } else {
-        k.note = oldNote; // revert
-        showToast('Not kaydedilemedi: ' + (res?.error || 'Bilinmeyen hata'), 'error');
-      }
-    } catch (err) {
-      k.note = oldNote; // revert
-      showToast('Not kaydedilirken hata: ' + err.message, 'error');
-    }
-  }
-};
-
-window.showNewKeepRelayModal = function() {
-  showModal('new-kr', `
-    <div class="modal-header">
-      <span class="modal-title">Yeni PMC Parametresi Tanımla</span>
-      <button class="modal-close" onclick="closeModal('new-kr')">✕</button>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Adres / No (ör. K00.4 veya T004) *</label>
-        <input class="form-control" id="nk-id" placeholder="K00.4" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Parametre Tipi *</label>
-        <select class="form-control" id="nk-type">
-          <option>Keep Relay</option>
-          <option>Timer</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Parametre İsmi *</label>
-      <input class="form-control" id="nk-name" placeholder="Kapı Kilidi İptali" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Açıklama *</label>
-      <textarea class="form-control" id="nk-desc" rows="3" placeholder="Sinyalin görevini açıklayın..."></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Özel Notlar</label>
-      <input class="form-control" id="nk-note" placeholder="Tezgaha özel not ekleyin..." />
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('new-kr')">İptal</button>
-      <button class="btn btn-primary" onclick="createNewKeepRelay()">Parametreyi Kaydet</button>
-    </div>
-  `);
-};
-
-window.createNewKeepRelay = async function() {
-  if (!canEdit()) { showToast('Keep Relay ekleme yetkiniz yok', 'error'); return; }
-  const id = document.getElementById('nk-id').value.trim();
-  const type = document.getElementById('nk-type').value;
-  const name = document.getElementById('nk-name').value.trim();
-  const description = document.getElementById('nk-desc').value.trim();
-  const note = document.getElementById('nk-note').value.trim();
-
-  if (!id || !name || !description) {
-    showToast('Adres, isim ve açıklama girmek zorunludur.', 'error');
-    return;
-  }
-
-  const newKR = { id, type, name, description, note };
-  try {
-    const res = await window.electronAPI.writeFile('./data/keep_relays.json', JSON.stringify({ keep_relays: [...State.keep_relays, newKR] }, null, 2));
-    if (res && res.ok) {
-      State.keep_relays.push(newKR);
-      closeModal('new-kr');
-      showToast('Parametre veritabanına eklendi!', 'success');
-      navigate('keep_relays');
-    } else {
-      showToast('Parametre kaydedilemedi: ' + (res?.error || 'Bilinmeyen hata'), 'error');
-    }
-  } catch (err) {
-    showToast('Parametre kaydedilirken hata: ' + err.message, 'error');
-  }
-};
+function renderKeepRelays() { return getKeepMacroFeature().renderKeepRelays(); }
+function renderMacroVariables() { return getKeepMacroFeature().renderMacroVariables(); }
 
 // ════════════════════════════════════════════════════════════════
-//  MAKRO DEĞİŞKENLERİ REHBERİ & HESAPLAYICISI
-// ════════════════════════════════════════════════════════════════
-function renderMacroVariables() {
-  const page = createPage('macro');
-  page.innerHTML = `
-    <div class="page-header">
-      <h1>🧮 FANUC Makro Değişkenleri Kılavuzu</h1>
-      <p>Macro B değişken tablosu, sistem değişkenleri referansı ve interaktif hesaplayıcı</p>
-    </div>
-    <div class="page-body">
-      <div class="grid-2 mb-4" style="grid-template-columns: 1fr 1fr; gap:16px">
-        <div class="card" style="display:flex; flex-direction:column; height:100%">
-          <div class="card-title mb-3">🧮 İnteraktif Makro Değer Hesaplayıcı</div>
-          <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:12px">
-            FANUC Macro B aritmetik ifadelerini test edin. Değişken kutularına (# sembolü olmadan) değerleri yazıp hesaplama yapabilirsiniz. Trigonometrik fonksiyonlar derece cinsinden hesaplanır (FANUC standardı).
-          </p>
-          <div class="grid-2 mb-3" style="gap:8px">
-            <div class="form-group" style="margin:0">
-              <label class="form-label" style="font-size:10.5px">#1 değeri (A)</label>
-              <input class="form-control" id="mc-v1" value="30.0" style="padding:6px; font-family:monospace" />
-            </div>
-            <div class="form-group" style="margin:0">
-              <label class="form-label" style="font-size:10.5px">#2 değeri (B)</label>
-              <input class="form-control" id="mc-v2" value="2.0" style="padding:6px; font-family:monospace" />
-            </div>
-            <div class="form-group" style="margin:0">
-              <label class="form-label" style="font-size:10.5px">#100 değeri</label>
-              <input class="form-control" id="mc-v100" value="150.5" style="padding:6px; font-family:monospace" />
-            </div>
-            <div class="form-group" style="margin:0">
-              <label class="form-label" style="font-size:10.5px">#500 değeri</label>
-              <input class="form-control" id="mc-v500" value="10.0" style="padding:6px; font-family:monospace" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" style="font-size:11px">Makro Formülü Girin (örn. [#100 + #500] * SIN[#1])</label>
-            <input class="form-control" id="mc-expression" value="[#100 + #500] * SIN[#1]" style="font-family:monospace; background:#0f172a; color:#38bdf8" />
-          </div>
-          <button class="btn btn-primary w-100" onclick="evaluateMacro()">⚡ Formülü Hesapla</button>
-          
-          <div class="card mt-3" style="background:var(--bg-card2); padding:10px; border-color:var(--border)">
-            <div style="font-size:11px; color:var(--text-muted)">HESAPLAMA SONUCU:</div>
-            <div id="mc-result" style="font-size:18px; font-family:monospace; font-weight:700; color:var(--green); margin-top:4px">—</div>
-          </div>
-        </div>
-
-        <div class="card" style="display:flex; flex-direction:column; height:100%">
-          <div class="card-title mb-2">📋 Değişken Türleri Referansı</div>
-          <div style="flex:1; overflow-y:auto; font-size:11.5px; display:flex; flex-direction:column; gap:10px">
-            <div style="background:var(--bg-card2); padding:8px; border-radius:4px">
-              <strong style="color:var(--text-accent)">#1 - #33 (Yerel Değişkenler):</strong><br>
-              G65 makro çağrılarında (alt program) lokal parametre transferi için kullanılır. Örneğin, <code>A=10.0</code> yazıldığında alt programda <code>#1</code> değeri 10.0 olur.
-            </div>
-            <div style="background:var(--bg-card2); padding:8px; border-radius:4px">
-              <strong style="color:var(--text-accent)">#100 - #199 / #500 - #999 (Ortak Değişkenler):</strong><br>
-              Tüm programlar tarafından erişilebilir. <strong>#100 serisi</strong> güç kapatıldığında sıfırlanırken (volatile), <strong>#500 serisi</strong> kalıcı bellekte saklanır (non-volatile).
-            </div>
-            <div style="background:var(--bg-card2); padding:8px; border-radius:4px">
-              <strong style="color:var(--text-accent)">#1000 - #1131 (PMC Giriş/Çıkış Arayüzü):</strong><br>
-              Makro programından PMC sinyal kontaklarını okumak (#1000) veya yazmak (#1100) için kullanılır.
-            </div>
-            <div style="background:var(--bg-card2); padding:8px; border-radius:4px">
-              <strong style="color:var(--text-accent)">#5021 - #5023 (Eksen Makine Koordinatları):</strong><br>
-              Tezgahın o anki makine koordinat sistemindeki X, Y, Z mutlak pozisyonlarını okur (Salt Okunur).
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  return page;
+function getRS232Feature() {
+  if (!window.MTBRS232Feature) throw new Error('RS232 modülü yüklenemedi');
+  return window.MTBRS232Feature.initialize({ createPage, showToast });
 }
 
-window.evaluateMacro = function() {
-  const v1 = parseFloat(document.getElementById('mc-v1').value) || 0;
-  const v2 = parseFloat(document.getElementById('mc-v2').value) || 0;
-  const v100 = parseFloat(document.getElementById('mc-v100').value) || 0;
-  const v500 = parseFloat(document.getElementById('mc-v500').value) || 0;
-  let expr = document.getElementById('mc-expression').value.trim();
-
-  const resEl = document.getElementById('mc-result');
-  if (!expr) {
-    resEl.innerText = 'Formül girilmedi';
-    resEl.style.color = 'var(--red)';
-    return;
-  }
-
-  // Define vars mapping
-  const vars = {
-    '1': v1,
-    '2': v2,
-    '100': v100,
-    '500': v500
-  };
-
-  try {
-    // 1. Replace brackets with parentheses for eval
-    expr = expr.replace(/\[/g, '(').replace(/\]/g, ')');
-
-    // 2. Replace math functions: SIN, COS, TAN, SQRT, ABS
-    // FANUC uses degrees, so convert SIN(x) -> Math.sin(x * PI/180)
-    expr = expr.replace(/SIN\(([^)]+)\)/gi, (m, p1) => `Math.sin((${p1}) * Math.PI / 180)`);
-    expr = expr.replace(/COS\(([^)]+)\)/gi, (m, p1) => `Math.cos((${p1}) * Math.PI / 180)`);
-    expr = expr.replace(/TAN\(([^)]+)\)/gi, (m, p1) => `Math.tan((${p1}) * Math.PI / 180)`);
-    expr = expr.replace(/SQRT\(([^)]+)\)/gi, 'Math.sqrt($1)');
-    expr = expr.replace(/ABS\(([^)]+)\)/gi, 'Math.abs($1)');
-    expr = expr.replace(/ROUND\(([^)]+)\)/gi, 'Math.round($1)');
-
-    // 3. Replace variables #1, #2, #100, #500
-    expr = expr.replace(/#100/g, vars['100']);
-    expr = expr.replace(/#500/g, vars['500']);
-    expr = expr.replace(/#1/g, vars['1']);
-    expr = expr.replace(/#2/g, vars['2']);
-
-    // Check if there are unreplaced variables (e.g. #3, #150)
-    if (/#\d+/g.test(expr)) {
-      resEl.innerText = 'Hata: Tanımsız değişken (Sadece #1, #2, #100, #500)';
-      resEl.style.color = 'var(--red)';
-      return;
-    }
-
-    // 4. Safe evaluate
-    // Use Function constructor instead of direct eval for safety
-    const result = evaluateSafeMathExpression(expr);
-
-    if (isNaN(result) || result === Infinity || result === -Infinity) {
-      resEl.innerText = 'Hesaplama Hatası (Bölünme veya Geçersiz İşlem)';
-      resEl.style.color = 'var(--red)';
-    } else {
-      resEl.innerText = result.toFixed(4);
-      resEl.style.color = 'var(--green)';
-    }
-  } catch (e) {
-    resEl.innerText = 'Hata: ' + e.message;
-    resEl.style.color = 'var(--red)';
-  }
-};
-
-// ════════════════════════════════════════════════════════════════
-//  RS232 / DNC SERİ HABERLEŞME SİMÜLATÖRÜ & KILAVUZU
-// ════════════════════════════════════════════════════════════════
 function renderRS232() {
-  const page = createPage('rs232');
-  page.innerHTML = `
-    <div class="page-header">
-      <h1>📶 RS232 / DNC Seri Haberleşme & Parametre Rehberi</h1>
-      <p>FANUC tezgahları için RS232 port ayarları, kablo şemaları ve interaktif G-Kod transfer simülatörü</p>
-    </div>
-    <div class="page-body">
-      <div class="grid-2 mb-4" style="grid-template-columns: 1.2fr 0.8fr; gap:16px">
-        
-        <!-- Left: Simulator -->
-        <div class="card" style="display:flex; flex-direction:column; justify-content:between">
-          <div>
-            <div class="card-title mb-3">📤 DNC Dosya Aktarım Simülatörü</div>
-            <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:12px">
-              Tezgaha gönderilecek G-Kod dosyasını veya örnek programı seçin, DNC parametrelerini yapılandırıp aktarımı başlatın.
-            </p>
-            
-            <div class="grid-2 mb-3" style="gap:8px">
-              <div class="form-group" style="margin:0">
-                <label class="form-label" style="font-size:10.5px">Baud Rate</label>
-                <select class="form-control" id="dnc-baud" style="padding:6px; font-size:11.5px">
-                  <option value="4800">4800 Baud</option>
-                  <option value="9600" selected>9600 Baud</option>
-                  <option value="19200">19200 Baud</option>
-                </select>
-              </div>
-              <div class="form-group" style="margin:0">
-                <label class="form-label" style="font-size:10.5px">Akış Kontrolü (Handshake)</label>
-                <select class="form-control" id="dnc-flow" style="padding:6px; font-size:11.5px">
-                  <option value="xon">XON / XOFF (Yazılımsal)</option>
-                  <option value="hw">Donanımsal (RTS/CTS)</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Signal Leds -->
-            <div style="display:flex; gap:14px; margin-bottom:14px; background:var(--bg-card2); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border)">
-              <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600">
-                <span id="led-tx" style="width:10px; height:10px; border-radius:50%; background:#374151; display:inline-block; transition:background .15s ease"></span> TX (Send)
-              </div>
-              <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600">
-                <span id="led-rx" style="width:10px; height:10px; border-radius:50%; background:#374151; display:inline-block; transition:background .15s ease"></span> RX (Recv)
-              </div>
-              <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600">
-                <span id="led-rts" style="width:10px; height:10px; border-radius:50%; background:#10b981; display:inline-block; transition:background .15s ease"></span> RTS (Ready)
-              </div>
-              <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600">
-                <span id="led-cts" style="width:10px; height:10px; border-radius:50%; background:#10b981; display:inline-block; transition:background .15s ease"></span> CTS (Clear)
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" style="font-size:11px">Gönderilecek G-Code Sinyal İçeriği</label>
-              <textarea class="form-control" id="dnc-gcode-input" rows="8" style="font-family:monospace; font-size:11.5px; background:#0f172a; color:#a5f3fc; line-height:1.4">%
-O1001 (RS232 DNC TEST)
-G21 G90 G40 G80
-T0101 M06 (DIS CAP TORNA)
-G97 S1200 M03
-G00 X50.0 Z5.0 M08
-G01 Z-25.0 F0.2
-G01 X60.0 F0.5
-G00 X100.0 Z100.0 M09
-G28 U0.0 W0.0
-M30
-%</textarea>
-            </div>
-
-            <!-- Progress Bar -->
-            <div style="width:100%; height:6px; background:#1f2937; border-radius:3px; overflow:hidden; margin-bottom:12px">
-              <div id="dnc-progress" style="width:0%; height:100%; background:var(--accent); transition:width .1s linear"></div>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button class="btn btn-primary" id="btn-dnc-send" onclick="startDncTransmission()">📤 CNC'ye Gönder</button>
-            <button class="btn btn-secondary" id="btn-dnc-stop" onclick="stopDncTransmission()" disabled>Durdur</button>
-          </div>
-        </div>
-
-        <!-- Right: Wiring Diagram & Params -->
-        <div class="card" style="display:flex; flex-direction:column; gap:16px">
-          <div>
-            <div class="card-title mb-2">🔌 FANUC RS232 Parametre Ayarları</div>
-            <table class="data-table" style="font-size:11px">
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>Parametre Adı</th>
-                  <th>Ayar Değeri</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong class="font-mono">0000</strong></td>
-                  <td>ISO Kodu Çıkışı</td>
-                  <td><strong style="color:var(--text-accent)">1 (ISO)</strong></td>
-                </tr>
-                <tr>
-                  <td><strong class="font-mono">0020</strong></td>
-                  <td>I/O Kanal Seçimi</td>
-                  <td><strong style="color:var(--text-accent)">0 (Channel 1 RS232)</strong></td>
-                </tr>
-                <tr>
-                  <td><strong class="font-mono">0101</strong></td>
-                  <td>Veri formatı / Stop Bit</td>
-                  <td><strong>10000001 (1 Stop Bit, 7-E)</strong></td>
-                </tr>
-                <tr>
-                  <td><strong class="font-mono">0102</strong></td>
-                  <td>Cihaz Tipi</td>
-                  <td><strong>3 (RS-232C Terminal)</strong></td>
-                </tr>
-                <tr>
-                  <td><strong class="font-mono">0103</strong></td>
-                  <td>Baud Rate Hızı</td>
-                  <td><strong>11 (9600) veya 12 (19200)</strong></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div>
-            <div class="card-title mb-2">🗺️ DB9 (PC) - DB25 (CNC) Kablo Şeması</div>
-            <p style="font-size:11px; color:var(--text-secondary); margin-bottom:8px">
-              Yazılımsal Akış Kontrolü (XON/XOFF) için Null-Modem kablo bağlantı şeması:
-            </p>
-            <div style="background:#0f172a; padding:12px; border-radius:4px; border:1px solid var(--border); font-family:monospace; font-size:11px; line-height:1.5; color:var(--green)">
-              PC (DB9 Dişi)               CNC (DB25 Erkek)
-              -------------               ----------------
-              Pin 2 (RXD)  <------------  Pin 2 (TXD)
-              Pin 3 (TXD)  ------------->  Pin 3 (RXD)
-              Pin 5 (GND)  =============  Pin 7 (SG)
-              
-              Pin 7 (RTS) --+             Pin 4 (RTS) --+
-              Pin 8 (CTS) --+ (Köprü)     Pin 5 (CTS) --+ (Köprü)
-              
-              Pin 4 (DTR) --+             Pin 6 (DSR) --+
-              Pin 6 (DSR) --+ (Köprü)     Pin 20(DTR) --+ (Köprü)
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  `;
-
-  return page;
+  return getRS232Feature().renderRS232();
 }
 
-let DncInterval = null;
-window.startDncTransmission = function() {
-  const codeText = document.getElementById('dnc-gcode-input').value;
-  const lines = codeText.split('\n');
-  if (!lines.length || !codeText.trim()) {
-    showToast('Gönderilecek G-Code bulunamadı.', 'error');
-    return;
-  }
-
-  const sendBtn = document.getElementById('btn-dnc-send');
-  const stopBtn = document.getElementById('btn-dnc-stop');
-  const progBar = document.getElementById('dnc-progress');
-  const ledTx = document.getElementById('led-tx');
-
-  sendBtn.disabled = true;
-  stopBtn.disabled = false;
-  progBar.style.width = '0%';
-
-  let currentLine = 0;
-  const totalLines = lines.length;
-
-  DncInterval = setInterval(() => {
-    if (currentLine >= totalLines) {
-      clearInterval(DncInterval);
-      DncInterval = null;
-      sendBtn.disabled = false;
-      stopBtn.disabled = true;
-      ledTx.style.background = '#374151';
-      showToast('G-Code programı DNC üzerinden başarıyla aktarıldı!', 'success');
-      return;
-    }
-
-    // Toggle LED flash for TX transmit
-    ledTx.style.background = ledTx.style.background === 'rgb(59, 130, 246)' ? '#374151' : '#3b82f6';
-
-    // Update progress
-    currentLine++;
-    const percent = Math.round((currentLine / totalLines) * 100);
-    progBar.style.width = percent + '%';
-  }, 180);
-};
-
-window.stopDncTransmission = function() {
-  if (DncInterval) {
-    clearInterval(DncInterval);
-    DncInterval = null;
-  }
-  document.getElementById('btn-dnc-send').disabled = false;
-  document.getElementById('btn-dnc-stop').disabled = true;
-  document.getElementById('led-tx').style.background = '#374151';
-  showToast('Aktarım kullanıcı tarafından durduruldu.', 'info');
-};
-
 // ════════════════════════════════════════════════════════════════
-//  SÜRÜCÜ 7-SEGMENT HATA TEŞHİS SİHİRBAZI
-// ════════════════════════════════════════════════════════════════
-window.CurrentDriveTab = 'led';
-
-function renderDriveDiagnostics() {
-  const page = createPage('drive_diagnostics');
-  page.innerHTML = `
-    <div class="page-header">
-      <h1>🔧 Servo & Spindle Sürücü Hata Teşhis Sihirbazı</h1>
-      <p>Sürücü arızalarını teşhis edin ve kabin içi sıcaklık / watchdog koruma parametrelerini inceleyin</p>
-      
-      <!-- Tabs -->
-      <div class="tabs mt-3" style="border-bottom:1px solid var(--border); display:flex; gap:16px; padding-bottom:8px">
-        <button class="tab-btn" id="tab-dr-led" onclick="switchDriveTab('led')" style="background:none; border:none; color:var(--text-accent); font-weight:bold; cursor:pointer">
-          🚨 7-Segment LED Hata Teşhisi
-        </button>
-        <button class="tab-btn" id="tab-dr-heat" onclick="switchDriveTab('heat')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer">
-          🌡️ Kabin Isı Kontrolü & Alarmlar
-        </button>
-        <button class="tab-btn" id="tab-dr-comm" onclick="switchDriveTab('commutation')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer">
-          ⚡ Servo Enkoder Kutup Hizalama
-        </button>
-      </div>
-    </div>
-    
-    <div class="page-body" id="drive-tab-content" style="padding-top:16px"></div>
-  `;
-
-  setTimeout(() => {
-    switchDriveTab(window.CurrentDriveTab, page);
-  }, 10);
-
-  return page;
+function getDriveDiagnosticsFeature() {
+  if (!window.MTBDriveDiagnosticsFeature) throw new Error('Sürücü teşhis modülü yüklenemedi');
+  return window.MTBDriveDiagnosticsFeature.initialize({ createPage, showToast });
 }
+function renderDriveDiagnostics() { return getDriveDiagnosticsFeature().renderDriveDiagnostics(); }
 
-window.switchDriveTab = function(tab, page = document) {
-  window.CurrentDriveTab = tab;
-  
-  const ledBtn = page.querySelector('#tab-dr-led');
-  const heatBtn = page.querySelector('#tab-dr-heat');
-  const commBtn = page.querySelector('#tab-dr-comm');
-  if (ledBtn && heatBtn && commBtn) {
-    ledBtn.style.color = tab === 'led' ? 'var(--text-accent)' : 'var(--text-secondary)';
-    ledBtn.style.fontWeight = tab === 'led' ? 'bold' : 'normal';
-    heatBtn.style.color = tab === 'heat' ? 'var(--text-accent)' : 'var(--text-secondary)';
-    heatBtn.style.fontWeight = tab === 'heat' ? 'bold' : 'normal';
-    commBtn.style.color = tab === 'commutation' ? 'var(--text-accent)' : 'var(--text-secondary)';
-    commBtn.style.fontWeight = tab === 'commutation' ? 'bold' : 'normal';
-  }
-
-  const content = page.querySelector('#drive-tab-content');
-  if (!content) return;
-
-  if (tab === 'led') {
-    content.innerHTML = `
-      <div class="grid-2 mb-4" style="grid-template-columns: 0.8fr 1.2fr; gap:16px">
-        <!-- Left: Input & LED Simulation -->
-        <div class="card" style="display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:space-between; padding:24px">
-          <div style="width:100%">
-            <div class="card-title mb-3" style="text-align:left">🚨 7-Segment Dijital Ekran</div>
-            <div class="form-group" style="text-align:left">
-              <label class="form-label">Sürücü Ekran Kodu Seçin</label>
-              <select class="form-control" id="diag-code-select" onchange="updateDiagLedDisplay()">
-                <option value="">Kod Seçin...</option>
-                ${State.drive_alarms.map(a => `<option value="${a.code}">${a.code} — ${a.title}</option>`).join('')}
-              </select>
-            </div>
-          </div>
-
-          <!-- Glow LED Box -->
-          <div style="width:120px; height:160px; background:#000; border:4px solid #1f2937; border-radius:8px; display:flex; align-items:center; justify-content:center; margin:24px 0; box-shadow:0 0 20px rgba(239,68,68,0.15)">
-            <span id="led-display-text" style="font-family:'Courier New', monospace; font-size:90px; font-weight:900; color:#1f2937; text-shadow:none; transition:all .3s ease">--</span>
-          </div>
-
-          <button class="btn btn-primary w-100" onclick="runDriveDiagnosis()">⚡ Arızayı Teşhis Et</button>
-        </div>
-
-        <!-- Right: Diagnosis Details -->
-        <div class="card" id="diag-results-card" style="padding:20px; min-height:300px">
-          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-muted)" id="diag-empty-state">
-            <svg style="width:48px; height:48px; stroke:currentColor; fill:none; stroke-width:1.5; margin-bottom:12px" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <p style="font-size:13px">Lütfen sol taraftan sürücü ekranında yanan kodu seçip "Arızayı Teşhis Et" butonuna basın.</p>
-          </div>
-          <div id="diag-details-content" style="display:none; line-height:1.6"></div>
-        </div>
-      </div>
-    `;
-  } else if (tab === 'heat') {
-    content.innerHTML = `
-      <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap:16px">
-        
-        <!-- Left: Overheat alarms guide -->
-        <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:14px">
-          <div class="card-title" style="color:var(--red)">🌡️ Kabin & Kart Aşırı Isınma Alarmları</div>
-          
-          <div style="padding:10px; background:var(--bg-card2); border-left:3px solid var(--red); border-radius:4px; font-size:12px">
-            <strong>ALARM 700 - CNC MAIN BOARD OVERHEAT:</strong><br>
-            CNC ana işlemci kartı (Main CPU) sıcaklığı kritik eşiği aştı. Soğutucu fanın çalışıp çalışmadığını kontrol edin.
-          </div>
-          
-          <div style="padding:10px; background:var(--bg-card2); border-left:3px solid var(--amber); border-radius:4px; font-size:12px">
-            <strong>ALARM 704 - SPINDLE/SERVO DRIVE OVERHEAT:</strong><br>
-            Sürücü soğutucu bloklarında (heatsink) aşırı ısınma algılandı. Genellikle sürücü gövdesinin dışındaki kabin fanları durduğunda tetiklenir.
-          </div>
-
-          <div style="font-size:12px; color:var(--text-secondary); display:flex; flex-direction:column; gap:6px">
-            <strong>🔧 Arıza Giderme Adımları:</strong>
-            <div>1. Elektrik kabininin arkasındaki ve sürücü üstündeki sarı fanların dönüp dönmediğini fiziksel olarak kontrol edin.</div>
-            <div>2. Filtreleri söküp hava üfleyin (yağ buharı fan kanatlarını kilitleyebilir).</div>
-            <div>3. Geçici acil durum kurtarması için elektrik kabin kapağını açıp harici vantilatör ile soğutma sağlayın.</div>
-          </div>
-        </div>
-
-        <!-- Right: Temperature monitoring parameters -->
-        <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:14px">
-          <div class="card-title">⚙️ Isı İzleme ve Parametre Göstergeleri</div>
-          <p style="font-size:11.5px; color:var(--text-secondary)">
-            Ana kart sıcaklığını doğrudan CNC ekranında görmek için parametreyi aktif edin:
-          </p>
-
-          <div style="background:#0f172a; padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:monospace; font-size:12.5px; color:#00ff00">
-            <div style="border-bottom:1px solid #00ff00; padding-bottom:4px; font-size:11px; margin-bottom:8px">PARAMETER SETTING</div>
-            <div style="display:flex; justify-content:space-between">
-              <span>Parametre 3111 #0 (TEMD)</span>
-              <span><strong>1</strong> (Ekranda Sıcaklık Göster)</span>
-            </div>
-          </div>
-
-          <div style="font-size:12px; color:var(--text-secondary); display:flex; flex-direction:column; gap:6px">
-            <strong>📊 Diagnostic İzleme Değerleri:</strong>
-            <div style="display:flex; justify-content:space-between; background:var(--bg-card2); padding:6px; border-radius:4px">
-              <span>DGN 1010 (CPU Isısı):</span>
-              <strong style="color:var(--text-accent)">Maksimum 85°C Sınırı</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between; background:var(--bg-card2); padding:6px; border-radius:4px">
-              <span>DGN 1014 (Sürücü Modül Sıcaklığı):</span>
-              <strong style="color:var(--text-accent)">Maksimum 90°C Sınırı</strong>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    `;
-  } else if (tab === 'commutation') {
-    content.innerHTML = `
-      <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap:16px; padding:0 20px">
-        
-        <!-- Left: Phase angle alignment -->
-        <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:12px">
-          <div class="card-title" style="color:var(--text-accent)">⚡ Servo Motor Enkoder Kutup (Phase Angle) Hizalama</div>
-          <p style="font-size:11.5px; color:var(--text-secondary); line-height:1.5">
-            Servo motorların enkoderi (Pulsecoder) tamir veya değişim için söküldüğünde, motor kutup açısı (rotor mıknatıs sıfır noktası) ile enkoder sıfır noktası arasındaki faz açısı kayar. Bu durum tezgah açıldığında eksenin aniden fırlamasına ve aşırı sapma (Excessive Error) alarmlarına yol açar.
-          </p>
-
-          <div style="font-size:12px; display:flex; flex-direction:column; gap:8px">
-            <strong>🔧 Adım Adım Faz Hizalama Prosedürü:</strong>
-            <div>1. CNC gücünü kapatın. Motoru makineden söküp boşa alın (miller serbest dönmelidir).</div>
-            <div>2. <code>SYSTEM > PARAM > 2000</code> serisindeki motor parametrelerini kontrol edin. Akım hizalamayı açmak için Parameter <strong>2013#0 (FCMD)</strong> bitini <code>1</code> yapın.</div>
-            <div>3. Tezgahı açın. Eksene çok düşük bir hızda (MDI modunda jog) manuel hareket verin.</div>
-            <div>4. Sürücü kontrol kartı, enkoderden gelen Z sinyali ile motorun U-Fazı sargı akımını otomatik olarak eşleştirecektir.</div>
-            <div>5. İşlem bittiğinde <strong>FCMD</strong> parametresini tekrar <code>0</code> yapıp CNC'yi yeniden başlatın.</div>
-          </div>
-        </div>
-
-        <!-- Right: Diagnostic value checking -->
-        <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:12px">
-          <div class="card-title">📊 Kutup Açısı İzleme Diagnostic Ekranı</div>
-          <p style="font-size:11.5px; color:var(--text-secondary)">
-            Hizalama bittikten sonra faz açısının doğruluğunu diagnostic ekranı üzerinden teyit edin:
-          </p>
-
-          <div style="background:#0f172a; padding:12px; border-radius:4px; font-family:monospace; font-size:12px; border:1px solid var(--border); display:flex; flex-direction:column; gap:8px">
-            <div>
-              <strong style="color:var(--text-accent)">• Diagnostic 453 (Phase Angle):</strong><br>
-              Hizalama sonrasında bu değer kararlı olmalıdır. Eksen boştayken elinizle mili zorladığınızda değerin dalgalanıp eski haline döndüğünü gözlemleyin.
-            </div>
-            <div style="padding:8px; background:rgba(239,68,68,0.06); border-radius:4px; border:1px solid rgba(239,68,68,0.15); color:var(--red); font-size:11px">
-              ⚠️ <strong>DİKKAT:</strong> Yanlış kutup hizalaması motorun kontrolsüzce son hızda dönüp çarparak mekanik stoperleri kırmasına yol açabilir! Test sırasında eksen yakınında durmayın ve eliniz acil stop butonunda hazır bekleyin.
-            </div>
-          </div>
-        </div>
-
-      </div>
-    `;
-  }
-};
-
-window.updateDiagLedDisplay = function() {
-  const code = document.getElementById('diag-code-select').value;
-  const led = document.getElementById('led-display-text');
-  if (led) {
-    if (code) {
-      led.innerText = code;
-      led.style.color = '#ef4444';
-      led.style.textShadow = '0 0 15px rgba(239, 68, 68, 0.8)';
-    } else {
-      led.innerText = '--';
-      led.style.color = '#1f2937';
-      led.style.textShadow = 'none';
-    }
-  }
-};
-
-window.runDriveDiagnosis = function() {
-  const code = document.getElementById('diag-code-select').value;
-  const emptyState = document.getElementById('diag-empty-state');
-  const detailsContent = document.getElementById('diag-details-content');
-
-  if (!code) {
-    showToast('Lütfen bir arıza kodu seçin.', 'error');
-    return;
-  }
-
-  const alarm = State.drive_alarms.find(a => a.code === code);
-  if (!alarm) return;
-
-  emptyState.style.display = 'none';
-  detailsContent.style.display = 'block';
-
-  let typeTag = 'tag-blue';
-  if (alarm.type.includes('Servo')) typeTag = 'tag-purple';
-  if (alarm.type.includes('Spindle')) typeTag = 'tag-orange';
-
-  detailsContent.innerHTML = `
-    <div style="display:flex; justify-content:between; align-items:center; margin-bottom:12px">
-      <h2 style="font-size:16px; color:var(--text-accent); margin:0">${alarm.code} — ${alarm.title}</h2>
-      <span class="tag ${typeTag}">${alarm.type}</span>
-    </div>
-    <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:16px">${alarm.description}</p>
-    
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px">
-      <div>
-        <strong style="font-size:11px; text-transform:uppercase; color:var(--red); letter-spacing:.5px">Olası Arıza Nedenleri:</strong>
-        <ul style="font-size:12px; color:var(--text-secondary); margin-top:6px; padding-left:16px; display:flex; flex-direction:column; gap:4px">
-          ${alarm.causes.map(c => `<li>${c}</li>`).join('')}
-        </ul>
-      </div>
-      <div>
-        <strong style="font-size:11px; text-transform:uppercase; color:var(--green); letter-spacing:.5px">Çözüm / Kontrol Adımları:</strong>
-        <ul style="font-size:12px; color:var(--text-secondary); margin-top:6px; padding-left:16px; display:flex; flex-direction:column; gap:4px">
-          ${alarm.solutions.map(s => `<li>${s}</li>`).join('')}
-        </ul>
-      </div>
-    </div>
-  `;
-};
-
-// ════════════════════════════════════════════════════════════════
-//  ESNEK DİŞLİ ORANI (FGR 2084/2085) HESAPLAYICI
 // ════════════════════════════════════════════════════════════════
 function renderGearRatio() {
   const page = createPage('gear_ratio');
@@ -7819,12 +3528,12 @@ function renderGearRatio() {
     </div>
     <div class="page-body">
       <div class="grid-2 mb-4" style="grid-template-columns: 1fr 1fr; gap:16px">
-        
+
         <!-- Left: Input Form -->
         <div class="card" style="padding:20px; display:flex; flex-direction:column; justify-content:between">
           <div>
             <div class="card-title mb-3">🛠 Mekanik & Enkoder Parametreleri</div>
-            
+
             <div class="form-group">
               <label class="form-label">Vidalı Mil Hatvesi (Pitch - mm) *</label>
               <input class="form-control" id="fgr-pitch" type="number" value="10" />
@@ -7871,7 +3580,7 @@ function renderGearRatio() {
 
           <div id="fgr-results" style="display:none; width:100%; text-align:left">
             <h2 style="font-size:14px; color:var(--text-accent); text-align:center; margin-bottom:16px">📊 FANUC Parametre Giriş Değerleri</h2>
-            
+
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px">
               <div class="card" style="background:var(--bg-card2); border-color:var(--border); text-align:center; padding:14px">
                 <div style="font-size:11px; color:var(--text-muted)">PA. 2084 (Pay - Numerator)</div>
@@ -7903,35 +3612,12 @@ window.calculateFlexibleGearRatio = function() {
   const screwTeeth = parseInt(document.getElementById('fgr-screw-teeth').value);
   const lci = parseFloat(document.getElementById('fgr-lci').value);
 
-  if (isNaN(pitch) || isNaN(motorTeeth) || isNaN(screwTeeth) || pitch <= 0 || motorTeeth <= 0 || screwTeeth <= 0) {
+  const result = window.DiagnosticEngine.calculateGearRatio({ pitch, encoder, motorTeeth, screwTeeth, lci });
+  if (!result) {
     showToast('Lütfen geçerli mekanik girdiler girin.', 'error');
     return;
   }
-
-  // Calculate LCI units per 1 mm (e.g. 0.001 mm -> 1000 units/mm)
-  const lciUnitsPerMm = 1 / lci;
-  // Command units per 1 screw revolution
-  const cmdUnitsPerScrewRev = pitch * lciUnitsPerMm;
-
-  // Formula: FGR = (Encoder Pulses / Command units per screw rev) * (Screw Gear / Motor Gear)
-  // Numerator = Encoder Pulses * Screw Gear
-  // Denominator = Command units per screw rev * Motor Gear
-  let num = encoder * screwTeeth;
-  let den = cmdUnitsPerScrewRev * motorTeeth;
-
-  // Reduce fraction using GCD
-  const getGcd = (a, b) => b ? getGcd(b, a % b) : a;
-  const commonDiv = getGcd(num, den);
-
-  num = num / commonDiv;
-  let finalDen = den / commonDiv;
-
-  // If FGR is out of limit (FANUC limit for 2084/2085 is generally between 1 and 32767)
-  if (num > 32767 || finalDen > 32767) {
-    // Try to scale down
-    const scaleFactor = Math.max(num, finalDen) / 30000;
-    num = Math.round(num / scaleFactor);
-    finalDen = Math.round(finalDen / scaleFactor);
+  if (result.approximated) {
     showToast('Dişli oranı limit dışına çıktı, en yakın tamsayı oranı hesaplandı.', 'info');
   }
 
@@ -7939,215 +3625,13 @@ window.calculateFlexibleGearRatio = function() {
   const resDiv = document.getElementById('fgr-results');
   resDiv.style.display = 'block';
 
-  document.getElementById('fgr-res-2084').innerText = num;
-  document.getElementById('fgr-res-2085').innerText = finalDen;
-  document.getElementById('fgr-cmd-units').innerText = cmdUnitsPerScrewRev;
+  document.getElementById('fgr-res-2084').innerText = result.numerator;
+  document.getElementById('fgr-res-2085').innerText = result.denominator;
+  document.getElementById('fgr-cmd-units').innerText = result.commandUnits;
 };
 
-// ════════════════════════════════════════════════════════════════
-//  MTBF & MTTR GÜVENİLİRLİK ANALİZÖRÜ
-// ════════════════════════════════════════════════════════════════
-function renderReliability() {
-  const page = createPage('reliability');
-  page.innerHTML = `
-    <div class="page-header">
-      <h1>📊 Tezgah Güvenilirlik & MTBF / MTTR Analiz Paneli</h1>
-      <p>Arıza sıklığı (MTBF), ortalama tamir süresi (MTTR) ve tezgahlara özel kullanılabilirlik oranları</p>
-    </div>
-    <div class="page-body">
-      
-      <!-- Summary metrics cards -->
-      <div class="flex gap-4 mb-4" style="flex-wrap:wrap">
-        <div class="card" style="flex:1; min-width:200px; padding:16px; background:var(--bg-card2)">
-          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase">Ortalama MTBF (Arızasızlık)</div>
-          <div id="stat-avg-mtbf" style="font-size:24px; font-weight:700; color:var(--accent); margin-top:4px">Yükleniyor...</div>
-        </div>
-        <div class="card" style="flex:1; min-width:200px; padding:16px; background:var(--bg-card2)">
-          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase">Ortalama MTTR (Tamir Süresi)</div>
-          <div id="stat-avg-mttr" style="font-size:24px; font-weight:700; color:var(--accent); margin-top:4px">Yükleniyor...</div>
-        </div>
-        <div class="card" style="flex:1; min-width:200px; padding:16px; background:var(--bg-card2)">
-          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase">Atölye Genel Kullanılabilirlik</div>
-          <div id="stat-avg-avail" style="font-size:24px; font-weight:700; color:var(--green); margin-top:4px">Yükleniyor...</div>
-        </div>
-      </div>
-
-      <div class="grid-2 mb-4" style="grid-template-columns: 1.2fr 0.8fr; gap:16px; align-items:stretch">
-        
-        <!-- Table -->
-        <div class="card" style="padding:16px; display:flex; flex-direction:column; height:100%">
-          <div class="card-title mb-3">📋 Tezgah Analiz Tablosu</div>
-          <div style="overflow-x:auto; flex:1">
-            <table class="data-table" style="font-size:11.5px">
-              <thead>
-                <tr>
-                  <th>Tezgah Adı</th>
-                  <th>Hata Sayısı</th>
-                  <th>MTBF (Saat)</th>
-                  <th>MTTR (Saat)</th>
-                  <th>Kullanılabilirlik</th>
-                  <th>Güvenilirlik Durumu</th>
-                </tr>
-              </thead>
-              <tbody id="reliability-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- OEE Component Card -->
-        <div class="card" style="padding:18px; display:flex; flex-direction:column; height:100%">
-          <div style="margin-bottom:14px">
-            <div class="card-title mb-1" style="display:flex; align-items:center; justify-content:space-between;">
-              <span>📊 OEE Verimlilik Karşılaştırması (%)</span>
-              <span class="tag tag-blue" style="font-size:10px; padding:2px 8px">Dinamik Hesaplama</span>
-            </div>
-            <p style="font-size:11px; color:var(--text-muted)">
-              Kullanılabilirlik × Performans × Kalite formülüyle hesaplanan genel ekipman verimliliği
-            </p>
-          </div>
-          <div id="oee-bar-container" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px;">
-            <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12px">Hesaplanıyor...</div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-  `;
-
-  setTimeout(() => calculateReliabilityMetrics(page), 50);
-
-  return page;
-}
-
-function calculateReliabilityMetrics(page) {
-  const tbody = page.querySelector('#reliability-tbody');
-  const avgMtbfEl = page.querySelector('#stat-avg-mtbf');
-  const avgMttrEl = page.querySelector('#stat-avg-mttr');
-  const avgAvailEl = page.querySelector('#stat-avg-avail');
-
-  if (!State.machines.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">Tezgah kaydı bulunamadı</td></tr>`;
-    return;
-  }
-
-  let totalMtbf = 0;
-  let totalMttr = 0;
-  let totalAvail = 0;
-  let activeMachineCount = 0;
-
-  const dataList = State.machines.map(m => {
-    // Filter failures (non-PM/non-periyodik maintenance entries)
-    const failures = State.maintenances.filter(maint => 
-      maint.tezgah_id === m.id && 
-      !(maint.aciklama && (maint.aciklama.includes('[PM]') || maint.aciklama.toLowerCase().includes('periyodik')))
-    );
-    const failureCount = failures.length;
-
-    // Operating hours calculation (assumed default 2400 hours)
-    const opHours = 2400;
-
-    // Repair hours sum
-    let repairHours = 0;
-    failures.forEach(f => {
-      // parse duration or fallback to 3 hours
-      const hrs = parseFloat(f.duration) || 3;
-      repairHours += hrs;
-    });
-
-    const mtbf = failureCount > 0 ? opHours / failureCount : opHours;
-    const mttr = failureCount > 0 ? repairHours / failureCount : 0;
-    
-    // Availability %
-    const avail = mtbf > 0 ? (mtbf / (mtbf + mttr)) * 100 : 100;
-
-    // OEE % (mocking Performance 94% and Quality 98%)
-    const oee = (avail * 94 * 98) / 10000;
-
-    totalMtbf += mtbf;
-    totalMttr += mttr;
-    totalAvail += avail;
-    activeMachineCount++;
-
-    return {
-      name: m.numarasi,
-      failures: failureCount,
-      mtbf,
-      mttr,
-      avail,
-      oee
-    };
-  });
-
-  // Render Table
-  tbody.innerHTML = dataList.map(d => {
-    let statusLabel = '🟢 Yüksek';
-    let statusClass = 'tag-green';
-    if (d.mtbf < 400) {
-      statusLabel = '🔴 Kritik (Sık Hata)';
-      statusClass = 'tag-red';
-    } else if (d.mtbf < 800) {
-      statusLabel = '🟡 Orta';
-      statusClass = 'tag-orange';
-    }
-
-    return `
-      <tr>
-        <td><strong>${escapeHTML(d.name)}</strong></td>
-        <td style="text-align:center">${d.failures}</td>
-        <td><span class="font-mono">${Math.round(d.mtbf)} Sa</span></td>
-        <td><span class="font-mono">${d.mttr.toFixed(1)} Sa</span></td>
-        <td><strong style="color:var(--green)">${d.avail.toFixed(1)}%</strong></td>
-        <td><span class="tag ${statusClass}">${statusLabel}</span></td>
-      </tr>
-    `;
-  }).join('');
-
-  // Set global stats
-  const avgMtbf = totalMtbf / activeMachineCount;
-  const avgMttr = totalMttr / activeMachineCount;
-  const avgAvail = totalAvail / activeMachineCount;
-
-  avgMtbfEl.innerText = `${Math.round(avgMtbf)} Saat`;
-  avgMttrEl.innerText = `${avgMttr.toFixed(1)} Saat`;
-  avgAvailEl.innerText = `${avgAvail.toFixed(1)}%`;
-
-  // Render Modern OEE Bar List Component
-  const oeeContainer = page.querySelector('#oee-bar-container');
-  if (oeeContainer) {
-    const sortedData = [...dataList].sort((a, b) => 
-      String(a.name || '').localeCompare(String(b.name || ''), 'tr', { numeric: true, sensitivity: 'base' })
-    );
-
-    oeeContainer.innerHTML = sortedData.map(d => {
-      const oeeVal = d.oee.toFixed(1);
-      const isHigh = d.oee >= 85;
-      const isMid = d.oee >= 70 && d.oee < 85;
-      const barGradient = isHigh 
-        ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)' 
-        : (isMid ? 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)' : 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)');
-      const badgeClass = isHigh ? 'tag-green' : (isMid ? 'tag-amber' : 'tag-red');
-      const glowColor = isHigh ? 'rgba(16, 185, 129, 0.3)' : (isMid ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)');
-
-      return `
-        <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 14px; transition:transform 0.2s ease, border-color 0.2s ease;" class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
-            <span style="font-size:12.5px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px">
-              <span style="width:8px; height:8px; border-radius:50%; background:${isHigh ? '#10b981' : (isMid ? '#f59e0b' : '#ef4444')}; display:inline-block; box-shadow:0 0 6px ${glowColor}"></span>
-              ${escapeHTML(d.name)}
-            </span>
-            <span class="tag ${badgeClass}" style="font-family:var(--font-mono); font-size:11.5px; font-weight:700">
-              %${oeeVal}
-            </span>
-          </div>
-          <div style="position:relative; width:100%; height:8px; background:var(--bg-base); border-radius:4px; overflow:hidden">
-            <div style="width:${Math.min(Math.max(d.oee, 5), 100)}%; height:100%; background:${barGradient}; border-radius:4px; transition:width 0.8s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 8px ${glowColor}"></div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-}
+// Reliability view delegated to js/features/operations_insights.js
+const renderReliability = (...args) => window.OperationsInsights.renderReliability(...args);
 
 // ════════════════════════════════════════════════════════════════
 //  G-CODE ÇARPIŞMA & HATA ÖNLEYİCİ
@@ -8161,7 +3645,7 @@ function renderGcodeChecker() {
     </div>
     <div class="page-body">
       <div class="grid-2 mb-4" style="grid-template-columns: 1.1fr 0.9fr; gap:16px">
-        
+
         <!-- Left: Text Area and controls -->
         <div class="card" style="display:flex; flex-direction:column; justify-content:between">
           <div>
@@ -8190,7 +3674,7 @@ M30
         <!-- Right: Diagnostic Results -->
         <div class="card" style="padding:20px; display:flex; flex-direction:column">
           <div class="card-title mb-3">🔍 Tarama Sonuçları</div>
-          
+
           <div id="gcc-summary" style="margin-bottom:14px; display:none">
             <div id="gcc-score-card" class="card" style="padding:10px 14px; display:flex; align-items:center; justify-content:space-between">
               <span style="font-weight:700" id="gcc-status-label">—</span>
@@ -8368,16 +3852,16 @@ function renderParamComparator() {
         </div>
       </div>
     </div>
-    
+
     <div class="page-body">
-      
+
       <!-- Hidden file inputs -->
       <input type="file" id="param-file-a-input" style="display:none" onchange="uploadParamFile('a')" accept=".txt,.cnm,.dat,.nc,.par,.all,.prm" />
       <input type="file" id="param-file-b-input" style="display:none" onchange="uploadParamFile('b')" accept=".txt,.cnm,.dat,.nc,.par,.all,.prm" />
 
       <!-- Side-by-Side File Input Cards -->
       <div class="grid-2 mb-4" style="grid-template-columns: 1fr 1fr; gap:16px">
-        
+
         <!-- File Input A (Reference) -->
         <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:10px">
           <div class="flex justify-between items-center">
@@ -8390,7 +3874,7 @@ function renderParamComparator() {
               <button class="btn btn-ghost btn-sm" onclick="clearParamInput('a')" title="Temizle">🗑️</button>
             </div>
           </div>
-          
+
           <div id="dropzone-a" class="dropzone-box" style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 10px; text-align: center; background: var(--bg-card2); transition: border-color 0.2s;"
                ondragover="handleParamDragOver(event, 'a')" ondragleave="handleParamDragLeave(event, 'a')" ondrop="handleParamDrop(event, 'a')">
             <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px">Dosyayı buraya sürükleyip bırakın veya metni aşağıya yapıştırın</div>
@@ -8414,7 +3898,7 @@ function renderParamComparator() {
               <button class="btn btn-ghost btn-sm" onclick="clearParamInput('b')" title="Temizle">🗑️</button>
             </div>
           </div>
-          
+
           <div id="dropzone-b" class="dropzone-box" style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 10px; text-align: center; background: var(--bg-card2); transition: border-color 0.2s;"
                ondragover="handleParamDragOver(event, 'b')" ondragleave="handleParamDragLeave(event, 'b')" ondrop="handleParamDrop(event, 'b')">
             <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px">Dosyayı buraya sürükleyip bırakın veya metni aşağıya yapıştırın</div>
@@ -8694,7 +4178,7 @@ function renderDiffTableRows(diffsList) {
 window.filterDiffRows = function() {
   const q = (document.getElementById('diff-search-input')?.value || '').toLowerCase().trim();
   const diffs = window.CurrentDiffs || [];
-  const filtered = diffs.filter(d => 
+  const filtered = diffs.filter(d =>
     !q || String(d.no).includes(q) || d.desc.toLowerCase().includes(q)
   );
   renderDiffTableRows(filtered);
@@ -8775,8 +4259,8 @@ function getBitDifferenceDetails(no, valA, valB) {
         <div style="padding: 4px 10px; display: flex; justify-content: space-between; font-size: 11px; border-bottom: 1px dashed var(--border)">
           <span style="color:var(--text-accent); font-family:monospace">Bit ${bit}: ${bitDesc}</span>
           <span>
-            <span style="color:var(--red); font-family:monospace">${charA}</span> 
-            ➔ 
+            <span style="color:var(--red); font-family:monospace">${charA}</span>
+            ➔
             <span style="color:var(--green); font-family:monospace; font-weight:bold">${charB}</span>
           </span>
         </div>
@@ -8928,7 +4412,9 @@ const TroubleshootNodes = {
   }
 };
 
-let CurrentTroubleshootNode = 'root';
+// `var` is intentional: the legacy renderer can be entered from deferred module
+// navigation while this section is still being initialized.
+var CurrentTroubleshootNode = 'root';
 
 function renderTroubleshooter() {
   CurrentTroubleshootNode = 'root';
@@ -8946,7 +4432,7 @@ function renderTroubleshooter() {
 
       <div class="card glass-card" style="padding:24px; max-width:800px; margin:0 auto; min-height:300px; display:flex; flex-direction:column; justify-content:space-between">
 
-        
+
         <div>
           <!-- Title -->
           <h2 id="ts-title" style="font-size:16px; color:var(--text-accent); margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px">
@@ -8994,7 +4480,7 @@ window.navigateTroubleshootNode = function(nextNode) {
     if (titleEl && descEl && optionsEl) {
       titleEl.innerHTML = TroubleshootNodes[nextNode].title;
       descEl.innerHTML = TroubleshootNodes[nextNode].desc;
-      
+
       const node = TroubleshootNodes[nextNode];
       optionsEl.innerHTML = node.options.map(opt => {
         const isBack = opt.next === 'root';
@@ -9021,235 +4507,12 @@ window.navigateTroubleshootNode = function(nextNode) {
 // ════════════════════════════════════════════════════════════════
 //  FANUC I/O LINK & DONANIM BAĞLANTI TEŞHİSİ
 // ════════════════════════════════════════════════════════════════
-window.CurrentIOTab = 'graph';
-
-function renderIOLink() {
-  const page = createPage('io_link');
-  page.innerHTML = `
-    <div class="page-header">
-      <h1>🔌 FANUC I/O Link & Donanım Bağlantı Teşhisi</h1>
-      <p>I/O Link kartları, veri kablosu mimarisi, adresleme kuralları ve donanımsal slot eşlemeleri</p>
-      
-      <!-- Tabs -->
-      <div class="tabs mt-3" style="border-bottom:1px solid var(--border); display:flex; gap:16px; padding-bottom:8px">
-        <button class="tab-btn" id="tab-io-graph" onclick="switchIOTab('graph')" style="background:none; border:none; color:var(--text-accent); font-weight:bold; cursor:pointer">
-          🔌 I/O Kablo Mimarisi & Alarmlar
-        </button>
-        <button class="tab-btn" id="tab-io-map" onclick="switchIOTab('map')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer">
-          🗺️ Donanımsal Slot & Adres Eşleme
-        </button>
-      </div>
-    </div>
-    
-    <div class="page-body" id="io-tab-content" style="padding-top:16px"></div>
-  `;
-
-  setTimeout(() => {
-    switchIOTab(window.CurrentIOTab, page);
-  }, 10);
-
-  return page;
+function getIOLinkFeature() {
+  if (!window.MTBIOLinkFeature) throw new Error('I/O Link modülü yüklenemedi');
+  return window.MTBIOLinkFeature.initialize({ createPage });
 }
+function renderIOLink() { return getIOLinkFeature().renderIOLink(); }
 
-window.switchIOTab = function(tab, page = document) {
-  window.CurrentIOTab = tab;
-  
-  const graphBtn = page.querySelector('#tab-io-graph');
-  const mapBtn = page.querySelector('#tab-io-map');
-  if (graphBtn && mapBtn) {
-    graphBtn.style.color = tab === 'graph' ? 'var(--text-accent)' : 'var(--text-secondary)';
-    graphBtn.style.fontWeight = tab === 'graph' ? 'bold' : 'normal';
-    mapBtn.style.color = tab === 'map' ? 'var(--text-accent)' : 'var(--text-secondary)';
-    mapBtn.style.fontWeight = tab === 'map' ? 'bold' : 'normal';
-  }
-
-  const content = page.querySelector('#io-tab-content');
-  if (!content) return;
-
-  if (tab === 'graph') {
-    content.innerHTML = `
-      <div class="grid-2 mb-4" style="grid-template-columns: 1fr 1fr; gap:16px">
-        <!-- Connection Graph -->
-        <div class="card" style="padding:16px; display:flex; flex-direction:column; justify-content:between">
-          <div>
-            <div class="card-title mb-2">🔌 I/O Link Kablo Mimarisi</div>
-            <p style="font-size:11px; color:var(--text-secondary); margin-bottom:12px">
-              FANUC I/O Link, kontrol kartı (Master) ile üniteler (Slave) arasındaki seri bağlantı zinciridir. Kablo soket etiketleri <strong>JD1A (OUT)</strong> ve <strong>JD1B (IN)</strong> şeklinde takip edilmelidir.
-            </p>
-            
-            <div style="background:#0f172a; padding:16px; border-radius:4px; font-family:monospace; font-size:10.5px; color:var(--green); line-height:1.6; border:1px solid var(--border); margin-bottom:12px">
-              [ CNC Main Board (COP10A) ]  JD1A (Master Port)
-                           │
-                           ▼ (I/O Link Kablosu)
-              [ Operator Panel Board ]     JD1B (IN) -> JD1A (OUT)
-                           │
-                           ▼ (I/O Link Kablosu)
-              [ I/O Base Module 1 ]        JD1B (IN) -> JD1A (OUT)
-                           │
-                           ▼ (I/O Link Kablosu)
-              [ I/O Base Module 2 ]        JD1B (IN)
-            </div>
-          </div>
-          <div class="card" style="background:rgba(239,68,68,0.03); border-color:rgba(239,68,68,0.12); padding:10px; font-size:11px; line-height:1.5">
-            ⚠️ <strong>Sinyal Kuralı:</strong> Zincirdeki herhangi bir ara ünite (Örn: Operatör Paneli Kartı) 24V güç beslemesini kaybederse, kendisinden sonraki tüm I/O kartlarının sinyal bağlantısı kopar ve sistem anında acil stopa geçer (ER97 hatası).
-          </div>
-        </div>
-
-        <!-- Alarm Table -->
-        <div class="card" style="padding:16px">
-          <div class="card-title mb-2">🚨 Yaygın I/O Link Alarm Kodları</div>
-          <table class="data-table" style="font-size:11px">
-            <thead>
-              <tr>
-                <th style="width:120px">Ekran Alarmı</th>
-                <th>Donanımsal Anlamı</th>
-                <th>Arıza Arama & Saha Çözümü</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong style="color:var(--red)">ER97 I/O LINK FAILURE</strong></td>
-                <td>Haberleşme hattı tamamen koptu.</td>
-                <td>Sarı I/O ünitelerinin 24V DC besleme sigortalarını ölçün. JD1A/JD1B metal soketlerinin yuvalarına tam oturduğundan emin olun.</td>
-              </tr>
-              <tr>
-                <td><strong style="color:var(--red)">ER96 I/O LINK FAILURE</strong></td>
-                <td>Genişleme kartında veya slotta hata var.</td>
-                <td>Sarı modüllerin arkasındaki sabitleme tırnaklarını kontrol edin. Gevşeme varsa kartı söküp pinleri temizleyin ve yeniden oturtun.</td>
-              </tr>
-              <tr>
-                <td><strong style="color:var(--red)">SYS_ALM 160 I/O LINK</strong></td>
-                <td>Ana kart FSSB / optik link arızası.</td>
-                <td>COP10A optik kablo hattındaki tozlanmayı temizleyin. Optik konnektörün kırmızı ışık verip vermediğini kontrol edin.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `;
-  } else {
-    content.innerHTML = `
-      <div class="grid-2" style="grid-template-columns: 1fr 1.2fr; gap:16px">
-        
-        <!-- Left: Slot selector -->
-        <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:14px">
-          <div class="card-title">🗺️ Donanımsal I/O Modülü Seçin</div>
-          <div class="form-group">
-            <label class="form-label">Sarı I/O Ünitesi Modülü</label>
-            <select class="form-control" id="io-slot-select" onchange="showIoSlotMapping()">
-              <option value="slot1">MODÜL 1 - 16 Girişli Dijital Giriş Kartı (Slot 1)</option>
-              <option value="slot2">MODÜL 2 - 16 Çıkışlı Dijital Çıkış Kartı (Slot 2)</option>
-              <option value="slot3">MODÜL 3 - Operatör Paneli Dahili Kartı (Slot 3)</option>
-            </select>
-          </div>
-
-          <div id="io-slot-details" style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:4px; font-size:12px">
-            <div style="font-weight:bold; color:var(--text-accent); margin-bottom:6px" id="io-slot-name">MODÜL 1 - Dijital Giriş Kartı</div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px">
-              <span>PMC Lojik Adres Aralığı:</span>
-              <strong id="io-slot-addr" style="font-family:monospace; color:var(--green)">X0.0 - X1.7</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between">
-              <span>Fiziksel Konnektör:</span>
-              <strong id="io-slot-conn" style="font-family:monospace">CB104 (50-Pin)</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: Terminal Pin mapping list -->
-        <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:12px">
-          <div class="card-title">🔌 Pin ve PMC Lojik Adres Eşlemesi</div>
-          <div style="overflow-y:auto; max-height:300px; background:#0f172a; padding:12px; border-radius:4px; border:1px solid var(--border)">
-            <table class="data-table" style="font-size:11.5px; font-family:monospace">
-              <thead>
-                <tr>
-                  <th>Fiziksel Pin No</th>
-                  <th>Sinyal Yönü</th>
-                  <th>PMC Lojik Adresi</th>
-                  <th>Tipik Fonksiyon (CNC)</th>
-                </tr>
-              </thead>
-              <tbody id="io-mapping-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-    `;
-    setTimeout(showIoSlotMapping, 10);
-  }
-};
-
-window.showIoSlotMapping = function() {
-  const select = document.getElementById('io-slot-select');
-  if (!select) return;
-
-  const val = select.value;
-  const tbody = document.getElementById('io-mapping-tbody');
-  if (!tbody) return;
-
-  const slotData = {
-    slot1: {
-      name: "MODÜL 1 - 16 Girişli Dijital Giriş Kartı (Slot 1)",
-      addr: "X0.0 - X1.7",
-      conn: "CB104 (20-Pin Klemens)",
-      mapping: [
-        { pin: "Pin 1 (X0.0)", dir: "Giriş (IN)", addr: "X0.0", func: "Acil Stop Butonu (ESP)" },
-        { pin: "Pin 2 (X0.1)", dir: "Giriş (IN)", addr: "X0.1", func: "Eksen Limit Limit Switch +" },
-        { pin: "Pin 3 (X0.2)", dir: "Giriş (IN)", addr: "X0.2", func: "Eksen Limit Limit Switch -" },
-        { pin: "Pin 4 (X0.3)", dir: "Giriş (IN)", addr: "X0.3", func: "Kabin Kapağı Emniyet Sensörü" },
-        { pin: "Pin 5 (X0.4)", dir: "Giriş (IN)", addr: "X0.4", func: "Kızak Yağ Seviyesi Switch'i" },
-        { pin: "Pin 6 (X0.5)", dir: "Giriş (IN)", addr: "X0.5", func: "Hidrolik Basınç Okuma Girişi" },
-        { pin: "Pin 7 to 16", dir: "Giriş (IN)", addr: "X0.6 - X1.7", func: "Kullanıcı Tanımlı Genel Sensörler" }
-      ]
-    },
-    slot2: {
-      name: "MODÜL 2 - 16 Çıkışlı Dijital Çıkış Kartı (Slot 2)",
-      addr: "Y0.0 - Y1.7",
-      conn: "CB105 (20-Pin Klemens)",
-      mapping: [
-        { pin: "Pin 1 (Y0.0)", dir: "Çıkış (OUT)", addr: "Y0.0", func: "Merkezi Yağlama Motor Rölesi" },
-        { pin: "Pin 2 (Y0.1)", dir: "Çıkış (OUT)", addr: "Y0.1", func: "Kabin İçi Soğutucu Solenoid Valf" },
-        { pin: "Pin 3 (Y0.2)", dir: "Çıkış (OUT)", addr: "Y0.2", func: "Hidrolik Motor Kontaktörü Tetik" },
-        { pin: "Pin 4 (Y0.3)", dir: "Çıkış (OUT)", addr: "Y0.3", func: "Ayna Hidrolik Bobin Sıkma Rölesi" },
-        { pin: "Pin 5 (Y0.4)", dir: "Çıkış (OUT)", addr: "Y0.4", func: "Ayna Hidrolik Bobin Açma Rölesi" },
-        { pin: "Pin 6 (Y0.5)", dir: "Çıkış (OUT)", addr: "Y0.5", func: "Fener Mili Yağ Soğutma Pompası" },
-        { pin: "Pin 7 to 16", dir: "Çıkış (OUT)", addr: "Y0.6 - Y1.7", func: "Genel Valf / Röle Tetik çıkışları" }
-      ]
-    },
-    slot3: {
-      name: "MODÜL 3 - Operatör Paneli Dahili Giriş Kartı (Slot 3)",
-      addr: "X4.0 - X7.7",
-      conn: "Dahili Şerit Kablo (Flat Cable)",
-      mapping: [
-        { pin: "Matrix 1 (X4.0)", dir: "Giriş (IN)", addr: "X4.0", func: "Panel Cycle Start Butonu" },
-        { pin: "Matrix 2 (X4.1)", dir: "Giriş (IN)", addr: "X4.1", func: "Panel Feed Hold Butonu" },
-        { pin: "Matrix 3 (X4.2)", dir: "Giriş (IN)", addr: "X4.2", func: "MDI Input Buton Girişi" },
-        { pin: "Matrix 4 (X4.3)", dir: "Giriş (IN)", addr: "X4.3", func: "Mod Seçici Switche (AUTO/MDI/JOG)" },
-        { pin: "Matrix 5 to 32", dir: "Giriş (IN)", addr: "X4.4 - X7.7", func: "Panel Diğer Tuş Girişleri" }
-      ]
-    }
-  };
-
-  const current = slotData[val];
-  if (!current) return;
-
-  document.getElementById('io-slot-name').innerText = current.name;
-  document.getElementById('io-slot-addr').innerText = current.addr;
-  document.getElementById('io-slot-conn').innerText = current.conn;
-
-  tbody.innerHTML = current.mapping.map(m => `
-    <tr>
-      <td>${m.pin}</td>
-      <td><span class="tag ${m.dir.includes('Giriş') ? 'tag-blue' : 'tag-orange'}">${m.dir}</span></td>
-      <td style="color:var(--text-accent); font-weight:bold">${m.addr}</td>
-      <td style="color:var(--text-secondary)">${m.func}</td>
-    </tr>
-  `).join('');
-};
-
-// ════════════════════════════════════════════════════════════════
-//  FANUC PARAMETRE & PROGRAM YEDEKLEME/YÜKLEME SİHİRBAZI
 // ════════════════════════════════════════════════════════════════
 window.BackupWizardState = {
   media: 'cf',  // 'cf', 'usb', 'rs232'
@@ -9362,7 +4625,7 @@ function renderBackupWizard() {
     <div class="page-header">
       <h1>📄 FANUC Parametre & Program Yedekleme</h1>
       <p>CNC parametre yedeklerinizi kaydedin veya Boot ROM SRAM yedekleme işlemlerini inceleyin</p>
-      
+
       <!-- Tabs -->
       <div class="tabs mt-3" style="border-bottom:1px solid var(--border); display:flex; gap:16px; padding-bottom:8px">
         <button class="tab-btn" id="tab-bk-steps" onclick="switchBackupTab('steps')" style="background:none; border:none; color:var(--text-accent); font-weight:bold; cursor:pointer">
@@ -9373,7 +4636,7 @@ function renderBackupWizard() {
         </button>
       </div>
     </div>
-    
+
     <div class="page-body" id="backup-tab-content" style="padding-top:16px"></div>
   `;
 
@@ -9405,7 +4668,7 @@ window.switchBackupTab = function(tab, page = document) {
         <!-- Left: Configuration selectors -->
         <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:16px">
           <div class="card-title">⚙️ İşlem Konfigürasyonu</div>
-          
+
           <!-- 1. Media Select -->
           <div>
             <label class="form-label" style="font-weight:700">1. Yedekleme Ortamı (Media)</label>
@@ -9453,7 +4716,7 @@ window.switchBackupTab = function(tab, page = document) {
   } else {
     content.innerHTML = `
       <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap:16px; padding:0 20px">
-        
+
         <!-- Left: Boot ROM SRAM procedures -->
         <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:12px">
           <div class="card-title" style="color:var(--text-accent)">🔋 Boot ROM / System Monitor SRAM Yedekleme</div>
@@ -9766,8 +5029,10 @@ window.deleteWikiArticle = async function(id) {
 // ════════════════════════════════════════════════════════════════
 //  YEDEK TAKİP DEFTERİ (BACKUP TRACKER)
 // ════════════════════════════════════════════════════════════════
-function renderBackupTracker() {
+function renderBackupTracker(extraData = null) {
   const page = createPage('backup_tracker');
+  const contextMachine = State.machines.find(machine => Number(machine.id) === Number(extraData?.machineId));
+  if (contextMachine) page.dataset.contextMachineId = String(contextMachine.id);
   page.innerHTML = `
     <div class="page-header">
       <div class="flex items-center justify-between">
@@ -9782,12 +5047,14 @@ function renderBackupTracker() {
         </button>
         ` : ''}
       </div>
+      ${contextMachine ? `<div class="context-filter-chip"><span>${escapeHTML(contextMachine.numarasi)} tezgâhı filtrelendi</span><button type="button" id="backup-clear-machine-context" aria-label="Tezgâh filtresini temizle">×</button></div>` : ''}
       <div class="flex gap-2 mt-3" style="flex-wrap:wrap">
         <div class="search-bar" style="flex:1; max-width:340px">
+          <label class="sr-only" for="bk-search">Yedek kayıtlarında ara</label>
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input type="text" id="bk-search" placeholder="Tezgah no veya açıklama ara..." />
         </div>
-        <select id="bk-status-filter" style="width:180px">
+        <label class="sr-only" for="bk-status-filter">Yedek durumu filtresi</label><select id="bk-status-filter" style="width:180px">
           <option value="">Tüm Durumlar</option>
           <option value="ok">🟢 Güncel (&lt;= 180 Gün)</option>
           <option value="warn">🔴 Güncel Değil (&gt; 180 Gün)</option>
@@ -9838,6 +5105,7 @@ function renderBackupTracker() {
     filterBackupTracker(page);
     page.querySelector('#bk-search').addEventListener('input', () => filterBackupTracker(page));
     page.querySelector('#bk-status-filter').addEventListener('change', () => filterBackupTracker(page));
+    page.querySelector('#backup-clear-machine-context')?.addEventListener('click', event => { delete page.dataset.contextMachineId; event.currentTarget.closest('.context-filter-chip')?.remove(); filterBackupTracker(page); });
   }, 10);
 
   return page;
@@ -9849,6 +5117,7 @@ function filterBackupTracker(page) {
 
   const q = page.querySelector('#bk-search').value.toLowerCase();
   const statusFilter = page.querySelector('#bk-status-filter').value;
+  const contextMachineId = Number(page.dataset.contextMachineId || 0);
 
   const list = State.machines.map(m => {
     // Find logs for this machine
@@ -9884,7 +5153,8 @@ function filterBackupTracker(page) {
   const filtered = list.filter(item => {
     const matchSearch = !q || item.machine.numarasi.toLowerCase().includes(q) || (item.latest && item.latest.aciklama.toLowerCase().includes(q));
     const matchStatus = !statusFilter || item.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchMachine = !contextMachineId || Number(item.machine.id) === contextMachineId;
+    return matchSearch && matchStatus && matchMachine;
   });
 
   if (!filtered.length) {
@@ -9895,7 +5165,7 @@ function filterBackupTracker(page) {
   tbody.innerHTML = filtered.map(item => {
     const m = item.machine;
     const l = item.latest;
-    
+
     let dateStr = '<span style="color:var(--red); font-weight:700">Yedek Yok</span>';
     let techStr = '—';
     let pathStr = '—';
@@ -9905,7 +5175,7 @@ function filterBackupTracker(page) {
       dateStr = `<span class="font-mono">${l.son_yedek_tarihi}</span>`;
       techStr = `<strong>${l.yedekleyen}</strong>`;
       pathStr = `<span class="font-mono" style="font-size:11px; color:var(--text-muted)" title="${l.dosya_konumu}">${l.dosya_konumu.length > 28 ? l.dosya_konumu.substring(0,25)+'...' : l.dosya_konumu}</span>`;
-      
+
       if (item.status === 'ok') {
         const remaining = 180 - item.daysPassed;
         statusBadge = `<span class="tag tag-green">🟢 Güncel (${remaining} Gün Kaldı)</span>`;
@@ -10088,14 +5358,14 @@ function renderBacklashHelper() {
     </div>
     <div class="page-body">
       <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap:16px">
-        
+
         <!-- Left: Test G-Code Generator -->
         <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:14px">
           <div class="card-title">🚀 1. Boşluk Test G-Kodu Üretici</div>
           <p style="font-size:11.5px; color:var(--text-secondary)">
             Tezgah eksenini komparatör saatine temas ettirip boşluğu ölçmek için otomatik test programı oluşturun:
           </p>
-          
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Test Ekseni</label>
@@ -10110,7 +5380,7 @@ function renderBacklashHelper() {
               <input class="form-control" id="bl-dist" type="number" value="10" />
             </div>
           </div>
-          
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Hız (Feedrate F)</label>
@@ -10190,18 +5460,7 @@ window.generateBacklashGcode = function() {
   const dist = parseFloat(document.getElementById('bl-dist').value) || 10;
   const feed = parseInt(document.getElementById('bl-feed').value) || 500;
   const dwell = parseFloat(document.getElementById('bl-dwell').value) || 2;
-
-  const code = `%
-O1851 (BACKLASH TEST ${axis})
-G21 G90 G94 (Metric, Abs, Feed/Min)
-G00 ${axis}0.0 (Baslangic noktasina konumlan)
-G04 X${dwell.toFixed(1)} (Komparator saati ayarlamak icin bekleme)
-G01 ${axis}${dist.toFixed(3)} F${feed} (Ileri hareket - Komparator saati 0 yapin)
-G04 X${dwell.toFixed(1)} (Ileri okuma beklemesi)
-G01 ${axis}0.0 F${feed} (Geri hareket - Sapmayi olcun)
-G04 X${dwell.toFixed(1)} (Geri okuma beklemesi)
-M30
-%`;
+  const code = window.DiagnosticEngine.generateBacklashGcode({ axis, distance: dist, feed, dwell });
 
   document.getElementById('bl-gcode-output').value = code;
   showToast('G-Kod başarıyla üretildi.', 'success');
@@ -10222,9 +5481,7 @@ window.calculateNewBacklash = function() {
   const measured = parseFloat(document.getElementById('bl-measured').value) || 0;
   const current = parseInt(document.getElementById('bl-current-p1851').value) || 0;
 
-  // Convert mm to microns (1mm = 1000 microns)
-  const measuredMicrons = Math.round(measured * 1000);
-  const newValue = current + measuredMicrons;
+  const { measuredMicrons, newValue } = window.DiagnosticEngine.calculateBacklash(measured, current);
 
   // Render values to simulated screen
   document.getElementById('bl-val-x').innerText = axis === 'X' ? newValue : '10';
@@ -10290,7 +5547,7 @@ function renderSpindleDiagnostics() {
     <div class="page-header">
       <h1>⚡ Spindle Sürücü Teşhisi ve Enkoder Kalibrasyonu</h1>
       <p>İş mili sürücü (SPM) alarmları, fren direnci testleri ve pozisyon kodlayıcı diş oranı ayarları</p>
-      
+
       <!-- Tabs -->
       <div class="tabs mt-3" style="border-bottom:1px solid var(--border); display:flex; gap:16px; padding-bottom:8px">
         <button class="tab-btn" id="tab-sp-alarms" onclick="switchSpindleTab('alarms')" style="background:none; border:none; color:var(--text-accent); font-weight:bold; cursor:pointer">
@@ -10304,7 +5561,7 @@ function renderSpindleDiagnostics() {
         </button>
       </div>
     </div>
-    
+
     <div class="page-body" id="spindle-tab-content" style="padding-top:16px"></div>
   `;
 
@@ -10317,7 +5574,7 @@ function renderSpindleDiagnostics() {
 
 window.switchSpindleTab = function(tab, page = document) {
   window.CurrentSpindleTab = tab;
-  
+
   const alBtn = page.querySelector('#tab-sp-alarms');
   const brBtn = page.querySelector('#tab-sp-brake');
   const geBtn = page.querySelector('#tab-sp-gear');
@@ -10346,11 +5603,11 @@ window.switchSpindleTab = function(tab, page = document) {
               ${SpindleDriveAlarms.map(a => `<option value="${a.code}">${a.code} - ${a.title}</option>`).join('')}
             </select>
           </div>
-          
+
           <div id="spd-alarm-detail" style="display:none; background:var(--bg-card2); border:1px solid var(--border); padding:16px; border-radius:var(--radius-sm)">
             <h3 id="spd-det-title" style="color:var(--red); font-size:14px; margin-bottom:8px"></h3>
             <p id="spd-det-desc" style="font-size:12px; color:var(--text-secondary); margin-bottom:12px"></p>
-            
+
             <div style="margin-bottom:10px">
               <strong style="font-size:12px; color:var(--text-accent)">Olası Nedenler:</strong>
               <ul id="spd-det-causes" style="font-size:11.5px; padding-left:18px; margin-top:4px"></ul>
@@ -10495,7 +5752,7 @@ window.calculateSpindleGearRatio = function() {
   // Simple fraction reduction (GCD helper)
   const gcd = (a, b) => b ? gcd(b, a % b) : a;
   const common = gcd(teethSp, teethSens);
-  
+
   const num = teethSp / common;
   const denom = teethSens / common;
 
@@ -10519,10 +5776,10 @@ window.showSpindleAlarmDetail = function() {
 
   document.getElementById('spd-det-title').innerText = `${alarm.code} - ${alarm.title}`;
   document.getElementById('spd-det-desc').innerText = alarm.desc;
-  
+
   document.getElementById('spd-det-causes').innerHTML = alarm.causes.map(c => `<li>${c}</li>`).join('');
   document.getElementById('spd-det-sols').innerHTML = alarm.solutions.map(s => `<li>${s}</li>`).join('');
-  
+
   detailDiv.style.display = 'block';
 };
 
@@ -10549,7 +5806,7 @@ function renderCustomBuilderLibrary() {
         </div>
         ` : ''}
       </div>
-      
+
       <!-- Tabs -->
       <div class="tabs mt-3" style="border-bottom:1px solid var(--border); display:flex; gap:16px; padding-bottom:8px">
         <button class="tab-btn" id="tab-mcodes" onclick="switchBuilderTab('mcodes')" style="background:none; border:none; color:var(--text-accent); font-weight:bold; cursor:pointer">
@@ -10587,7 +5844,7 @@ function renderCustomBuilderLibrary() {
 
 window.switchBuilderTab = function(tab, page = document) {
   window.CurrentBuilderTab = tab;
-  
+
   const mBtn = page.querySelector('#tab-mcodes');
   const aBtn = page.querySelector('#tab-alarms');
   if (mBtn && aBtn) {
@@ -10628,9 +5885,9 @@ function filterBuilderList(page) {
   if (!tbody) return;
 
   const q = page.querySelector('#builder-search').value.toLowerCase();
-  
+
   if (window.CurrentBuilderTab === 'mcodes') {
-    const filtered = State.custom_mcodes.filter(m => 
+    const filtered = State.custom_mcodes.filter(m =>
       !q || m.code.toLowerCase().includes(q) || m.name.toLowerCase().includes(q) || m.description.toLowerCase().includes(q)
     );
 
@@ -10651,7 +5908,7 @@ function filterBuilderList(page) {
       </tr>
     `).join('');
   } else {
-    const filtered = State.custom_alarms.filter(a => 
+    const filtered = State.custom_alarms.filter(a =>
       !q || a.address.toLowerCase().includes(q) || a.code.toLowerCase().includes(q) || a.title.toLowerCase().includes(q) || a.description.toLowerCase().includes(q)
     );
 
@@ -10836,11 +6093,11 @@ function renderRs232Cables() {
     </div>
     <div class="page-body">
       <div class="grid-2" style="grid-template-columns: 1.2fr 0.8fr; gap:16px">
-        
+
         <!-- Left: Wiring Schematic Details -->
         <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:14px">
           <div class="card-title">🔌 Kablo Şeması Seçici</div>
-          
+
           <div class="form-group">
             <label class="form-label">Bağlantı Tipi</label>
             <select class="form-control" id="r2-scheme-select" onchange="showRs232Schematic()">
@@ -10852,7 +6109,7 @@ function renderRs232Cables() {
           <div id="r2-scheme-detail" style="margin-top:10px">
             <h3 id="r2-sch-title" style="color:var(--text-accent); font-size:13.5px; font-weight:bold; margin-bottom:4px"></h3>
             <p id="r2-sch-desc" style="font-size:12px; color:var(--text-secondary); margin-bottom:12px"></p>
-            
+
             <div style="background:#0f172a; padding:12px; border-radius:var(--radius-sm); border:1px solid var(--border)">
               <div style="font-size:12px; font-weight:bold; color:var(--text-primary); margin-bottom:8px">Lehimleme Bağlantı Tablosu:</div>
               <div id="r2-sch-wiring-list" style="font-family:monospace; font-size:11.5px; display:flex; flex-direction:column; gap:6px"></div>
@@ -10872,7 +6129,7 @@ function renderRs232Cables() {
               <strong style="color:var(--green)">1. Kısa Devre Kontrolü:</strong><br>
               Multimetreyi direnç veya buzzer konumuna alın. Yandaki tabloda yer almayan **hiçbir pin çiftinin** kendi arasında kısa devre yapmadığını doğrulayın. (Özellikle 2 ve 3 numaralı pinler).
             </div>
-            
+
             <div style="padding:10px; background:var(--bg-card2); border-left:3px solid var(--text-accent); border-radius:4px">
               <strong>2. Dış Ekranlama (Shield GND) Testi:</strong><br>
               Kablo dışındaki metal örgü (blendaj) korumasını **sadece DB25 (CNC) tarafındaki Pin 1 (Frame Ground)** terminaline lehimleyin. PC tarafındaki DB9 tarafında ekranlama boşta kalmalıdır. Bu kural toprak döngüsü parazitlerini engeller.
@@ -10926,7 +6183,7 @@ function renderAxisLimitsHelper() {
     <div class="page-header">
       <h1>⚙️ Eksen Yumuşak Limit & Hareket Kilidi (Interlock)</h1>
       <p>Yumuşak limit parametrelerini hesaplayın veya eksen hareket kilidi (interlock) sinyallerini teşhis edin</p>
-      
+
       <!-- Tabs -->
       <div class="tabs mt-3" style="border-bottom:1px solid var(--border); display:flex; gap:16px; padding-bottom:8px">
         <button class="tab-btn" id="tab-lim-calc" onclick="switchLimitTab('limits')" style="background:none; border:none; color:var(--text-accent); font-weight:bold; cursor:pointer">
@@ -10937,7 +6194,7 @@ function renderAxisLimitsHelper() {
         </button>
       </div>
     </div>
-    
+
     <div class="page-body" id="limit-tab-content" style="padding-top:16px"></div>
   `;
 
@@ -10969,7 +6226,7 @@ window.switchLimitTab = function(tab, page = document) {
         <!-- Left: Input & Calculation parameters -->
         <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:14px">
           <div class="card-title">📐 Limit Hesaplama Kriterleri</div>
-          
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Eksen Seçimi</label>
@@ -11049,7 +6306,7 @@ window.switchLimitTab = function(tab, page = document) {
   } else {
     content.innerHTML = `
       <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap:16px">
-        
+
         <!-- Left: Axis interlock diagnostics -->
         <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:12px">
           <div class="card-title" style="color:var(--text-accent)">🔒 Eksen Kilidi (Interlock) PMC Teşhisi</div>
@@ -11076,7 +6333,7 @@ window.switchLimitTab = function(tab, page = document) {
           <p style="font-size:11.5px; color:var(--text-secondary)">
             PMC ekranı üzerinden kilit sinyallerinin lojik durumlarını teyit edin:
           </p>
-          
+
           <div style="font-size:12px; display:flex; flex-direction:column; gap:8px">
             <div>1. CNC panelinden <strong>SYSTEM > PMC > STATUS</strong> menüsüne girin.</div>
             <div>2. Arama çubuğuna <code>G130</code> yazıp SEARCH (veya G-DATA) basın.</div>
@@ -11194,7 +6451,7 @@ function showPromptModal(title, defaultValue, onSubmit) {
       <button class="btn btn-primary" id="prompt-tech-submit">Onayla</button>
     </div>
   `, 'sm');
-  
+
   setTimeout(() => {
     const input = document.getElementById('prompt-tech-input');
     if (input) {
@@ -11445,7 +6702,7 @@ function renderCncDashboard() {
       if (writeRes && writeRes.ok) {
         showToast(`${machine.numarasi} bağlantısı kuruluyor, lütfen bekleyin...`, 'success');
         await window.electronAPI.restartAdapter();
-        
+
         // Refresh iframe to reload app.js with updated State.cnc_slotX_name values
         setTimeout(() => {
           const iframe = page.querySelector('iframe');
@@ -11464,7 +6721,7 @@ function renderCncDashboard() {
 
 function renderCncScreenViewer() {
   const page = createPage('cnc_screen_viewer');
-  
+
   const sortedMachines = [...State.machines].sort((a, b) => {
     return String(a.numarasi || '').localeCompare(String(b.numarasi || ''), 'tr-TR', { numeric: true, sensitivity: 'base' });
   });

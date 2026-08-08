@@ -43,3 +43,19 @@ test('telemetry history, summaries and retention work', () => {
   assert.equal(store.purgeTelemetry(30),1);
   store.close(); fs.rmSync(root,{recursive:true,force:true});
 });
+
+test('SQLite backups can exclude identity documents and records', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'fanuc-backup-'));
+  const jsonDir = path.join(root, 'data'); fs.mkdirSync(jsonDir);
+  fs.writeFileSync(path.join(jsonDir, 'users.json'), '{"users":[{"id":1,"pinHash":"secret"}]}');
+  fs.writeFileSync(path.join(jsonDir, 'machines.json'), '{"machines":[{"id":1}]}');
+  const store = new DataStore(path.join(root, 'app.db'), jsonDir);
+  store.migrateJsonDirectory();
+  const backupPath = path.join(root, 'backup.db');
+  store.backupTo(backupPath, { excludeIdentity: true });
+  const backup = new DataStore(backupPath, path.join(root, 'backup-json'));
+  assert.equal(backup.readDocument('users.json'), null);
+  assert.deepEqual(backup.listRecords('users'), []);
+  assert.equal(JSON.parse(backup.readDocument('machines.json')).machines.length, 1);
+  backup.close(); store.close(); fs.rmSync(root, { recursive: true, force: true });
+});

@@ -10,8 +10,17 @@
   <link rel="stylesheet" href="styles/main.css" />
   <link rel="stylesheet" href="styles/visual-system.css" />
   <link rel="stylesheet" href="styles/fanuc-center.css" />
+  <link rel="stylesheet" href="styles/machine-workspace.css" />
 </head>
 <body>
+  <div id="recovery-overlay" hidden role="alertdialog" aria-modal="true" aria-labelledby="recovery-title" style="position:fixed;inset:0;z-index:20000;background:#0d0f1a;display:none;place-items:center">
+    <div class="card" style="max-width:520px;padding:28px">
+      <h1 id="recovery-title">Uygulama ekranı yeniden başlatıldı</h1>
+      <p>Beklenmeyen bir ekran kapanması algılandı. Kayıtlı verileriniz silinmedi.</p>
+      <p id="recovery-reason" class="text-muted"></p>
+      <button id="recovery-reload" class="btn btn-primary" type="button">Güvenli şekilde yeniden yükle</button>
+    </div>
+  </div>
   <!-- Startup Intro -->
   <div id="intro-overlay" aria-label="Uygulama tanıtım videosu">
     <video id="intro-video" autoplay playsinline preload="auto" aria-label="MTB Elektrik Bakım giriş videosu">
@@ -306,6 +315,9 @@
       </div>
 
       <div class="sidebar-footer">
+        <button class="nav-item" data-page="performance_diagnostics" id="nav-performance_diagnostics">
+          <span class="nav-icon" aria-hidden="true">⏱</span><span>Performans Teşhisi</span>
+        </button>
         <button class="nav-item" data-page="settings" id="nav-settings">
           <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
           <span>Ayarlar</span>
@@ -321,11 +333,30 @@
 
   <script src="../assets/vendor/purify.min.js"></script>
   <script src="js/intro.js"></script>
+  <script src="js/recovery.js"></script>
   <script src="js/ux_feedback.js"></script>
+  <script src="js/ui/modal.js"></script>
   <script src="js/inline_actions.js"></script>
+  <script src="js/features/lifecycle.js"></script>
+  <script src="js/features/rs232.js"></script>
+  <script src="js/features/keep_macro.js"></script>
+  <script src="js/features/drive_diagnostics.js"></script>
+  <script src="js/features/io_link.js"></script>
+  <script src="js/services/data_persistence.js"></script>
+  <script src="js/diagnostics_engine.js"></script>
+  <script src="js/features/alarm_parameter.js"></script>
+  <script src="js/features/alarm_parameter_screens.js"></script>
+  <script src="js/features/ai_knowledge.js"></script>
+  <script src="js/features/knowledge_screens.js"></script>
+  <script src="js/features/ai_screen.js"></script>
   <script src="renderer.js"></script>
+  <script src="js/features/operations_insights.js"></script>
+  <script src="js/features/report_exports.js"></script>
+  <script src="js/performance_data.js"></script>
+  <script src="js/features/performance_diagnostics.js"></script>
   <script src="js/operations_dashboard.js"></script>
   <script src="js/fanuc_center.js"></script>
+  <script src="js/machine_workspace.js"></script>
   <script type="module" src="js/modules/rag.js"></script>
   <script type="module" src="js/modules/backup_manager.js"></script>
   <script type="module" src="js/modules/degradation.js"></script>

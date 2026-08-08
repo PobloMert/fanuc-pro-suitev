@@ -61,6 +61,13 @@ function createWindow() {
   });
   mainWindow.webContents.on('render-process-gone', (event, details) => {
     console.error('Render process gone:', details);
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    setTimeout(() => {
+      if (!mainWindow || mainWindow.isDestroyed()) return;
+      mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'), {
+        query: { recovery: 'renderer', reason: String(details.reason || 'unknown') }
+      });
+    }, 500);
   });
 
   mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
@@ -110,6 +117,15 @@ const APP_BIN_DIR = path.resolve(app.isPackaged
 const ADAPTER_RUNTIME_DIR = path.join(ALLOWED_DATA_DIR, 'adapter');
 const ADAPTER_CONFIG_FILE = path.join(ADAPTER_RUNTIME_DIR, 'adapter.config.json');
 const USERS_FILE = path.join(WRITABLE_DATA_DIR, 'users.json');
+const DATASTORE_DB_FILE = path.join(ALLOWED_DATA_DIR, 'fanuc-pro-suite.db');
+const BACKUP_BUSINESS_FILES = Object.freeze([
+  'alarms.json', 'parameters.json', 'machines.json', 'maintenances.json',
+  'batteries.json', 'fans.json', 'backup_logs.json', 'keep_relays.json',
+  'pmc_signals.json', 'library.json', 'wiki.json', 'nc_codes.json',
+  'drive_alarms.json', 'custom_alarms.json', 'custom_mcodes.json',
+  'custom_alarm_notes.json'
+]);
+const BACKUP_BUSINESS_FILE_SET = new Set(BACKUP_BUSINESS_FILES);
 const SECRETS_FILE = path.join(ALLOWED_DATA_DIR, 'secrets.json');
 const KNOWLEDGE_PREFS_FILE = path.join(ALLOWED_DATA_DIR, 'knowledge-preferences.json');
 const sessions = new Map();
@@ -300,6 +316,59 @@ function resolveDataPath(filePath) {
     return path.resolve(WRITABLE_DATA_DIR, normalized.slice(4).replace(/^\//, ''));
   }
   return path.isAbsolute(filePath) ? path.resolve(filePath) : path.resolve(path.join(__dirname, filePath));
+}
+
+function validateBackupSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object' || !snapshot.data || typeof snapshot.data !== 'object') throw new Error('Geçersiz yedek dosyası formatı.');
+  const entries = [];
+  for (const [fileName, fileData] of Object.entries(snapshot.data)) {
+    if (fileName === 'users.json') continue; // Identity data is deliberately outside business-data restore.
+    if (!BACKUP_BUSINESS_FILE_SET.has(fileName)) throw new Error(`Yedek kapsamında izin verilmeyen girdi: ${fileName}`);
+    if (Buffer.byteLength(String(fileData), 'utf8') > 10 * 1024 * 1024) throw new Error(`Yedek girdisi çok büyük: ${fileName}`);
+    JSON.parse(String(fileData));
+    const expected = snapshot.checksums?.[fileName];
+    const actual = crypto.createHash('sha256').update(String(fileData)).digest('hex');
+    if (snapshot.schemaVersion >= 2 && (!expected || expected !== actual)) throw new Error(`Yedek bütünlük doğrulaması başarısız: ${fileName}`);
+    entries.push([fileName, String(fileData)]);
+  }
+  if (snapshot.schemaVersion >= 3) {
+    const declared = snapshot.manifest?.includedBusinessFiles;
+    if (!Array.isArray(declared) || declared.some(name => !BACKUP_BUSINESS_FILE_SET.has(name))) throw new Error('Yedek kapsam manifesti geçersiz.');
+    const actualNames = entries.map(([name]) => name).sort();
+    if (JSON.stringify([...declared].sort()) !== JSON.stringify(actualNames)) throw new Error('Yedek kapsam manifesti dosya içeriğiyle eşleşmiyor.');
+  }
+  let database = null;
+  if (snapshot.database) {
+    if (snapshot.database.encoding !== 'base64' || snapshot.database.name !== 'fanuc-pro-suite.db') throw new Error('Geçersiz SQLite yedek tanımı.');
+    database = Buffer.from(String(snapshot.database.payload || ''), 'base64');
+    if (!database.length || database.length > 200 * 1024 * 1024) throw new Error('SQLite yedek boyutu geçersiz.');
+    const actual = crypto.createHash('sha256').update(database).digest('hex');
+    if (actual !== snapshot.database.sha256) throw new Error('SQLite yedek bütünlük doğrulaması başarısız.');
+    if (database.subarray(0, 16).toString('utf8') !== 'SQLite format 3\u0000') throw new Error('SQLite yedek başlığı geçersiz.');
+  } else if (snapshot.schemaVersion >= 3) {
+    throw new Error('Yedekte SQLite veri deposu eksik.');
+  }
+  return { entries, database, identityExcluded: true };
+}
+
+function recoverInterruptedRestore() {
+  const journalPath = path.join(ALLOWED_DATA_DIR, 'restore-journal.json');
+  if (!fs.existsSync(journalPath)) return;
+  const journal = JSON.parse(fs.readFileSync(journalPath, 'utf8'));
+  if (!/^\d+-[a-f0-9]{8}$/.test(String(journal.restoreId || ''))) throw new Error('Geri yükleme kurtarma günlüğü geçersiz.');
+  const stageDir = path.join(ALLOWED_DATA_DIR, 'restore-staging', journal.restoreId);
+  const rollbackDir = path.join(stageDir, 'rollback');
+  for (const fileName of Array.isArray(journal.files) ? journal.files : []) {
+    if (!BACKUP_BUSINESS_FILE_SET.has(fileName)) continue;
+    const target = path.join(WRITABLE_DATA_DIR, fileName);
+    const rollback = path.join(rollbackDir, fileName);
+    if (fs.existsSync(rollback)) fs.copyFileSync(rollback, target);
+    else if (journal.preExisting?.[fileName] === false && fs.existsSync(target)) fs.unlinkSync(target);
+  }
+  const databaseRollback = path.join(rollbackDir, 'fanuc-pro-suite.db');
+  if (journal.database && fs.existsSync(databaseRollback)) fs.copyFileSync(databaseRollback, DATASTORE_DB_FILE);
+  fs.rmSync(stageDir, { recursive: true, force: true });
+  fs.unlinkSync(journalPath);
 }
 
 function migrateLegacyAISecret() {
@@ -498,6 +567,7 @@ function stopAdapter() {
 app.whenReady().then(() => {
   logger = new StructuredLogger(path.join(ALLOWED_DATA_DIR, 'logs'));
   ensureWritableDataDirectory();
+  try { recoverInterruptedRestore(); } catch (err) { logger.write('data', 'error', 'Interrupted restore recovery failed', { error: err.message }); }
   dataStore = new DataStore(path.join(ALLOWED_DATA_DIR, 'fanuc-pro-suite.db'), WRITABLE_DATA_DIR);
   dataStore.migrateJsonDirectory();
   const retentionDays = (() => { try { const p=path.join(ALLOWED_DATA_DIR,'settings.json'); return fs.existsSync(p) ? Number(JSON.parse(fs.readFileSync(p,'utf8')).retentionDays)||30 : 30; } catch { return 30; } })();
@@ -672,12 +742,14 @@ ipcMain.handle('retention-run', event => {
 ipcMain.handle('backup-health', event => {
   try {
     requirePermission(event,'records.read');
-    const dir=path.join(ALLOWED_DATA_DIR,'backups');
+    const dir=getConfiguredBackupDir();
     const files=fs.existsSync(dir)?fs.readdirSync(dir).filter(f=>f.endsWith('.json')).map(f=>path.join(dir,f)):[];
     if(!files.length)return {ok:true,data:{status:'missing',message:'Henüz yedek yok'}};
     const latest=files.sort((a,b)=>fs.statSync(b).mtimeMs-fs.statSync(a).mtimeMs)[0];
-    const raw=fs.readFileSync(latest,'utf8'); JSON.parse(raw);
-    return {ok:true,data:{status:'healthy',file:path.basename(latest),ageMs:Date.now()-fs.statSync(latest).mtimeMs,sha256:crypto.createHash('sha256').update(raw).digest('hex')}};
+    const raw=fs.readFileSync(latest,'utf8');
+    const snapshot=JSON.parse(raw);
+    const validated=validateBackupSnapshot(snapshot);
+    return {ok:true,data:{status:'healthy',file:path.basename(latest),ageMs:Date.now()-fs.statSync(latest).mtimeMs,sha256:crypto.createHash('sha256').update(raw).digest('hex'),schemaVersion:snapshot.schemaVersion||1,businessFiles:validated.entries.length,databaseIncluded:Boolean(validated.database),identityExcluded:validated.identityExcluded}};
   } catch(err){return {ok:true,data:{status:'invalid',message:err.message}};}
 });
 
@@ -1186,6 +1258,18 @@ ipcMain.handle('print-to-pdf', async (event, htmlContent, defaultName) => {
   let printWin = null;
   let tempPath = null;
   try {
+    requireSession(event);
+    const rawHtml = String(htmlContent || '');
+    if (Buffer.byteLength(rawHtml, 'utf8') > 5 * 1024 * 1024) throw new Error('PDF içeriği boyut sınırını aşıyor.');
+    const printCsp = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: file: app-file:; style-src 'unsafe-inline'; font-src data: file: app-file:; script-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">`;
+    const safeHtml = rawHtml
+      .replace(/<(script|iframe|object|embed|base)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '')
+      .replace(/<(script|iframe|object|embed|base)\b[^>]*\/?>/gi, '')
+      .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/\s+(href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\2/gi, ' $1="#"');
+    const printableHtml = /<head\b[^>]*>/i.test(safeHtml)
+      ? safeHtml.replace(/<head\b[^>]*>/i, match => `${match}${printCsp}`)
+      : `<!doctype html><html><head>${printCsp}</head><body>${safeHtml}</body></html>`;
     const result = await dialog.showSaveDialog(mainWindow, {
       defaultPath: defaultName || 'rapor.pdf',
       filters: [{ name: 'PDF Dosyası', extensions: ['pdf'] }]
@@ -1211,7 +1295,7 @@ ipcMain.handle('print-to-pdf', async (event, htmlContent, defaultName) => {
       fs.mkdirSync(tempDir, { recursive: true });
     }
     tempPath = path.join(tempDir, `print_temp_${Date.now()}_${Math.random().toString(36).substring(7)}.html`);
-    fs.writeFileSync(tempPath, htmlContent, 'utf8');
+    fs.writeFileSync(tempPath, printableHtml, 'utf8');
 
     // Load local HTML file
     await printWin.loadFile(tempPath);
@@ -1249,33 +1333,57 @@ ipcMain.handle('print-to-pdf', async (event, htmlContent, defaultName) => {
 });
 
 // ── Auto-Backup Engine ──────────────────────────────────────────
-async function performAutoBackup() {
+async function performAutoBackup({ force = false } = {}) {
   try {
     const backupDir = getConfiguredBackupDir();
     if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
 
-    const filesToBackup = [
-      'alarms.json', 'parameters.json', 'machines.json', 'maintenances.json',
-      'batteries.json', 'fans.json', 'users.json', 'keep_relays.json',
-      'wiki.json', 'custom_alarms.json', 'custom_mcodes.json', 'custom_alarm_notes.json'
-    ];
+    if (!force) {
+      const today = new Date().toLocaleDateString('en-CA');
+      const existingToday = fs.readdirSync(backupDir)
+        .filter(file => file.startsWith('backup_') && file.endsWith('.json'))
+        .map(file => path.join(backupDir, file))
+        .find(file => {
+          try {
+            const snapshot = JSON.parse(fs.readFileSync(file, 'utf8'));
+            return new Date(snapshot.timestamp).toLocaleDateString('en-CA') === today;
+          } catch { return false; }
+        });
+      if (existingToday) return { ok: true, file: existingToday, skipped: true, reason: 'daily-backup-exists' };
+    }
 
     const snapshot = {
       timestamp: new Date().toISOString(),
-      schemaVersion: 2,
+      schemaVersion: 3,
       applicationVersion: app.getVersion(),
+      manifest: {
+        scope: 'business-data',
+        includedBusinessFiles: [],
+        identityData: { included: false, reason: 'Kullanıcı hesapları ve PIN türevleri iş verisi yedeğinden ayrı tutulur.' },
+        sqlite: { included: true, name: 'fanuc-pro-suite.db' }
+      },
       data: {},
       checksums: {}
     };
 
-    for (const file of filesToBackup) {
+    for (const file of BACKUP_BUSINESS_FILES) {
       const p = path.join(WRITABLE_DATA_DIR, file);
       if (fs.existsSync(p)) {
-        try {
-          snapshot.data[file] = fs.readFileSync(p, 'utf8');
-          snapshot.checksums[file] = crypto.createHash('sha256').update(snapshot.data[file]).digest('hex');
-        } catch {}
+        const payload = fs.readFileSync(p, 'utf8');
+        JSON.parse(payload);
+        snapshot.data[file] = payload;
+        snapshot.checksums[file] = crypto.createHash('sha256').update(payload).digest('hex');
+        snapshot.manifest.includedBusinessFiles.push(file);
       }
+    }
+
+    const sqliteTemp = path.join(backupDir, `.sqlite-backup-${process.pid}-${Date.now()}.tmp`);
+    try {
+      dataStore.backupTo(sqliteTemp, { excludeIdentity: true });
+      const database = fs.readFileSync(sqliteTemp);
+      snapshot.database = { name: 'fanuc-pro-suite.db', encoding: 'base64', payload: database.toString('base64'), sha256: crypto.createHash('sha256').update(database).digest('hex'), sizeBytes: database.length };
+    } finally {
+      if (fs.existsSync(sqliteTemp)) fs.unlinkSync(sqliteTemp);
     }
 
     const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -1305,8 +1413,6 @@ async function performAutoBackup() {
 ipcMain.handle('get-backups-list', async event => {
   try {
     requireSession(event);
-    if (Buffer.byteLength(String(htmlContent || ''), 'utf8') > 5 * 1024 * 1024) throw new Error('PDF içeriği boyut sınırını aşıyor.');
-    requireSession(event);
     const backupDir = getConfiguredBackupDir();
     if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
 
@@ -1333,7 +1439,7 @@ ipcMain.handle('get-backups-list', async event => {
 ipcMain.handle('create-manual-backup', async (event) => {
   try {
     const session = requireSession(event, ['admin', 'technician']);
-    const result = await performAutoBackup();
+    const result = await performAutoBackup({ force: true });
     if (result.ok) writeAudit('backup.create', session.user, { file: path.basename(result.file) });
     return result;
   } catch (err) { return { ok: false, error: err.message }; }
@@ -1373,43 +1479,63 @@ ipcMain.handle('restore-backup', async (event, backupFilePath) => {
     const resolvedBackup = path.resolve(backupFilePath);
     const backupDir = path.resolve(getConfiguredBackupDir());
     if (!(resolvedBackup.startsWith(backupDir + path.sep)) || !fs.existsSync(resolvedBackup)) return { ok: false, error: 'Yedek dosyası bulunamadı veya izin verilen klasörde değil.' };
-    if (fs.statSync(resolvedBackup).size > 50 * 1024 * 1024) throw new Error('Yedek dosyası boyut sınırını aşıyor.');
+    if (fs.statSync(resolvedBackup).size > 300 * 1024 * 1024) throw new Error('Yedek dosyası boyut sırını aşıyor.');
     const content = fs.readFileSync(resolvedBackup, 'utf8');
     const snapshot = JSON.parse(content);
-    if (!snapshot || !snapshot.data) return { ok: false, error: 'Geçersiz yedek dosyası formatı.' };
-
-    const entries = Object.entries(snapshot.data);
-    if (entries.length > 100) throw new Error('Yedek çok fazla dosya içeriyor.');
-    for (const [fileName, fileData] of entries) {
-      if (path.basename(fileName) !== fileName || !fileName.endsWith('.json')) throw new Error(`Geçersiz yedek girdisi: ${fileName}`);
-      if (Buffer.byteLength(String(fileData), 'utf8') > 10 * 1024 * 1024) throw new Error(`Yedek girdisi çok büyük: ${fileName}`);
-      JSON.parse(String(fileData));
-      if (snapshot.schemaVersion >= 2) {
-        const expected = snapshot.checksums?.[fileName];
-        const actual = crypto.createHash('sha256').update(String(fileData)).digest('hex');
-        if (!expected || expected !== actual) throw new Error(`Yedek bütünlük doğrulaması başarısız: ${fileName}`);
-      }
-    }
-    await performAutoBackup();
+    const { entries, database } = validateBackupSnapshot(snapshot);
+    await performAutoBackup({ force: true });
     const previous = new Map(entries.map(([fileName]) => {
       const target = path.join(WRITABLE_DATA_DIR, fileName);
       return [fileName, fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : null];
     }));
+    const restoreId = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+    const stageDir = path.join(ALLOWED_DATA_DIR, 'restore-staging', restoreId);
+    const rollbackDir = path.join(stageDir, 'rollback');
+    const journalPath = path.join(ALLOWED_DATA_DIR, 'restore-journal.json');
+    fs.mkdirSync(rollbackDir, { recursive: true });
+    for (const [fileName, fileData] of entries) fs.writeFileSync(path.join(stageDir, fileName), fileData, 'utf8');
+    if (database) fs.writeFileSync(path.join(stageDir, 'fanuc-pro-suite.db'), database);
+    fs.writeFileSync(journalPath, JSON.stringify({ restoreId, backup: path.basename(resolvedBackup), state: 'prepared', files: entries.map(([name]) => name), preExisting: Object.fromEntries([...previous].map(([name, value]) => [name, value !== null])), database: Boolean(database), createdAt: new Date().toISOString() }, null, 2), 'utf8');
+    let storeClosed = false;
     try {
-      for (const [fileName, fileData] of entries) {
-        if (dataStore && fileName !== 'users.json') dataStore.writeDocument(fileName, String(fileData));
-        else fs.writeFileSync(path.join(WRITABLE_DATA_DIR, fileName), String(fileData), 'utf8');
+      if (database) {
+        dataStore.close();
+        storeClosed = true;
+        if (fs.existsSync(DATASTORE_DB_FILE)) fs.copyFileSync(DATASTORE_DB_FILE, path.join(rollbackDir, 'fanuc-pro-suite.db'));
+        fs.copyFileSync(path.join(stageDir, 'fanuc-pro-suite.db'), `${DATASTORE_DB_FILE}.restore.tmp`);
+        fs.renameSync(`${DATASTORE_DB_FILE}.restore.tmp`, DATASTORE_DB_FILE);
       }
+      for (const [fileName, fileData] of entries) {
+        const target = path.join(WRITABLE_DATA_DIR, fileName);
+        if (fs.existsSync(target)) fs.copyFileSync(target, path.join(rollbackDir, fileName));
+        fs.copyFileSync(path.join(stageDir, fileName), `${target}.restore.tmp`);
+        fs.renameSync(`${target}.restore.tmp`, target);
+        if (!database) dataStore.writeDocument(fileName, fileData);
+      }
+      if (storeClosed) {
+        dataStore = new DataStore(DATASTORE_DB_FILE, WRITABLE_DATA_DIR);
+        storeClosed = false;
+      }
+      fs.writeFileSync(journalPath, JSON.stringify({ restoreId, state: 'committed', committedAt: new Date().toISOString() }), 'utf8');
     } catch (restoreError) {
       for (const [fileName, prior] of previous) {
-        if (prior === null) continue;
-        if (dataStore && fileName !== 'users.json') dataStore.writeDocument(fileName, prior);
-        else fs.writeFileSync(path.join(WRITABLE_DATA_DIR, fileName), prior, 'utf8');
+        const target = path.join(WRITABLE_DATA_DIR, fileName);
+        if (prior === null) {
+          if (fs.existsSync(target)) fs.unlinkSync(target);
+        } else {
+          fs.writeFileSync(target, prior, 'utf8');
+        }
       }
+      if (database && fs.existsSync(path.join(rollbackDir, 'fanuc-pro-suite.db'))) fs.copyFileSync(path.join(rollbackDir, 'fanuc-pro-suite.db'), DATASTORE_DB_FILE);
+      if (storeClosed) dataStore = new DataStore(DATASTORE_DB_FILE, WRITABLE_DATA_DIR);
       throw new Error(`Geri yükleme geri alındı: ${restoreError.message}`);
+    } finally {
+      if (fs.existsSync(journalPath)) fs.unlinkSync(journalPath);
+      fs.rmSync(stageDir, { recursive: true, force: true });
     }
     writeAudit('backup.restore', session.user, { backup: path.basename(resolvedBackup) });
-    return { ok: true };
+    sessions.clear();
+    return { ok: true, requiresRelogin: true, message: 'Geri yükleme tamamlandı. Güvenlik için yeniden giriş yapın.' };
   } catch (err) {
     return { ok: false, error: err.message };
   }
