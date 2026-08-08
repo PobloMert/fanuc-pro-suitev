@@ -126,10 +126,57 @@
 
     startAutoPolling();
 
+    async function pullDirectFromGoogleDrive(silent = false) {
+      if (!syncConfig.webAppUrl) return false;
+      try {
+        if (!silent && typeof showToast === 'function') {
+          showToast('☁️ Google Drive\'dan en son veriler indiriliyor...', 'info');
+        }
+
+        let res;
+        if (window.electronAPI && window.electronAPI.fetchProxy) {
+          res = await window.electronAPI.fetchProxy(syncConfig.webAppUrl + '?action=get', { method: 'GET' });
+        } else if (window.fetch) {
+          const response = await fetch(syncConfig.webAppUrl + '?action=get');
+          res = { ok: response.ok, data: await response.text() };
+        }
+
+        if (res && res.ok && res.data) {
+          try {
+            const bundle = JSON.parse(res.data);
+            if (bundle && bundle.machines) {
+              if (bundle.machines) State.machines = bundle.machines;
+              if (bundle.maintenances) State.maintenances = bundle.maintenances;
+              if (bundle.batteries) State.batteries = bundle.batteries;
+              if (bundle.fans) State.fans = bundle.fans;
+              if (bundle.backup_logs) State.backup_logs = bundle.backup_logs;
+
+              if (typeof saveMachines === 'function') await saveMachines();
+              if (typeof saveMaintenances === 'function') await saveMaintenances();
+              if (typeof saveBatteries === 'function') await saveBatteries();
+              if (typeof saveFans === 'function') await saveFans();
+
+              if (!silent && typeof showToast === 'function') {
+                showToast('☁️ Google Drive\'daki güncel veriler başarıyla indirildi ve yüklendi! ✓', 'success');
+              }
+              if (window.navigate) window.navigate('dashboard');
+              return true;
+            }
+          } catch (pErr) {
+            console.log('Direct pull parse note:', pErr);
+          }
+        }
+      } catch (err) {
+        console.error('Pull from Google Drive failed:', err);
+      }
+      return false;
+    }
+
     return {
       getSyncStatus,
       syncNow,
       autoWriteBackupPackage,
+      pullDirectFromGoogleDrive,
       startAutoPolling
     };
   }

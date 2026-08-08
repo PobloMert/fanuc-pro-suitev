@@ -29,7 +29,7 @@
     showFocasScannerModal runFocasScanner saveDiscoveredMachine exportScannerResultsCSV autoCreateMachineFromScan
     runOfflineRootCauseAnalysis selectOfflinePreset printOfflineDiagnosticPDF
     runKeepRelayDiffComparison loadDefaultKeepRelayDiff exportKeepRelayDiffPDF exportKeepRelayDiffCSV filterKeepRelayDiffRows filterKeepRelayDiffMode uploadKeepRelayFile clearKeepRelayInput
-    triggerCloudSyncNow exportFullCloudBundle importFullCloudBundle
+    triggerCloudSyncNow exportFullCloudBundle importFullCloudBundle pullDirectFromGoogleDrive
   `.trim().split(/\s+/));
 
   function splitTopLevel(source, separator) {

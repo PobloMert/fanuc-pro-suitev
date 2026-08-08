@@ -1317,9 +1317,10 @@ function renderSettings() {
             <span id="cloud-sync-status-badge" class="tag tag-green" style="font-size:11px;">🟢 Webhook Bulut Yükleme Aktif</span>
           </div>
           <div class="flex gap-2" style="flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm" onclick="triggerCloudSyncNow()">⚡ Şimdi Senkronize Et & Drive'a Yükle</button>
-            <button class="btn btn-secondary btn-sm" onclick="exportFullCloudBundle()">📥 Yerel Yedek Dosyası Üret</button>
-            <button class="btn btn-secondary btn-sm" onclick="importFullCloudBundle()">📤 Yedeği İçe Aktar</button>
+            <button class="btn btn-primary btn-sm" onclick="triggerCloudSyncNow()">⚡ Drive'a Yükle (Gönder)</button>
+            <button class="btn btn-secondary btn-sm" onclick="pullDirectFromGoogleDrive()">☁️ Drive'dan İndir & Güncelle (Çek)</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportFullCloudBundle()">📥 Bilgisayara İndir</button>
+            <button class="btn btn-ghost btn-sm" onclick="importFullCloudBundle()">📤 Bilgisayardan Yükle</button>
           </div>
         </div>
         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
@@ -3581,6 +3582,17 @@ window.importFullCloudBundle = async function() {
   } catch (err) {
     showToast(`İçe aktarma hatası: ${err.message}`, 'error');
   }
+};
+
+window.pullDirectFromGoogleDrive = async function() {
+  if (window.MTBCloudSync) {
+    const syncEngine = window.MTBCloudSync.initCloudSync({ State, showToast });
+    if (syncEngine.pullDirectFromGoogleDrive) {
+      await syncEngine.pullDirectFromGoogleDrive(false);
+      return;
+    }
+  }
+  showToast('☁️ Google Drive ile canlı veri çekme başlatıldı...', 'info');
 };
 
 // ════════════════════════════════════════════════════════════════
