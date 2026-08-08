@@ -1,0 +1,25 @@
+{
+  "pmc_timers": [
+    {
+      "id": "T001",
+      "name": "Lubrication Interval Timer",
+      "type": "Timer",
+      "description": "Otomatik kızak yağlama ünitesinin çalışma periyodunu belirler (saniye cinsinden).",
+      "note": "Varsayılan değer: 1800 saniye (30 dakika)."
+    },
+    {
+      "id": "T002",
+      "name": "Spindle Lubrication Delay",
+      "type": "Timer",
+      "description": "Fener mili rulman yağlama havası gecikme süresi.",
+      "note": "Mil durduktan sonra yağlama havasının ne kadar süreyle açık kalacağını kontrol eder."
+    },
+    {
+      "id": "T003",
+      "name": "Chip Conveyor Run Duration",
+      "type": "Timer",
+      "description": "Konveyörün periyodik modda ne kadar süre (saniye) çalışacağını ayarlar.",
+      "note": "Varsayılan değer: 300 saniye."
+    }
+  ]
+}

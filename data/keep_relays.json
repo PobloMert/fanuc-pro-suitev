@@ -29,6 +29,48 @@
       "note": "Pompa kuru çalıştırılmamalıdır."
     },
     {
+      "id": "K00.4",
+      "name": "Automatic Power Off Function",
+      "type": "Keep Relay",
+      "description": "M30 / M02 program sonu komutu ile tezgah ana şalterini otomatik kapatma fonksiyonunu etkinleştirir.",
+      "note": "1 = Otomatik kapanma aktif, 0 = Devre dışı."
+    },
+    {
+      "id": "K00.5",
+      "name": "Lube Alarm Hold Mode",
+      "type": "Keep Relay",
+      "description": "Otomatik yağlama seviyesi düştüğünde program yürütmesini durdurma (Feed Hold) modunu ayarlar.",
+      "note": "1 = Anında durdur, 0 = Blok sonunda uyar."
+    },
+    {
+      "id": "K00.6",
+      "name": "Air Blow Interlock Bypass",
+      "type": "Keep Relay",
+      "description": "Hassas talaş üfleme havası kilit kontrolünü devre dışı bırakır.",
+      "note": "Pnömatik arızalarda geçici kullanılır."
+    },
+    {
+      "id": "K00.7",
+      "name": "PMC Ladder Write Protect",
+      "type": "Keep Relay",
+      "description": "PMC merdiven diyagramı parametre ve timer değişikliklerini yazma korumasına alır.",
+      "note": "1 = Korumalı, 0 = Değiştirilebilir."
+    },
+    {
+      "id": "K01.0",
+      "name": "Robot Interface Enable",
+      "type": "Keep Relay",
+      "description": "Otomatik yükleme robotu / palet değiştirici (APC) iletişim arayüzünü etkinleştirir.",
+      "note": "Robotlu otomasyon hatlarında 1 yapılır."
+    },
+    {
+      "id": "K01.1",
+      "name": "High-Pressure Coolant Selection",
+      "type": "Keep Relay",
+      "description": "Takım içi yüksek basınçlı soğutma sıvısı (CTS 20/70 Bar) pompasını seçer.",
+      "note": "1 = Yüksek basınç aktif, 0 = Standart basınç."
+    },
+    {
       "id": "K01.2",
       "name": "Tailstock Interlock Bypass",
       "type": "Keep Relay",
@@ -36,25 +78,67 @@
       "note": "Kısa parça işlerken açılması gerekir."
     },
     {
-      "id": "T001",
-      "name": "Lubrication Interval Timer",
-      "type": "Timer",
-      "description": "Otomatik kızak yağlama ünitesinin çalışma periyodunu belirler (saniye cinsinden).",
-      "note": "Varsayılan değer: 1800 saniye (30 dakika)."
+      "id": "K01.3",
+      "name": "Spindle Orientation Check Mode",
+      "type": "Keep Relay",
+      "description": "Fener mili oryantasyon kilit kontrolünü hassas moda geçirir.",
+      "note": "Takım değiştirme arızalarında denetlenmelidir."
     },
     {
-      "id": "T002",
-      "name": "Spindle Lubrication Delay",
-      "type": "Timer",
-      "description": "Fener mili rulman yağlama havası gecikme süresi.",
-      "note": "Mil durduktan sonra yağlama havasının ne kadar süreyle açık kalacağını kontrol eder."
+      "id": "K01.4",
+      "name": "Auto Door Open at M30",
+      "type": "Keep Relay",
+      "description": "Program sonunda (M30) koruyucu otomatik kapının açılmasını sağlar.",
+      "note": "1 = Otomatik aç, 0 = Manuel butonla aç."
     },
     {
-      "id": "T003",
-      "name": "Chip Conveyor Run Duration",
-      "type": "Timer",
-      "description": "Konveyörün periyodik modda ne kadar süre (saniye) çalışacağını ayarlar.",
-      "note": "Varsayılan değer: 300 saniye."
+      "id": "K01.5",
+      "name": "Workpiece Counter Auto Increment",
+      "type": "Keep Relay",
+      "description": "M30 okunduğunda tezgah parça sayacını otomatik 1 arttırır.",
+      "note": "1 = Otomatik sayaç, 0 = Manuel sayaç."
+    },
+    {
+      "id": "K01.6",
+      "name": "Tool Setter Measurement Mode",
+      "type": "Keep Relay",
+      "description": "Otomatik takım sıfırlama probu (Renishaw/Marposs) ölçüm modunu etkinleştirir.",
+      "note": "1 = Prob ölçümü aktif."
+    },
+    {
+      "id": "K01.7",
+      "name": "Axis Brake Lock Test Mode",
+      "type": "Keep Relay",
+      "description": "Dikey Z ekseni motor tutma freni test ve servis modunu ayarlar.",
+      "note": "Servis ve bakım esnasında denetlenmelidir."
+    },
+    {
+      "id": "K02.0",
+      "name": "Spindle Load Guard Level 1",
+      "type": "Keep Relay",
+      "description": "Fener mili aşırı yük koruması seviye 1 uyarısını etkinleştirir.",
+      "note": "1 = Uyarı mesajı ver, 0 = İptal."
+    },
+    {
+      "id": "K02.1",
+      "name": "Spindle Load Guard Level 2",
+      "type": "Keep Relay",
+      "description": "Fener mili aşırı yük koruması seviye 2 eksen durdurmasını etkinleştirir.",
+      "note": "1 = Eksen hareketi durdurulur."
+    },
+    {
+      "id": "K02.2",
+      "name": "Axis Lubrication Cycle Selection",
+      "type": "Keep Relay",
+      "description": "Eksen vidalı mil ve kızak yağlama periyodunu sürekli veya fasılalı moda geçirir.",
+      "note": "1 = Fasılalı periyodik yağlama."
+    },
+    {
+      "id": "K02.3",
+      "name": "Chuck Clamping Detection Mode",
+      "type": "Keep Relay",
+      "description": "Ayna sıkma basınç şalteri onay kontrolünü içten/dıştan sıkma olarak ayarlar.",
+      "note": "1 = Dıştan sıkma, 0 = İçten sıkma."
     }
   ]
 }

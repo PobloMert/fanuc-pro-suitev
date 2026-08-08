@@ -5,7 +5,7 @@
       "category": "axis",
       "name": "SEQ - Auto Sequence Number",
       "description": "Toggles automatic generation of sequence numbers (N-codes) when writing a program on the CNC.",
-      "dataType": "word",
+      "dataType": "bit",
       "range": "—",
       "default": "—"
     },
@@ -14,7 +14,7 @@
       "category": "axis",
       "name": "MIR - Mirror Image",
       "description": "Bit-parameter to activate mirror imaging for each axis (0 = Normal, 1 = Mirror image enabled).",
-      "dataType": "word",
+      "dataType": "bit",
       "range": "—",
       "default": "—"
     },
@@ -30,8 +30,8 @@
     {
       "no": 1002,
       "category": "axis",
-      "name": "JAX - Axis Type Designation",
-      "description": "Configures whether each logical axis is designated as a linear motion axis or rotary axis.",
+      "name": "JAX - Simultaneous Axis Control",
+      "description": "JOG ve Manuel modda aynı anda birden fazla eksenin hareket ettirilip ettirilemeyeceğini belirler (0: 1 Eksen, 1: Çoklu Eksen).",
       "dataType": "bit",
       "range": "—",
       "default": "—"
@@ -89,7 +89,7 @@
       "category": "axis",
       "name": "ZRN - Ref Position Setting",
       "description": "Dictates zero return behavior (e.g., whether manual home return is permitted without moving away first).",
-      "dataType": "word",
+      "dataType": "bit",
       "range": "—",
       "default": "—"
     },
@@ -118,7 +118,7 @@
       "category": "feed",
       "name": "JGD - Jog Feedrate Unit",
       "description": "Sets feedrate unit during manual jog: 0 = Feedrate per minute (mm/min), 1 = Feedrate per revolution (mm/rev).",
-      "dataType": "word",
+      "dataType": "bit",
       "range": "—",
       "default": "—"
     },
@@ -253,11 +253,21 @@
       "default": "1000"
     },
     {
+      "no": 1851,
+      "category": "axis",
+      "name": "BACKLASH COMPENSATION AMOUNT",
+      "description": "Eksen mekanik vidalı mil ve kaplin boşluk (Backlash) telafi miktarı.",
+      "dataType": "word",
+      "range": "-9999 to 9999",
+      "default": "0",
+      "note": "Birim: 0.001 mm. Komut yön değiştirdiğinde boşluk kadar ekstra puls verilir."
+    },
+    {
       "no": 2000,
       "category": "axis",
       "name": "SV_PRM - Servo Parameter Init",
       "description": "Initializing bit for servo parameters. Used to load default motor database values into the control.",
-      "dataType": "word",
+      "dataType": "bit",
       "range": "—",
       "default": "—"
     },
@@ -313,7 +323,7 @@
       "category": "display",
       "name": "KEY_PROT - Memory Protect Key Logic",
       "description": "Determines how the hardware Write Protect Key interacts with program storage (enabling/disabling edit mode).",
-      "dataType": "word",
+      "dataType": "bit",
       "range": "—",
       "default": "—"
     },
@@ -336,6 +346,33 @@
       "range": "0–24000",
       "default": "2000",
       "note": "Birim: RPM"
+    },
+    {
+      "no": 4001,
+      "category": "spindle",
+      "name": "SPINDLE CONTROL PARAMETER 1",
+      "description": "Spindle sensör tipi ve haberleşme bağlantı parametresi (Bit 4 GSM: 0=1:1 Direkt, 1=Dişli/Kayış).",
+      "dataType": "bit",
+      "range": "Bit",
+      "default": "0"
+    },
+    {
+      "no": 4002,
+      "category": "spindle",
+      "name": "SPINDLE GEAR RATIO NUMERATOR (GEAR 1)",
+      "description": "Spindle motor ile spindle mili arasındaki 1. dişli kademesi diş oranı payı (Motor Dişli Sayısı / Pals Değeri).",
+      "dataType": "word",
+      "range": "1 to 32767",
+      "default": "1000"
+    },
+    {
+      "no": 4003,
+      "category": "spindle",
+      "name": "SPINDLE GEAR RATIO DENOMINATOR (GEAR 1)",
+      "description": "Spindle motor ile spindle mili arasındaki 1. dişli kademesi diş oranı paydası (Spindle Mil Dişli Sayısı / Pals Değeri).",
+      "dataType": "word",
+      "range": "1 to 32767",
+      "default": "1000"
     },
     {
       "no": 4082,

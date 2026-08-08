@@ -467,8 +467,8 @@ window.switchParamTab = function(tab, page = document) {
               <code>1</code> yapıldığında, operatörün G54-G59 sayfasına veri yazması engellenir (İş sıfırı kilidi). Yazmak için <code>0</code> yapılmalıdır.
             </div>
             <div>
-              <strong style="color:var(--text-accent)">• Parameter 3202 #0 (NE9):</strong><br>
-              <code>1</code> olduğunda, O9000-O9999 aralığındaki imalatçı özel makro programları koruma altındadır (Düzenlenemez/Silinemez). Düzenleme yapmak veya yedeklemek için <code>0</code> yapılmalıdır.
+              <strong style="color:var(--text-accent)">• Parameter 3202 #4 (NE9):</strong><br>
+              <code>1</code> olduğunda, O9000-O9999 aralığındaki imalatçı özel makro programları koruma altındadır (Düzenlenemez/Silinemez). Düzenleme yapmak veya yedeklemek için <code>0</code> yapılmalıdır. (Not: Bit 0 (NE8) ise O8000-O8999 makrolarını korur).
             </div>
           </div>
         </div>
