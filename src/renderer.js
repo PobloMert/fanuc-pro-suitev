@@ -3530,6 +3530,7 @@ window.triggerCloudSyncNow = async function() {
 };
 
 window.exportFullCloudBundle = async function() {
+  showToast('💡 İPUCU: Açılan kaydetme penceresinde sol menüden Google Drive klasörünüzü seçin.', 'info');
   const bundle = {
     schemaVersion: "1.4.1",
     exportDate: new Date().toISOString(),
