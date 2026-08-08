@@ -1316,8 +1316,10 @@ function renderSettings() {
             <span>☁️ Google Drive Bulut Veri Senkronizasyonu</span>
             <span id="cloud-sync-status-badge" class="tag tag-green" style="font-size:11px;">🟢 Servis Hesabı Aktif</span>
           </div>
-          <div class="flex gap-2">
-            <button class="btn btn-primary btn-sm" onclick="triggerCloudSyncNow()">⚡ Şimdi Senkronize Et</button>
+          <div class="flex gap-2" style="flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="exportFullCloudBundle()">📥 Drive Klasörüne Yedekle</button>
+            <button class="btn btn-secondary btn-sm" onclick="importFullCloudBundle()">📤 Drive Yedeği İçe Aktar</button>
+            <button class="btn btn-ghost btn-sm" onclick="triggerCloudSyncNow()">⚡ Şimdi Senkronize Et</button>
           </div>
         </div>
         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
@@ -3524,6 +3526,59 @@ window.triggerCloudSyncNow = async function() {
     await syncEngine.syncNow(false);
   } else {
     showToast('☁️ Google Drive bulut senkronizasyonu başlatıldı ✓', 'success');
+  }
+};
+
+window.exportFullCloudBundle = async function() {
+  const bundle = {
+    schemaVersion: "1.4.1",
+    exportDate: new Date().toISOString(),
+    googleDriveFolderId: "1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK",
+    machines: State.machines || [],
+    maintenances: State.maintenances || [],
+    batteries: State.batteries || [],
+    fans: State.fans || [],
+    backup_logs: State.backup_logs || [],
+    custom_notes: State.custom_notes || [],
+    keep_relays: State.keep_relays || []
+  };
+
+  const defaultName = `FANUC_DATABASE_SYNC_${new Date().toISOString().slice(0,10)}.json`;
+  const target = await window.electronAPI.saveFileDialog([{ name: 'Google Drive Yedek Dosyası', extensions: ['json'] }], defaultName);
+  if (!target) return;
+
+  const res = await window.electronAPI.writeFile(target, JSON.stringify(bundle, null, 2));
+  if (res?.ok) {
+    showToast('☁️ Tüm veritabanı yedeği Google Drive klasörüne aktarıldı ✓', 'success');
+  } else {
+    showToast(`Yedekleme hatası: ${res?.error}`, 'error');
+  }
+};
+
+window.importFullCloudBundle = async function() {
+  const source = await window.electronAPI.openFileDialog([{ name: 'Google Drive Yedek Dosyası', extensions: ['json'] }]);
+  if (!source) return;
+
+  const result = await window.electronAPI.readFile(source);
+  try {
+    const bundle = JSON.parse(result.data);
+    if (!bundle.machines) throw new Error('Geçersiz veritabanı yedeği.');
+
+    if (bundle.machines) State.machines = bundle.machines;
+    if (bundle.maintenances) State.maintenances = bundle.maintenances;
+    if (bundle.batteries) State.batteries = bundle.batteries;
+    if (bundle.fans) State.fans = bundle.fans;
+    if (bundle.backup_logs) State.backup_logs = bundle.backup_logs;
+
+    await saveMachines();
+    await saveMaintenances();
+    await saveBatteries();
+    await saveFans();
+
+    showToast('☁️ Google Drive yedeği başarıyla içe aktarıldı ve eşitlendi! ✓', 'success');
+    navigate('dashboard');
+  } catch (err) {
+    showToast(`İçe aktarma hatası: ${err.message}`, 'error');
   }
 };
 
