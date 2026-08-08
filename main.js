@@ -1191,36 +1191,81 @@ ipcMain.handle('scan-focas-network', async (event, options = {}) => {
       }
     }
 
-    // Probe IP asynchronously
-    const probeIp = (ip) => new Promise((resolve) => {
-      const socket = new net.Socket();
-      let status = false;
+    // Multi-port probing list (FOCAS: 8193, 8192, 8194 | FTP: 21 | MTConnect: 5000, 8080)
+    const scanPorts = Array.isArray(options.ports) && options.ports.length > 0
+      ? options.ports.map(p => parseInt(p)).filter(Boolean)
+      : [parseInt(options.port) || 8193, 21, 5000];
 
-      socket.setTimeout(timeoutMs);
-      socket.on('connect', () => {
-        status = true;
-        socket.destroy();
-      });
-      socket.on('timeout', () => {
-        socket.destroy();
-      });
-      socket.on('error', () => {
-        socket.destroy();
-      });
-      socket.on('close', () => {
-        resolve({ ip, port, open: status });
-      });
+    // Probe IP & Ports with high-precision latency measurement
+    const probeIpAndPorts = (ip) => new Promise(async (resolve) => {
+      const openPorts = [];
+      let minLatency = 999;
 
-      socket.connect(port, ip);
+      for (const p of scanPorts) {
+        await new Promise((pResolve) => {
+          const socket = new net.Socket();
+          const startNs = process.hrtime.bigint();
+          let status = false;
+
+          socket.setTimeout(timeoutMs);
+          socket.on('connect', () => {
+            const durationMs = Number(process.hrtime.bigint() - startNs) / 1e6;
+            if (durationMs < minLatency) minLatency = durationMs;
+            status = true;
+            socket.destroy();
+          });
+          socket.on('timeout', () => socket.destroy());
+          socket.on('error', () => socket.destroy());
+          socket.on('close', () => {
+            if (status) openPorts.push(p);
+            pResolve();
+          });
+
+          socket.connect(p, ip);
+        });
+      }
+
+      if (openPorts.length > 0) {
+        const roundedLatency = Math.round(minLatency * 10) / 10;
+        let quality = 'excellent';
+        let qualityLabel = '🟢 Mükemmel Hat Kalitesi';
+        if (roundedLatency > 30) {
+          quality = 'poor';
+          qualityLabel = '🔴 Yüksek Gecikme / Zayıf Ağ';
+        } else if (roundedLatency > 5) {
+          quality = 'good';
+          qualityLabel = '🟡 Kabul Edilebilir';
+        }
+
+        const hasFocas = openPorts.some(p => [8193, 8192, 8194].includes(p));
+        const hasFtp = openPorts.includes(21);
+        const hasMTConnect = openPorts.some(p => [5000, 8080].includes(p));
+
+        resolve({
+          ip,
+          openPorts,
+          latencyMs: roundedLatency,
+          quality,
+          qualityLabel,
+          cncModel: hasFocas ? 'FANUC Series 0i-MF / 31i' : (hasFtp ? 'FANUC Ethernet Node' : 'CNC Ağ Cihazı'),
+          services: {
+            focas: hasFocas,
+            ftp: hasFtp,
+            mtconnect: hasMTConnect
+          }
+        });
+      } else {
+        resolve(null);
+      }
     });
 
     const results = [];
-    const BATCH_SIZE = 40;
+    const BATCH_SIZE = 35;
     for (let i = 0; i < targetIps.length; i += BATCH_SIZE) {
       const batch = targetIps.slice(i, i + BATCH_SIZE);
-      const batchResults = await Promise.all(batch.map(ip => probeIp(ip)));
+      const batchResults = await Promise.all(batch.map(ip => probeIpAndPorts(ip)));
       for (const res of batchResults) {
-        if (res.open) results.push(res);
+        if (res) results.push(res);
       }
     }
 

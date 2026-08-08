@@ -6851,6 +6851,8 @@ window.onCncScreenMachineChange = function() {
 };
 
 // ── FANUC Network Scanner & Machine Matcher ────────────────────────
+let lastScannerResults = [];
+
 window.showFocasScannerModal = async function() {
   const content = `
     <div class="modal-header">
@@ -6862,9 +6864,9 @@ window.showFocasScannerModal = async function() {
     </div>
     <div class="modal-body" style="display:flex; flex-direction:column; gap:14px; font-size:12px;">
       <div style="background:var(--bg-card2); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border);">
-        <div style="font-weight:700; color:var(--text-primary); margin-bottom:4px;">🔍 Ağ Taraması & Subnet Bilgisi</div>
+        <div style="font-weight:700; color:var(--text-primary); margin-bottom:4px;">🔍 Gelişmiş Ağ Taraması & Çoklu Port Sorgulama</div>
         <p style="color:var(--text-secondary); margin:0; line-height:1.4;">
-          Uygulama yerel ağ kartlarını inceleyerek hedef IP bloğunu otomatik tanımlar. Farklı bir pano veya VLAN üzerinde ise aşağıdaki kutucuğa hedef subnet bilgisini girebilirsiniz.
+          Uygulama yerel ağ kartlarını ve VLAN bloklarını taraayarak FOCAS (8193), FTP (21) ve MTConnect (5000) portlarını eşzamanlı sorgular. Ağ gecikme sürelerini (latency) milisaniye cinsinden ölçer.
         </p>
       </div>
 
@@ -6873,9 +6875,9 @@ window.showFocasScannerModal = async function() {
           <label class="form-label" style="font-size:11px; font-weight:700;">Hedef Subnet / IP Bloğu:</label>
           <input type="text" id="scanner-subnet-input" class="form-control" placeholder="192.168.30.1-254 (Veya 192.168.30)" style="font-size:12px;" />
         </div>
-        <div style="width:100px;">
-          <label class="form-label" style="font-size:11px; font-weight:700;">FOCAS Port:</label>
-          <input type="number" id="scanner-port-input" class="form-control" value="8193" style="font-size:12px;" />
+        <div style="width:130px;">
+          <label class="form-label" style="font-size:11px; font-weight:700;">Sorgulanacak Portlar:</label>
+          <input type="text" id="scanner-ports-input" class="form-control" value="8193, 21, 5000" style="font-size:12px;" />
         </div>
         <button class="btn btn-primary" id="btn-run-scanner" onclick="runFocasScanner()" style="padding:7px 16px;">
           ⚡ Taramayı Başlat
@@ -6885,8 +6887,8 @@ window.showFocasScannerModal = async function() {
       <!-- Live Scan Progress -->
       <div id="scanner-progress-box" style="display:none; background:var(--bg-card2); padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--accent); color:var(--text-accent);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span style="font-weight:700;">● Tarama Yapılıyor...</span>
-          <span id="scanner-progress-status" class="font-mono">IP adresleri taranıyor...</span>
+          <span style="font-weight:700;">● Çoklu Port & Latency Taraması Yapılıyor...</span>
+          <span id="scanner-progress-status" class="font-mono">IP adresleri sorgulanıyor...</span>
         </div>
         <div style="height:4px; background:var(--border); border-radius:2px; overflow:hidden;">
           <div id="scanner-progress-bar" style="width:30%; height:100%; background:var(--accent); transition:width 0.3s;"></div>
@@ -6895,11 +6897,16 @@ window.showFocasScannerModal = async function() {
 
       <!-- Discovered Devices Section -->
       <div id="scanner-results-container" style="display:none; flex-direction:column; gap:10px; margin-top:6px;">
-        <div style="font-weight:700; color:var(--text-primary); display:flex; justify-content:space-between; align-items:center;">
-          <span>🟢 Bulunan CNC Cihazları ve Eşleştirmeler</span>
-          <span id="scanner-count-badge" class="tag tag-green">0 Cihaz</span>
+        <div style="font-weight:700; color:var(--text-primary); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span>🟢 Bulunan CNC Cihazları, Latency & Servis Haritası</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="exportScannerResultsCSV()" style="font-size:11px; padding:3px 10px;">
+              📥 Ağ Haritasını CSV İndir
+            </button>
+            <span id="scanner-count-badge" class="tag tag-green">0 Cihaz</span>
+          </div>
         </div>
-        <div id="scanner-results-list" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px;"></div>
+        <div id="scanner-results-list" style="max-height:340px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px;"></div>
       </div>
     </div>
   `;
@@ -6918,7 +6925,8 @@ window.showFocasScannerModal = async function() {
 
 window.runFocasScanner = async function() {
   const subnetInput = document.getElementById('scanner-subnet-input')?.value.trim() || '';
-  const portInput = parseInt(document.getElementById('scanner-port-input')?.value) || 8193;
+  const portsRaw = document.getElementById('scanner-ports-input')?.value || '8193, 21, 5000';
+  const parsedPorts = portsRaw.split(',').map(p => parseInt(p.trim())).filter(Boolean);
   const btn = document.getElementById('btn-run-scanner');
   const progressBox = document.getElementById('scanner-progress-box');
   const progressBar = document.getElementById('scanner-progress-bar');
@@ -6930,12 +6938,12 @@ window.runFocasScanner = async function() {
   if (btn) btn.disabled = true;
   if (progressBox) progressBox.style.display = 'block';
   if (progressBar) progressBar.style.width = '20%';
-  if (progressStatus) progressStatus.textContent = 'Paralel TCP port taraması başlatılıyor...';
+  if (progressStatus) progressStatus.textContent = 'Paralel TCP port ve latency sorgusu başlatılıyor...';
 
   try {
     const response = await window.electronAPI.scanFocasNetwork({
       subnet: subnetInput,
-      port: portInput,
+      ports: parsedPorts,
       timeoutMs: 350
     });
 
@@ -6953,6 +6961,7 @@ window.runFocasScanner = async function() {
     }
 
     const devices = response.foundDevices || [];
+    lastScannerResults = devices;
     if (resultsContainer) resultsContainer.style.display = 'flex';
     if (countBadge) countBadge.textContent = `${devices.length} Cihaz Bulundu`;
 
@@ -6960,8 +6969,8 @@ window.runFocasScanner = async function() {
       if (resultsList) {
         resultsList.innerHTML = `
           <div style="text-align:center; padding:20px; color:var(--text-muted); background:var(--bg-card2); border-radius:var(--radius-md);">
-            🔍 Taranan IP bloğunda 8193 portu açık bir FANUC CNC cihazı bulunamadı.<br>
-            <small style="color:var(--text-secondary); display:block; margin-top:4px;">Lütfen tezgâh panosundaki Ethernet kablosunun takılı ve FOCAS2 fonksiyonunun aktif olduğunu kontrol edin.</small>
+            🔍 Taranan IP bloğunda belirtilen portları (8193, 21, 5000) açık cihaz bulunamadı.<br>
+            <small style="color:var(--text-secondary); display:block; margin-top:4px;">Lütfen tezgâh panosundaki Ethernet kablosunun takılı ve FOCAS2 / FTP servislerinin aktif olduğunu kontrol edin.</small>
           </div>
         `;
       }
@@ -6969,14 +6978,13 @@ window.runFocasScanner = async function() {
       return;
     }
 
-    // Render discovered devices with automatic matching against State.machines
+    // Render discovered devices with latency quality badges and multi-port indicators
     const sortedMachines = [...State.machines].sort((a, b) => {
       return String(a.numarasi || '').localeCompare(String(b.numarasi || ''), 'tr-TR', { numeric: true, sensitivity: 'base' });
     });
 
     if (resultsList) {
       resultsList.innerHTML = devices.map((dev, idx) => {
-        // Try matching IP with existing machines
         const matched = sortedMachines.find(m => m.ip === dev.ip);
         const matchLabel = matched ? `🟢 Tanımlı Tezgah: ${escapeHTML(matched.numarasi)}` : '⚠️ Yeni Cihaz (Tanımsız IP)';
 
@@ -6984,23 +6992,44 @@ window.runFocasScanner = async function() {
           <option value="${m.id}" ${matched && matched.id === m.id ? 'selected' : ''}>${escapeHTML(m.numarasi)} (${escapeHTML(m.tip || 'CNC')})</option>
         `).join('');
 
+        // Latency badge formatting
+        let latTagClass = 'tag-green';
+        if (dev.quality === 'poor') latTagClass = 'tag-red';
+        else if (dev.quality === 'good') latTagClass = 'tag-orange';
+
+        // Service badges
+        const serviceBadges = [];
+        if (dev.services?.focas) serviceBadges.push('<span class="tag tag-blue" style="font-size:10px;">FOCAS (8193)</span>');
+        if (dev.services?.ftp) serviceBadges.push('<span class="tag tag-purple" style="font-size:10px;">FTP (21)</span>');
+        if (dev.services?.mtconnect) serviceBadges.push('<span class="tag tag-teal" style="font-size:10px;">MTConnect (5000)</span>');
+        if (!serviceBadges.length) serviceBadges.push(`<span class="tag tag-gray" style="font-size:10px;">Port: ${dev.openPorts.join(', ')}</span>`);
+
         return `
           <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-            <div>
-              <div style="font-weight:750; font-size:13px; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
-                <span class="font-mono" style="color:var(--text-accent);">IP: ${dev.ip}</span>
-                <span class="tag tag-blue" style="font-size:10px;">Port ${dev.port} Açık</span>
+            <div style="flex:1; min-width:240px;">
+              <div style="font-weight:750; font-size:13px; color:var(--text-primary); display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span class="font-mono" style="color:var(--text-accent); font-size:13.5px;">IP: ${dev.ip}</span>
+                <span class="tag ${latTagClass}" style="font-size:10.5px;">⚡ ${dev.latencyMs} ms (${dev.qualityLabel})</span>
               </div>
-              <div style="font-size:11px; color:var(--text-secondary); margin-top:3px;">${matchLabel}</div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span style="font-weight:600; color:var(--text-primary);">${dev.cncModel}</span>
+                <span>•</span>
+                <span>${matchLabel}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:4px; margin-top:6px; flex-wrap:wrap;">
+                ${serviceBadges.join('')}
+              </div>
             </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <select id="scan-assign-m-${idx}" class="form-control" style="width:160px; font-size:11.5px; padding:3px 6px;">
+
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <select id="scan-assign-m-${idx}" class="form-control" style="width:150px; font-size:11.5px; padding:3px 6px;">
                 <option value="">-- Tezgâh Eşleştir --</option>
                 ${machineOptionsHtml}
               </select>
-              <button class="btn btn-secondary btn-sm" onclick="saveDiscoveredMachine('${dev.ip}', ${dev.port}, 'scan-assign-m-${idx}')" style="padding:4px 10px; font-size:11px;">
-                💾 Kaydet
+              <button class="btn btn-secondary btn-sm" onclick="saveDiscoveredMachine('${dev.ip}', ${dev.openPorts[0] || 8193}, 'scan-assign-m-${idx}')" style="padding:4px 10px; font-size:11px;">
+                💾 Eşleştir
               </button>
+              ${!matched ? `<button class="btn btn-primary btn-sm" onclick="autoCreateMachineFromScan('${dev.ip}', ${dev.openPorts[0] || 8193}, '${dev.cncModel}')" style="padding:4px 10px; font-size:11px;">✨ Yeni Tezgah Ekle</button>` : ''}
             </div>
           </div>
         `;
@@ -7032,5 +7061,44 @@ window.saveDiscoveredMachine = async function(ip, port, selectId) {
   } catch (e) {
     showToast('Kaydetme hatası: ' + e.message, 'error');
   }
+};
+
+window.autoCreateMachineFromScan = async function(ip, port, modelName) {
+  const nextNumber = `CNF ${String(State.machines.length + 1).padStart(2, '0')}`;
+  const newMachine = {
+    id: Date.now(),
+    numarasi: nextNumber,
+    ip: ip,
+    port: port || 8193,
+    tip: modelName || 'FANUC CNC',
+    model: modelName || 'Series 0i-MF',
+    durum: 'Aktif',
+    eklenmeTarihi: new Date().toISOString().slice(0, 10)
+  };
+
+  try {
+    State.machines.push(newMachine);
+    await window.electronAPI.upsertRecord('machines', newMachine.id, newMachine);
+    showToast(`✓ Yeni Tezgah ${nextNumber} (${ip}:${port}) başarıyla oluşturuldu ve kaydedildi!`, 'success');
+    runFocasScanner();
+  } catch (e) {
+    showToast('Tezgah ekleme hatası: ' + e.message, 'error');
+  }
+};
+
+window.exportScannerResultsCSV = function() {
+  if (!lastScannerResults || !lastScannerResults.length) {
+    showToast('Dışa aktarılacak tarama sonucu bulunamadı.', 'warning');
+    return;
+  }
+
+  let csv = '\uFEFFIP Adresi;Ağ Gecikmesi (ms);Hat Kalitesi;Model;Açık Portlar;FOCAS;FTP;MTConnect;Tanımlı Tezgah\n';
+  for (const dev of lastScannerResults) {
+    const matched = State.machines.find(m => m.ip === dev.ip);
+    const mName = matched ? matched.numarasi : 'Tanımsız';
+    csv += `${dev.ip};${dev.latencyMs};${dev.qualityLabel.replace(/,/, ' ')};${dev.cncModel};"${dev.openPorts.join(', ')}";${dev.services.focas ? 'EVET' : 'HAYIR'};${dev.services.ftp ? 'EVET' : 'HAYIR'};${dev.services.mtconnect ? 'EVET' : 'HAYIR'};${mName}\n`;
+  }
+
+  window.electronAPI.exportCSV(csv, `fanuc-network-scan-${new Date().toISOString().slice(0, 10)}.csv`);
 };
 
