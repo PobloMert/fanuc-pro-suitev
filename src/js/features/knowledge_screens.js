@@ -40,6 +40,43 @@ function renderLibrary() {
       </div>
     </div>
     <div class="page-body">
+      <!-- Interactive PMC Signal & Ladder Simulator -->
+      ${window.renderPmcInteractiveExplorer ? window.renderPmcInteractiveExplorer() : ''}
+
+      <!-- Hardware & Drive Replacement Field Manual Card -->
+      <div class="card glass-card mb-4" style="padding:20px;">
+        <div style="font-weight:750; font-size:15px; color:var(--text-primary); margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+          <span>🛠️ FANUC Donanım Kart Değişim & Pin Ölçüm Rehberi</span>
+          <span class="tag tag-green" style="font-size:10px;">Saha Servis Protokolü</span>
+        </div>
+        
+        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
+          Servo Sürücü (SVM), Güç Kaynağı (PSM) ve Spindle Sürücüsü (SPM) kart değişiminde soket pin eşleşmeleri ve ölçülen voltaj standartları.
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
+          <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
+            <div style="font-weight:700; font-size:12.5px; color:var(--text-accent); margin-bottom:6px;">1. SVM / PSM Kart Değişim Adımları</div>
+            <ol style="font-size:11.5px; color:var(--text-primary); margin:0; padding-left:16px; display:flex; flex-direction:column; gap:4px; line-height:1.4;">
+              <li>Tezgah ana şalterini kapatın ve DC Link voltajının 0V'a düşmesini bekleyin (yaklaşık 5-10 dk).</li>
+              <li>Sürücü ön yüzündeki klemens kapağını söküp baraları ayırın.</li>
+              <li>CXA2A / CXA2B haberleşme soket kilitlerini bastırarak çıkarın.</li>
+              <li>Yeni sürücüyü takıp vidalarını tork doğruluğunda sıkın.</li>
+            </ol>
+          </div>
+
+          <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
+            <div style="font-weight:700; font-size:12.5px; color:var(--text-accent); margin-bottom:6px;">2. Avometre Pin Ölçüm Referansları</div>
+            <ul style="font-size:11.5px; color:var(--text-primary); margin:0; padding-left:16px; display:flex; flex-direction:column; gap:4px; line-height:1.4;">
+              <li><b>CXA2A Soketi (Pin 1-2):</b> 24V DC (±0.5V) Kontrol Gerilimi.</li>
+              <li><b>DC Link Barası (L1-L2):</b> ~300V DC (Şebeke 220V AC için).</li>
+              <li><b>JF1 / JF2 Enkoder Hatları:</b> 5V DC (±0.2V) Besleme.</li>
+              <li><b>COP10A Optik Fiber:</b> Büküm yarıçapı min. 30mm olmalıdır.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <!-- Offline Knowledge Packs Card -->
       <div class="card mb-4" style="padding:16px; background:var(--bg-card2)">
         <div class="card-title mb-3" style="display:flex; align-items:center; justify-content:space-between">
