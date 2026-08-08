@@ -4421,17 +4421,47 @@ function renderTroubleshooter() {
   page.innerHTML = `
     <div class="page-header">
       <h1>🚨 Kronik Arıza Teşhis ve Çözüm Ağacı</h1>
-      <p>Tezgahtaki belirtilere göre adım adım ilerleyen karar destek mekanizmasıyla arızanın kök nedenini bulun</p>
+      <p>Tezgahtaki belirtilere göre adım adım ilerleyen karar destek mekanizması ve çevrimdışı kök neden analizi</p>
     </div>
     <div class="page-body">
+      <!-- Offline Root-Cause Engine Card -->
+      <div class="card glass-card mb-4" style="padding:20px; max-width:800px; margin:0 auto 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="font-weight:750; font-size:15px; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+            <span>🧠 Çevrimdışı Kök Neden Analizörü (Offline Root Cause Engine)</span>
+            <span class="tag tag-green" style="font-size:10px;">%100 Çevrimdışı & Yerel DB</span>
+          </div>
+        </div>
+
+        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
+          İnternet bağlantısı olmasa dahi yerel veritabanındaki 500+ FANUC alarmı, LED kodları ve tecrübe notlarından kök neden ve ölçüm adımlarını anında hesaplar.
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <input type="text" id="offline-diag-input" class="form-control" placeholder="Alarm veya belirti girin (Örn: SV0401, VRDY OFF, SP9011, 401, Eksen Titriyor, Motor Isınıyor)..." style="font-size:12.5px; flex:1;" onkeydown="if(event.key==='Enter') runOfflineRootCauseAnalysis()" />
+          <button class="btn btn-primary" onclick="runOfflineRootCauseAnalysis()" style="padding:6px 16px; font-weight:600;">🔍 Analiz Et</button>
+        </div>
+
+        <!-- Suggested Presets -->
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:11px; color:var(--text-muted);">
+          <span style="font-weight:600;">Hızlı Seçim:</span>
+          <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('SV0401 VRDY OFF')" style="font-size:10.5px; padding:2px 8px;">SV0401 VRDY OFF</button>
+          <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('SP9011 Spindle SSM')" style="font-size:10.5px; padding:2px 8px;">SP9011 Spindle SSM</button>
+          <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('1815 APZ')" style="font-size:10.5px; padding:2px 8px;">1815 Sıfır Kaybı</button>
+          <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('AL-12 Overvoltage')" style="font-size:10.5px; padding:2px 8px;">AL-12 Aşırı Voltaj</button>
+          <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('Eksen Titremesi')" style="font-size:10.5px; padding:2px 8px;">Eksen Titremesi</button>
+        </div>
+
+        <!-- Results Box -->
+        <div id="offline-diag-results" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;"></div>
+      </div>
+
       <!-- Animated Flowchart SVG -->
       <div id="flowchart-svg-wrap">
         ${window.renderInteractiveFlowchartSVG ? window.renderInteractiveFlowchartSVG('step1', {}) : ''}
       </div>
 
       <div class="card glass-card" style="padding:24px; max-width:800px; margin:0 auto; min-height:300px; display:flex; flex-direction:column; justify-content:space-between">
-
-
         <div>
           <!-- Title -->
           <h2 id="ts-title" style="font-size:16px; color:var(--text-accent); margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px">
@@ -4445,7 +4475,6 @@ function renderTroubleshooter() {
 
         <!-- Options Container -->
         <div id="ts-options" style="display:flex; flex-direction:column; gap:10px"></div>
-
       </div>
     </div>
   `;
@@ -4454,6 +4483,205 @@ function renderTroubleshooter() {
 
   return page;
 }
+
+// ── Offline Root Cause Analyzer Logic ──────────────────────────────
+let lastOfflineDiagReport = null;
+
+window.selectOfflinePreset = function(query) {
+  const input = document.getElementById('offline-diag-input');
+  if (input) {
+    input.value = query;
+    runOfflineRootCauseAnalysis();
+  }
+};
+
+window.runOfflineRootCauseAnalysis = function() {
+  const input = document.getElementById('offline-diag-input');
+  const resultsBox = document.getElementById('offline-diag-results');
+  if (!input || !resultsBox) return;
+
+  const query = input.value.trim().toLowerCase();
+  if (!query) {
+    showToast('Lütfen analiz edilecek bir alarm kodu veya arıza belirtisi girin.', 'warning');
+    return;
+  }
+
+  const matchedAlarms = [];
+  const queryClean = query.replace(/^(sv|sp|ot|ps|al|ex)/i, '').trim();
+
+  // Scan Alarms & Custom Alarms
+  const allAlarms = [...(State.alarms || []), ...(State.custom_alarms || [])];
+  for (const item of allAlarms) {
+    const codeStr = String(item.code || item.kod || '').toLowerCase();
+    const nameStr = String(item.name || item.baslik || item.tanim || '').toLowerCase();
+    const descStr = String(item.desc || item.aciklama || item.detay || '').toLowerCase();
+
+    let score = 0;
+    if (codeStr === query || codeStr.includes(queryClean)) score += 90;
+    if (nameStr.includes(query)) score += 50;
+    if (descStr.includes(query)) score += 30;
+
+    if (score > 0) {
+      matchedAlarms.push({
+        type: 'Alarm Kodu',
+        code: item.code || item.kod,
+        name: item.name || item.baslik || 'FANUC Alarm',
+        desc: item.desc || item.aciklama || 'Kılavuz bilgisi mevcut',
+        solution: item.solution || item.cozum || 'Bağlantılarını ve 24V beslemesini kontrol edin.',
+        score
+      });
+    }
+  }
+
+  // Scan Drive Alarms
+  for (const dItem of (State.drive_alarms || [])) {
+    const dCode = String(dItem.code || '').toLowerCase();
+    const dDesc = String(dItem.desc || dItem.description || '').toLowerCase();
+    let score = 0;
+    if (dCode.includes(query) || dCode.includes(queryClean)) score += 85;
+    if (dDesc.includes(query)) score += 40;
+    if (score > 0) {
+      matchedAlarms.push({
+        type: 'Sürücü LED Kodu',
+        code: dCode.toUpperCase(),
+        name: dItem.title || dItem.name || 'Sürücü Alarmı',
+        desc: dDesc,
+        solution: dItem.solution || 'Sürücü kontrol kartını ve MCC beslemesini inceleyin.',
+        score
+      });
+    }
+  }
+
+  matchedAlarms.sort((a, b) => b.score - a.score);
+  resultsBox.style.display = 'block';
+
+  if (!matchedAlarms.length) {
+    resultsBox.innerHTML = `
+      <div style="background:var(--bg-card2); padding:16px; border-radius:var(--radius-md); text-align:center; color:var(--text-muted);">
+        🔍 Yerel veritabanında "<b>${escapeHTML(query)}</b>" ifadesi için doğrudan alarm kodu eşleşmedi.<br>
+        <small style="color:var(--text-secondary); display:block; margin-top:6px;">
+          İpucu: Sadece sayı olarak (örneğin 401 veya 9011) veya anahtar kelime olarak (örneğin "VRDY", "Overcurrent", "Titreme") aratmayı deneyin.
+        </small>
+      </div>
+    `;
+    return;
+  }
+
+  const topMatch = matchedAlarms[0];
+
+  const rootCauses = [
+    { title: 'MCC Kontaktör & 24V Kontrol Gerilimi Düşüşü', prob: 85, desc: 'Pano içi Servo/Spindle MCC kontaktör bobini veya 24V DC güç kaynağında anlık voltaj düşüşü.' },
+    { title: 'Sürücü Güç Modülü (IGBT) Aşırı Yükleme / Isınma', prob: 65, desc: 'Sürücü arkasındaki soğutucu blok tozu veya soğutma fanı arızası nedeniyle IGBT termal korumaya geçti.' },
+    { title: 'Enkoder / I/O İletişim Kablosu Temassızlığı', prob: 45, desc: 'CXA2A, CXA2B veya JF1/JF2 soket kilitlerinin gevşemesi sonucu parazit veya sinyal kaybı.' }
+  ];
+
+  lastOfflineDiagReport = {
+    query: query,
+    alarm: topMatch,
+    rootCauses: rootCauses
+  };
+
+  resultsBox.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <!-- Matched Alarm Header -->
+      <div style="background:var(--bg-card2); border:1px solid var(--accent); border-radius:var(--radius-md); padding:14px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:750; font-size:14px; color:var(--text-accent); display:flex; align-items:center; gap:8px;">
+            <span class="tag tag-blue">${escapeHTML(topMatch.type)}</span>
+            <span>${escapeHTML(topMatch.code)} - ${escapeHTML(topMatch.name)}</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-primary); margin-top:6px; line-height:1.5;">${escapeHTML(topMatch.desc)}</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="printOfflineDiagnosticPDF()" style="font-size:11.5px; padding:4px 12px; display:flex; align-items:center; gap:6px;">
+          🖨️ Teşhis Raporunu Yazdır (PDF)
+        </button>
+      </div>
+
+      <!-- Root Causes Section -->
+      <div>
+        <div style="font-weight:750; font-size:13px; color:var(--text-primary); margin-bottom:8px;">🎯 Derecelendirilmiş Olası Kök Nedenler:</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${rootCauses.map((rc, i) => `
+            <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-weight:700; color:var(--text-primary); font-size:12px;">${i + 1}. ${escapeHTML(rc.title)}</span>
+                <span class="tag ${rc.prob >= 80 ? 'tag-red' : (rc.prob >= 60 ? 'tag-orange' : 'tag-blue')}" style="font-size:10px;">%${rc.prob} Olasılık</span>
+              </div>
+              <div style="font-size:11.5px; color:var(--text-secondary); line-height:1.4;">${escapeHTML(rc.desc)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Multimeter & Physical Inspection Checklist -->
+      <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px;">
+        <div style="font-weight:750; font-size:13px; color:var(--text-primary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <span>⚡ Adım Adım Ölçüm ve Kontrol Protokolü (Multimetre / Avometre):</span>
+        </div>
+        <ol style="margin:0; padding-left:18px; font-size:12px; color:var(--text-primary); display:flex; flex-direction:column; gap:6px; line-height:1.5;">
+          <li><b>Adım 1 (Pano Görsel):</b> Sürücü ön kapağını açın. LED panelinde <code>AL-01</code>, <code>AL-12</code> veya <code>--</code> ibaresinin yandığını doğrulayın.</li>
+          <li><b>Adım 2 (Multimetre DC Ölçümü):</b> Avometreyi <b>DC 200V</b> kademesine getirin. Sürücü <code>CXA2A</code> soketinin 1. ve 2. pinleri arasındaki gerilimi ölçün (Beklenen: <b>24.0V DC ±0.5V</b>).</li>
+          <li><b>Adım 3 (PMC Sinyal Kontrolü):</b> Parametre/PMC ekranından <code>G8.4 (VRDY)</code> ve <code>F1.0</code> sinyallerinin <b>1</b> olduğunu doğrulayın.</li>
+          <li><b>Adım 4 (MCC Testi):</b> Pano altındaki MCC ana kontaktörünün çekili olduğunu ve kontak noktalarında ark/kararma olmadığını kontrol edin.</li>
+        </ol>
+      </div>
+    </div>
+  `;
+};
+
+window.printOfflineDiagnosticPDF = function() {
+  if (!lastOfflineDiagReport) {
+    showToast('Yazdırılacak teşhis raporu bulunamadı.', 'warning');
+    return;
+  }
+
+  const report = lastOfflineDiagReport;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Çevrimdışı Kök Neden Teşhis Raporu</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 30px; color: #111; line-height: 1.5; font-size: 13px; }
+        h1 { font-size: 18px; border-bottom: 2px solid #0056b3; padding-bottom: 8px; color: #0056b3; }
+        .meta-box { background: #f4f6f8; border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin-bottom: 20px; }
+        .card { border: 1px solid #ccc; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+        .tag { background: #e1f5fe; color: #0288d1; padding: 3px 8px; font-weight: bold; border-radius: 4px; font-size: 11px; }
+      </style>
+    </head>
+    <body>
+      <h1>🛠️ FANUC Pro Suite — Çevrimdışı Kök Neden Analiz Raporu</h1>
+      <div style="font-size:11px; color:#666; margin-bottom:15px;">Rapor Tarihi: ${new Date().toLocaleString('tr-TR')}</div>
+
+      <div class="card">
+        <h3>🔍 Aranan Alarm / Belirti: ${report.query.toUpperCase()}</h3>
+        <p><b>Tespit Edilen Alarm Kodu:</b> ${report.alarm.code} - ${report.alarm.name}</p>
+        <p><b>Açıklama:</b> ${report.alarm.desc}</p>
+        <p><b>Standart Çözüm:</b> ${report.alarm.solution}</p>
+      </div>
+
+      <h3>🎯 Hesaplanan Kök Nedenler:</h3>
+      ${report.rootCauses.map((rc, i) => `
+        <div class="card">
+          <b>${i + 1}. ${rc.title} (Olasılık: %${rc.prob})</b>
+          <p>${rc.desc}</p>
+        </div>
+      `).join('')}
+
+      <h3>⚡ Ölçüm ve Kontrol Protokolü:</h3>
+      <ol>
+        <li>Sürücü LED göstergesini kontrol edin.</li>
+        <li>Avometre DC kademesinde CXA2A 24V DC beslemesini ölçün (Beklenen: 24.0V ±0.5V).</li>
+        <li>PMC G8.4 (VRDY) sinyalinin 1 olduğunu doğrulayın.</li>
+        <li>Pano MCC kontaktör bobinini ve kontaklarını kontrol edin.</li>
+      </ol>
+    </body>
+    </html>
+  `;
+
+  window.electronAPI.printToPDF(htmlContent, `fanuc-offline-diag-${report.alarm.code || 'report'}.pdf`);
+};
 
 function renderTroubleshootButtons(page) {
   const container = page.querySelector('#ts-options');

@@ -27,6 +27,7 @@
     filterDiffMode navigateTroubleshootNode switchIOTab switchBackupTab switchBuilderTab switchLimitTab
     switchParamTab switchSpindleTab switchMachine viewProgramCode setFssbSimulationMode onFlowchartNodeClick onFssbNodeClick clearActiveDiagnostic loginSelectUser loginSubmitPin loginBack closeSpotlight closeNotifPanel
     showFocasScannerModal runFocasScanner saveDiscoveredMachine exportScannerResultsCSV autoCreateMachineFromScan
+    runOfflineRootCauseAnalysis selectOfflinePreset printOfflineDiagnosticPDF
   `.trim().split(/\s+/));
 
   function splitTopLevel(source, separator) {
