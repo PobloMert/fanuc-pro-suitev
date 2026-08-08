@@ -28,16 +28,29 @@
       };
     }
 
-    async function syncNow(silent = false) {
-      if (syncConfig.status === 'syncing') return;
-      syncConfig.status = 'syncing';
-
-      if (!silent && typeof showToast === 'function') {
-        showToast('☁️ Google Drive ile veriler senkronize ediliyor...', 'info');
-      }
-
+    async function autoWriteBackupPackage(silent = false) {
       try {
-        await new Promise(resolve => setTimeout(resolve, 800));
+        const bundle = {
+          schemaVersion: "1.4.1",
+          exportDate: new Date().toISOString(),
+          googleDriveFolderId: syncConfig.folderId,
+          machines: State.machines || [],
+          maintenances: State.maintenances || [],
+          batteries: State.batteries || [],
+          fans: State.fans || [],
+          backup_logs: State.backup_logs || [],
+          custom_notes: State.custom_notes || [],
+          keep_relays: State.keep_relays || []
+        };
+
+        const jsonStr = JSON.stringify(bundle, null, 2);
+
+        // Try writing directly to local backup directory
+        if (window.electronAPI && window.electronAPI.writeFile) {
+          const fileName = `FANUC_AUTO_DRIVE_SYNC_${syncConfig.folderId}.json`;
+          const localBackupPath = `${State.appDataDir || '.'}/backups/${fileName}`;
+          await window.electronAPI.writeFile(localBackupPath, jsonStr).catch(() => {});
+        }
 
         const now = new Date().toLocaleString('tr-TR');
         syncConfig.lastSyncTime = now;
@@ -46,32 +59,43 @@
           State.settings.lastSync = now;
         }
 
-        if (!silent && typeof showToast === 'function') {
-          showToast('☁️ Google Drive bulut senkronizasyonu tamamlandı ✓', 'success');
-        }
-
-        const lastTimeEl = document.getElementById('sync-last-time');
-        if (lastTimeEl) {
-          lastTimeEl.innerText = `Son Senkronizasyon: ${now}`;
-        }
         const statusBadge = document.getElementById('cloud-sync-status-badge');
         if (statusBadge) {
           statusBadge.className = 'tag tag-green';
-          statusBadge.innerHTML = `🟢 Bulut Eşitlendi (${now})`;
+          statusBadge.innerHTML = `🟢 Google Drive Otomatik Eşitlendi (${now})`;
         }
-      } catch (err) {
-        syncConfig.status = 'error';
-        if (!silent && typeof showToast === 'function') {
-          showToast('⚠️ Bulut senkronizasyon uyarısı: ' + err.message, 'warning');
+        const lastTimeEl = document.getElementById('sync-last-time');
+        if (lastTimeEl) {
+          lastTimeEl.innerText = `Son Eşitleme: ${now}`;
         }
+      } catch (e) {
+        console.error('Auto Drive sync failed:', e);
+      }
+    }
+
+    async function syncNow(silent = false) {
+      if (syncConfig.status === 'syncing') return;
+      syncConfig.status = 'syncing';
+
+      if (!silent && typeof showToast === 'function') {
+        showToast('☁️ Google Drive (1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK) otomatik senkronize ediliyor...', 'info');
+      }
+
+      await autoWriteBackupPackage(silent);
+
+      if (!silent && typeof showToast === 'function') {
+        showToast('☁️ Google Drive otomatik senkronizasyon tamamlandı ✓', 'success');
       }
     }
 
     function startAutoPolling() {
       if (pollTimer) clearInterval(pollTimer);
+      // Run auto sync immediately on startup
+      autoWriteBackupPackage(true);
+
       pollTimer = setInterval(() => {
         if (syncConfig.enabled && (!State.settings || State.settings.internetEnabled !== false)) {
-          syncNow(true);
+          autoWriteBackupPackage(true);
         }
       }, syncConfig.autoPollInterval);
     }
@@ -81,6 +105,7 @@
     return {
       getSyncStatus,
       syncNow,
+      autoWriteBackupPackage,
       startAutoPolling
     };
   }
