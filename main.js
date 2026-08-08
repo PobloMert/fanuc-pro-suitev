@@ -301,7 +301,11 @@ function ensureAdapterRuntime() {
   if (!fs.existsSync(APP_BIN_DIR)) throw new Error(`Paketlenmiş adaptör klasörü bulunamadı: ${APP_BIN_DIR}`);
   for (const entry of fs.readdirSync(APP_BIN_DIR, { withFileTypes: true })) {
     if (!entry.isFile() || entry.name === 'adapter.config.json' || entry.name === 'adapter_crash.log') continue;
-    fs.copyFileSync(path.join(APP_BIN_DIR, entry.name), path.join(ADAPTER_RUNTIME_DIR, entry.name));
+    try {
+      fs.copyFileSync(path.join(APP_BIN_DIR, entry.name), path.join(ADAPTER_RUNTIME_DIR, entry.name));
+    } catch (e) {
+      if (e.code !== 'EBUSY') throw e;
+    }
   }
   if (!fs.existsSync(ADAPTER_CONFIG_FILE)) {
     fs.copyFileSync(path.join(APP_BIN_DIR, 'adapter.config.json'), ADAPTER_CONFIG_FILE);
