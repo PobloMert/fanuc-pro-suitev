@@ -3542,7 +3542,11 @@ window.exportFullCloudBundle = async function() {
     fans: State.fans || [],
     backup_logs: State.backup_logs || [],
     custom_notes: State.custom_notes || [],
-    keep_relays: State.keep_relays || []
+    custom_alarms: State.custom_alarms || [],
+    custom_mcodes: State.custom_mcodes || [],
+    keep_relays: State.keep_relays || [],
+    settings: State.settings || {},
+    users: State.users || []
   };
 
   const defaultName = `FANUC_DATABASE_SYNC_${new Date().toISOString().slice(0,10)}.json`;

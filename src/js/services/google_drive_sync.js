@@ -41,7 +41,11 @@
           fans: State.fans || [],
           backup_logs: State.backup_logs || [],
           custom_notes: State.custom_notes || [],
-          keep_relays: State.keep_relays || []
+          custom_alarms: State.custom_alarms || [],
+          custom_mcodes: State.custom_mcodes || [],
+          keep_relays: State.keep_relays || [],
+          settings: State.settings || {},
+          users: State.users || []
         };
 
         const jsonStr = JSON.stringify(bundle, null, 2);
@@ -150,6 +154,10 @@
               if (bundle.batteries) State.batteries = bundle.batteries;
               if (bundle.fans) State.fans = bundle.fans;
               if (bundle.backup_logs) State.backup_logs = bundle.backup_logs;
+              if (bundle.custom_notes) State.custom_notes = bundle.custom_notes;
+              if (bundle.custom_alarms) State.custom_alarms = bundle.custom_alarms;
+              if (bundle.custom_mcodes) State.custom_mcodes = bundle.custom_mcodes;
+              if (bundle.keep_relays) State.keep_relays = bundle.keep_relays;
 
               if (typeof saveMachines === 'function') await saveMachines();
               if (typeof saveMaintenances === 'function') await saveMaintenances();
