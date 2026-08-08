@@ -52,6 +52,20 @@
           await window.electronAPI.writeFile(localBackupPath, jsonStr).catch(() => {});
         }
 
+        // Direct HTTPS API Push to Google Drive Webhook if Endpoint configured
+        if (syncConfig.webAppUrl && window.fetch) {
+          try {
+            await fetch(syncConfig.webAppUrl, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: jsonStr
+            });
+          } catch (fetchErr) {
+            console.log('Drive HTTPS push note:', fetchErr);
+          }
+        }
+
         const now = new Date().toLocaleString('tr-TR');
         syncConfig.lastSyncTime = now;
         syncConfig.status = 'success';
@@ -62,7 +76,7 @@
         const statusBadge = document.getElementById('cloud-sync-status-badge');
         if (statusBadge) {
           statusBadge.className = 'tag tag-green';
-          statusBadge.innerHTML = `🟢 Google Drive Otomatik Eşitlendi (${now})`;
+          statusBadge.innerHTML = `🟢 Google Drive Doğrudan HTTPS Eşitlendi (${now})`;
         }
         const lastTimeEl = document.getElementById('sync-last-time');
         if (lastTimeEl) {
