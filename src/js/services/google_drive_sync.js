@@ -16,8 +16,12 @@
   };
 
   let pollTimer = null;
+  let activeSyncInstance = null;
+  let activePushPromise = null;
+  let activePullPromise = null;
 
   function initCloudSync(deps) {
+    if (activeSyncInstance) return activeSyncInstance;
     const { State, showToast } = deps;
 
     function getSyncStatus() {
@@ -30,76 +34,86 @@
     }
 
     async function autoWriteBackupPackage(silent = false) {
-      if (syncConfig.status === 'syncing') return;
-      syncConfig.status = 'syncing';
-      try {
-        const bundle = {
-          schemaVersion: "1.4.1",
-          exportDate: new Date().toISOString(),
-          googleDriveFolderId: syncConfig.folderId,
-          machines: State.machines || [],
-          maintenances: State.maintenances || [],
-          batteries: State.batteries || [],
-          fans: State.fans || [],
-          backup_logs: State.backup_logs || [],
-          custom_notes: State.custom_notes || [],
-          custom_alarms: State.custom_alarms || [],
-          custom_mcodes: State.custom_mcodes || [],
-          keep_relays: State.keep_relays || [],
-          settings: State.settings || {},
-          users: State.users || []
-        };
-
-        const jsonStr = JSON.stringify(bundle, null, 2);
-
-        // Direct HTTPS API Push to Google Drive Webhook
-        if (syncConfig.webAppUrl) {
-          try {
-            if (window.electronAPI && window.electronAPI.fetchProxy) {
-              const res = await window.electronAPI.fetchProxy(syncConfig.webAppUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: jsonStr
-              });
-              console.log('Google Drive Webhook result:', res);
-            } else if (window.fetch) {
-              await fetch(syncConfig.webAppUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: jsonStr
-              });
-            }
-          } catch (fetchErr) {
-            console.log('Drive HTTPS push note:', fetchErr);
-          }
-        }
-
-        const now = new Date().toLocaleString('tr-TR');
-        syncConfig.lastSyncTime = now;
-        if (State.settings) {
-          State.settings.lastSync = now;
-        }
-
-        const statusBadge = document.getElementById('cloud-sync-status-badge');
-        if (statusBadge) {
-          statusBadge.className = 'tag tag-green';
-          statusBadge.innerHTML = `🟢 Google Drive Doğrudan HTTPS Eşitlendi (${now})`;
-        }
-        const lastTimeEl = document.getElementById('sync-last-time');
-        if (lastTimeEl) {
-          lastTimeEl.innerText = `Son Eşitleme: ${now}`;
-        }
-      } catch (e) {
-        console.error('Auto Drive sync failed:', e);
-      } finally {
-        syncConfig.status = 'idle';
+      if (activePushPromise) {
+        return activePushPromise;
       }
+
+      activePushPromise = (async () => {
+        try {
+          syncConfig.status = 'syncing';
+          const bundle = {
+            schemaVersion: "1.4.1",
+            exportDate: new Date().toISOString(),
+            googleDriveFolderId: syncConfig.folderId,
+            machines: State.machines || [],
+            maintenances: State.maintenances || [],
+            batteries: State.batteries || [],
+            fans: State.fans || [],
+            backup_logs: State.backup_logs || [],
+            custom_notes: State.custom_notes || [],
+            custom_alarms: State.custom_alarms || [],
+            custom_mcodes: State.custom_mcodes || [],
+            keep_relays: State.keep_relays || [],
+            settings: State.settings || {},
+            users: State.users || []
+          };
+
+          const jsonStr = JSON.stringify(bundle, null, 2);
+
+          // Direct HTTPS API Push to Google Drive Webhook
+          if (syncConfig.webAppUrl) {
+            try {
+              if (window.electronAPI && window.electronAPI.fetchProxy) {
+                const res = await window.electronAPI.fetchProxy(syncConfig.webAppUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: jsonStr
+                });
+                console.log('Google Drive Webhook result:', res);
+              } else if (window.fetch) {
+                await fetch(syncConfig.webAppUrl, {
+                  method: 'POST',
+                  mode: 'no-cors',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: jsonStr
+                });
+              }
+            } catch (fetchErr) {
+              console.log('Drive HTTPS push note:', fetchErr);
+            }
+          }
+
+          const now = new Date().toLocaleString('tr-TR');
+          syncConfig.lastSyncTime = now;
+          if (State.settings) {
+            State.settings.lastSync = now;
+          }
+
+          const statusBadge = document.getElementById('cloud-sync-status-badge');
+          if (statusBadge) {
+            statusBadge.className = 'tag tag-green';
+            statusBadge.innerHTML = `🟢 Google Drive Doğrudan HTTPS Eşitlendi (${now})`;
+          }
+          const lastTimeEl = document.getElementById('sync-last-time');
+          if (lastTimeEl) {
+            lastTimeEl.innerText = `Son Eşitleme: ${now}`;
+          }
+        } catch (e) {
+          syncConfig.status = 'error';
+          console.error('Auto Drive sync failed:', e);
+        } finally {
+          if (syncConfig.status === 'syncing') {
+            syncConfig.status = 'idle';
+          }
+          activePushPromise = null;
+        }
+      })();
+
+      return activePushPromise;
     }
 
     async function syncNow(silent = false) {
-      if (syncConfig.status === 'syncing') return;
-      syncConfig.status = 'syncing';
+      if (activePushPromise) return activePushPromise;
 
       if (!silent && typeof showToast === 'function') {
         showToast('☁️ Google Drive (1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK) otomatik senkronize ediliyor...', 'info');
@@ -127,62 +141,72 @@
     startAutoPolling();
 
     async function pullDirectFromGoogleDrive(silent = false) {
+      if (activePullPromise) return activePullPromise;
       if (!syncConfig.webAppUrl) return false;
-      try {
-        if (!silent && typeof showToast === 'function') {
-          showToast('☁️ Google Drive\'dan en son veriler indiriliyor...', 'info');
-        }
 
-        let res;
-        if (window.electronAPI && window.electronAPI.fetchProxy) {
-          res = await window.electronAPI.fetchProxy(syncConfig.webAppUrl + '?action=get', { method: 'GET' });
-        } else if (window.fetch) {
-          const response = await fetch(syncConfig.webAppUrl + '?action=get');
-          res = { ok: response.ok, data: await response.text() };
-        }
-
-        if (res && res.ok && res.data) {
-          try {
-            const bundle = JSON.parse(res.data);
-            if (bundle && bundle.machines) {
-              if (bundle.machines) State.machines = bundle.machines;
-              if (bundle.maintenances) State.maintenances = bundle.maintenances;
-              if (bundle.batteries) State.batteries = bundle.batteries;
-              if (bundle.fans) State.fans = bundle.fans;
-              if (bundle.backup_logs) State.backup_logs = bundle.backup_logs;
-              if (bundle.custom_notes) State.custom_notes = bundle.custom_notes;
-              if (bundle.custom_alarms) State.custom_alarms = bundle.custom_alarms;
-              if (bundle.custom_mcodes) State.custom_mcodes = bundle.custom_mcodes;
-              if (bundle.keep_relays) State.keep_relays = bundle.keep_relays;
-
-              if (typeof saveMachines === 'function') await saveMachines();
-              if (typeof saveMaintenances === 'function') await saveMaintenances();
-              if (typeof saveBatteries === 'function') await saveBatteries();
-              if (typeof saveFans === 'function') await saveFans();
-
-              if (!silent && typeof showToast === 'function') {
-                showToast('☁️ Google Drive\'daki güncel veriler başarıyla indirildi ve yüklendi! ✓', 'success');
-              }
-              if (window.navigate) window.navigate('dashboard');
-              return true;
-            }
-          } catch (pErr) {
-            console.log('Direct pull parse note:', pErr);
+      activePullPromise = (async () => {
+        try {
+          if (!silent && typeof showToast === 'function') {
+            showToast('☁️ Google Drive\'dan en son veriler indiriliyor...', 'info');
           }
+
+          let res;
+          if (window.electronAPI && window.electronAPI.fetchProxy) {
+            res = await window.electronAPI.fetchProxy(syncConfig.webAppUrl + '?action=get', { method: 'GET' });
+          } else if (window.fetch) {
+            const response = await fetch(syncConfig.webAppUrl + '?action=get');
+            res = { ok: response.ok, data: await response.text() };
+          }
+
+          if (res && res.ok && res.data) {
+            try {
+              const bundle = JSON.parse(res.data);
+              if (bundle && bundle.machines) {
+                if (bundle.machines) State.machines = bundle.machines;
+                if (bundle.maintenances) State.maintenances = bundle.maintenances;
+                if (bundle.batteries) State.batteries = bundle.batteries;
+                if (bundle.fans) State.fans = bundle.fans;
+                if (bundle.backup_logs) State.backup_logs = bundle.backup_logs;
+                if (bundle.custom_notes) State.custom_notes = bundle.custom_notes;
+                if (bundle.custom_alarms) State.custom_alarms = bundle.custom_alarms;
+                if (bundle.custom_mcodes) State.custom_mcodes = bundle.custom_mcodes;
+                if (bundle.keep_relays) State.keep_relays = bundle.keep_relays;
+
+                if (typeof saveMachines === 'function') await saveMachines();
+                if (typeof saveMaintenances === 'function') await saveMaintenances();
+                if (typeof saveBatteries === 'function') await saveBatteries();
+                if (typeof saveFans === 'function') await saveFans();
+
+                if (!silent && typeof showToast === 'function') {
+                  showToast('☁️ Google Drive\'daki güncel veriler başarıyla indirildi ve yüklendi! ✓', 'success');
+                }
+                if (window.navigate) window.navigate('dashboard');
+                return true;
+              }
+            } catch (pErr) {
+              console.log('Direct pull parse note:', pErr);
+            }
+          }
+        } catch (err) {
+          console.error('Pull from Google Drive failed:', err);
+        } finally {
+          activePullPromise = null;
         }
-      } catch (err) {
-        console.error('Pull from Google Drive failed:', err);
-      }
-      return false;
+        return false;
+      })();
+
+      return activePullPromise;
     }
 
-    return {
+    activeSyncInstance = {
       getSyncStatus,
       syncNow,
       autoWriteBackupPackage,
       pullDirectFromGoogleDrive,
       startAutoPolling
     };
+
+    return activeSyncInstance;
   }
 
   global.MTBCloudSync = { initCloudSync };
