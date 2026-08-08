@@ -1325,8 +1325,11 @@ function renderSettings() {
         </div>
         <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-md); font-size:11.5px; display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">Google Drive Depo Klasörü:</div>
-            <div class="font-mono text-xs" style="color:var(--text-accent);">FANUC_Pro_Suite_CloudData (Servis Hesabı Otomatik Senkron)</div>
+            <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">Google Drive Depo Klasör ID:</div>
+            <div class="font-mono text-xs" style="color:var(--text-accent);">
+              1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK
+              <a href="https://drive.google.com/drive/folders/1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK" target="_blank" style="color:var(--accent); margin-left:6px; text-decoration:underline;">🔗 Google Drive'da Aç</a>
+            </div>
           </div>
           <div style="text-align:right;">
             <div style="font-size:11px; color:var(--text-muted);" id="sync-last-time">Son Senkronizasyon: ${escapeHTML(State.settings.lastSync || 'Henüz Eşitlenmedi')}</div>

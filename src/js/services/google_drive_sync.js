@@ -8,7 +8,7 @@
 
   let syncConfig = {
     enabled: true,
-    folderId: 'fanuc_pro_suite_cloud_drive',
+    folderId: '1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK',
     lastSyncTime: null,
     status: 'idle', // 'idle' | 'syncing' | 'success' | 'error'
     autoPollInterval: 60000 // 60 seconds
