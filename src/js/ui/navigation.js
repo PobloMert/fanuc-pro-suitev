@@ -46,7 +46,7 @@ export function organizeNavigation() {
     { id: 'operations', label: 'Operasyon', pages: ['cnc_dashboard', 'cnc_screen_viewer', 'machines', 'fanuc_center', 'maintenance', 'battery', 'reports', 'predictive', 'reliability', 'projects'] },
 
     { id: 'diagnostics', label: 'Teşhis ve Destek', pages: ['troubleshooter', 'io_link', 'drive_diagnostics', 'spindle_diagnostics', 'backup_wizard', 'backup_tracker', 'troubleshoot_wiki'] },
-    { id: 'engineering', label: 'Mühendislik Araçları', pages: ['tuning', 'generator', 'gcode_checker', 'param_comparator', 'gear_ratio', 'backlash_helper', 'axis_limits_helper', 'rs232', 'rs232_cables', 'fssb_topology'] },
+    { id: 'engineering', label: 'Mühendislik Araçları', pages: ['tuning', 'generator', 'gcode_checker', 'param_comparator', 'param_inspector', 'gear_ratio', 'backlash_helper', 'axis_limits_helper', 'rs232', 'rs232_cables', 'fssb_topology'] },
     { id: 'reference', label: 'Bilgi Merkezi', pages: ['library', 'alarms', 'parameters', 'keep_relays', 'macro', 'nc_codes', 'pmc_signals', 'custom_builder_library', 'cheat_sheets'] }
   ];
 

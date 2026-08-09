@@ -336,6 +336,7 @@ window.navigate = function navigate(page, extraData = null) {
     reliability: renderReliability,
     gcode_checker: renderGcodeChecker,
     param_comparator: renderParamComparator,
+    param_inspector: () => window.ParamInspectorFeature ? window.ParamInspectorFeature.renderParamInspector() : createPage('param_inspector'),
     troubleshooter: renderTroubleshooter,
     io_link:     renderIOLink,
     backup_wizard: renderBackupWizard,
@@ -7478,4 +7479,16 @@ window.exportScannerResultsCSV = function() {
 
   window.electronAPI.exportCSV(csv, `fanuc-network-scan-${new Date().toISOString().slice(0, 10)}.csv`);
 };
+
+window.triggerParamFileUpload = function() { window.ParamInspectorFeature?.triggerParamFileUpload(); };
+window.onParamFileSelected = function(e) { window.ParamInspectorFeature?.onParamFileSelected(e); };
+window.handleParamDragOver = function(e) { window.ParamInspectorFeature?.handleParamDragOver(e); };
+window.handleParamDragLeave = function(e) { window.ParamInspectorFeature?.handleParamDragLeave(e); };
+window.handleParamFileDrop = function(e) { window.ParamInspectorFeature?.handleParamFileDrop(e); };
+window.loadSamplePrmBackup = function() { window.ParamInspectorFeature?.loadSamplePrmBackup(); };
+window.filterParamInspectorRows = function() { window.ParamInspectorFeature?.filterParamInspectorRows(); };
+window.inspectParamBitDetail = function(no, val) { window.ParamInspectorFeature?.inspectParamBitDetail(no, val); };
+window.closeParamBitDetail = function() { window.ParamInspectorFeature?.closeParamBitDetail(); };
+window.exportParamInspectorCSV = function() { window.ParamInspectorFeature?.exportParamInspectorCSV(); };
+window.exportParamInspectorPDF = function() { window.ParamInspectorFeature?.exportParamInspectorPDF(); };
 

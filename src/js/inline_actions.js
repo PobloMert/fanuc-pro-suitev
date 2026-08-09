@@ -30,6 +30,7 @@
     runOfflineRootCauseAnalysis selectOfflinePreset printOfflineDiagnosticPDF
     runKeepRelayDiffComparison loadDefaultKeepRelayDiff exportKeepRelayDiffPDF exportKeepRelayDiffCSV filterKeepRelayDiffRows filterKeepRelayDiffMode uploadKeepRelayFile clearKeepRelayInput
     triggerCloudSyncNow exportFullCloudBundle importFullCloudBundle pullDirectFromGoogleDrive
+    triggerParamFileUpload onParamFileSelected handleParamDragOver handleParamDragLeave handleParamFileDrop loadSamplePrmBackup filterParamInspectorRows inspectParamBitDetail closeParamBitDetail exportParamInspectorCSV exportParamInspectorPDF
   `.trim().split(/\s+/));
 
   function splitTopLevel(source, separator) {
