@@ -57,7 +57,15 @@
     return { measuredMicrons, newValue: (Number.parseInt(currentMicrons, 10) || 0) + measuredMicrons };
   }
   function maskSensitive(text, machineNames = [], userName = '') {
-    let safe = String(text || '').replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[IP MASKELENDİ]').replace(/[A-Z]:\\[^\s]+/gi, '[DOSYA YOLU MASKELENDİ]').replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[E-POSTA MASKELENDİ]').replace(/\b(?:sk-[A-Za-z0-9_-]{12,}|AIza[A-Za-z0-9_-]{20,})\b/g, '[API ANAHTARI MASKELENDİ]');
+    let safe = String(text || '')
+      .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[IP MASKELENDİ]')
+      .replace(/\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b/g, '[IP MASKELENDİ]')
+      .replace(/[A-Z]:\\[^\s]+/gi, '[DOSYA YOLU MASKELENDİ]')
+      .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[E-POSTA MASKELENDİ]')
+      .replace(/\b(?:sk-[A-Za-z0-9_-]{12,}|AIza[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{20,}|Bearer\s+[A-Za-z0-9._-]+)\b/g, '[TOKEN MASKELENDİ]')
+      .replace(/\b(?:SN|S\/N|Seri\s*No|Serial)[:\s=]*[A-Z0-9-]{4,20}\b/gi, '[SERİ NO MASKELENDİ]')
+      .replace(/\b(?:PIN|pin|passcode)[:\s=]*\d{4,8}\b/gi, '[PIN MASKELENDİ]')
+      .replace(/(?:password|passwd|pass|pwd|secret)[:\s=]+[^\s,;]+/gi, '[PAROLA MASKELENDİ]');
     [...machineNames, userName].filter(v => String(v).trim().length > 2).forEach(value => { safe = safe.split(String(value).trim()).join(value === userName ? '[KULLANICI MASKELENDİ]' : '[MAKİNE MASKELENDİ]'); });
     return safe;
   }
