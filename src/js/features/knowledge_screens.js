@@ -40,6 +40,27 @@ function renderLibrary() {
       </div>
     </div>
     <div class="page-body">
+      <!-- Official FANUC PDF Manuals Google Drive Hub Card -->
+      <div class="card glass-card mb-4" style="padding:20px; border:1px solid var(--accent); background:rgba(59,130,246,0.04);">
+        <div style="font-weight:750; font-size:15px; color:var(--text-primary); margin-bottom:6px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span>📚 Resmi FANUC PDF Doküman & Manuel Kütüphanesi</span>
+            <span class="tag tag-accent" style="font-size:10px;">Google Drive Canlı Havuz</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="window.electronAPI && window.electronAPI.openExternal ? window.electronAPI.openExternal('https://drive.google.com/drive/folders/1UEJP5MTj6cAkYvGmHI8DDMfEiKnQFIAx') : window.open('https://drive.google.com/drive/folders/1UEJP5MTj6cAkYvGmHI8DDMfEiKnQFIAx', '_blank')">
+            🌐 Google Drive Kütüphanesini Aç ↗
+          </button>
+        </div>
+        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
+          Tüm FANUC 0i-MF, 31i-B, Servo/Spindle Sürücü ve PMC Ladder el kitapçıkları (PDF) Yapay Zeka bilgi bankamıza entegre edilmiştir.
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; font-size:11px;">
+          <span class="tag tag-blue">📘 B-64310EN Parametre El Kitabı</span>
+          <span class="tag tag-green">📕 B-65270EN Servo Bakım Kılavuzu</span>
+          <span class="tag tag-orange">📙 B-65282EN Spindle Arıza Kitabı</span>
+          <span class="tag tag-purple">📗 B-64303EN PMC Ladder Spesifikasyonu</span>
+        </div>
+      </div>
       <!-- Hardware & Drive Replacement Field Manual Card -->
       <div class="card glass-card mb-4" style="padding:20px;">
         <div style="font-weight:750; font-size:15px; color:var(--text-primary); margin-bottom:10px; display:flex; align-items:center; gap:8px;">

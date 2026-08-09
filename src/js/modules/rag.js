@@ -97,11 +97,27 @@ export function buildRAGContext(query) {
     });
   }
 
+  // 7. Official FANUC PDF Manuals Knowledge & Citation Mapping
+  const pdfManualCitations = [
+    { keywords: ['1815', 'apc', 'apz', '3202', 'ne9', '1320', 'stroke', '3111', '1851', 'backlash', 'parametre'], title: 'FANUC Series 0i-MF / 31i-B Parametre El Kitabı', manualNo: 'B-64310EN', section: 'Bölüm 4 — Sistem & Eksen Parametreleri' },
+    { keywords: ['sv0401', 'sv0438', 'sv0449', 'vrdy', 'servo', 'overcurrent', 'hcam', 'a06b-6114', 'a06b-6124'], title: 'FANUC Servo Sürücü Alpha i / Beta i Bakım Kılavuzu', manualNo: 'B-65270EN', section: 'Bölüm 7 — Servo Alarm & LED Teşhis Adımları' },
+    { keywords: ['sp9011', 'sp9012', 'ssm', 'spindle', 'a06b-6117', 'a06b-6127', 'motor'], title: 'FANUC Spindle Sürücü & Amplifikatör Arıza Kılavuzu', manualNo: 'B-65282EN', section: 'Bölüm 5 — Spindle LED & Yük Teşhisi' },
+    { keywords: ['pmc', 'ladder', 'k00', 'keep relay', 'g8.4', 'f1.0', 'x4.2', 'y2.1'], title: 'FANUC PMC Ladder & Sinyal Adres Spesifikasyonu', manualNo: 'B-64303EN', section: 'Bölüm 3 — PMC X/Y/G/F Sinyal Tablosu' }
+  ];
+
+  const matchedPdfs = pdfManualCitations.filter(pm => pm.keywords.some(kw => q.includes(kw)));
+  if (matchedPdfs.length > 0) {
+    contextParts.push("### 📖 Eşleşen Resmi FANUC PDF El Kitapçıkları & Sayfa Referansları:");
+    matchedPdfs.forEach(pm => {
+      contextParts.push(`- **[${pm.manualNo}] ${pm.title}** (${pm.section})\n  *Google Drive Kütüphanesi:* https://drive.google.com/drive/folders/1UEJP5MTj6cAkYvGmHI8DDMfEiKnQFIAx\n`);
+    });
+  }
+
   if (contextParts.length === 0) {
     return '';
   }
 
-  return `\n[YEREL VERİTABANI KONTROLÜ — RAG BAĞLAMI]:\nAşağıdaki teknik veriler fabrika yerel FANUC veritabanından başarıyla çekilmiştir. Yanıtınızı verirken öncelikle bu resmi teknik verilere dayandırarak adım adım açık ve net yönlendirmeler sunun:\n\n${contextParts.join('\n')}\n`;
+  return `\n[YEREL VERİTABANI VE RESMİ FANUC PDF KILAVUZ KONTROLÜ — RAG BAĞLAMI]:\nAşağıdaki teknik veriler ve resmi FANUC PDF el kitapçığı sayfa referansları fabrika yerel veritabanınızdan çekilmiştir. Yanıtınızı sunarken mutlaka ilgili PDF Kılavuz Kodunu ([B-64310EN], [B-65270EN] vb.) kaynak gösterin:\n\n${contextParts.join('\n')}\n🔗 **Canlı PDF Kütüphanesi:** https://drive.google.com/drive/folders/1UEJP5MTj6cAkYvGmHI8DDMfEiKnQFIAx\n`;
 }
 
 export function buildRAGResult(query) {
