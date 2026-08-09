@@ -1,9 +1,8 @@
 /**
  * RS232 Cables
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBRs232Cables(global) {
+(function(global) {
   'use strict';
 
 // ════════════════════════════════════════════════════════════════
@@ -127,6 +126,12 @@ window.showRs232Schematic = function(page = document) {
 };
 
 
-  // ── Global Exports ──
-  global.renderRs232Cables = renderRs232Cables;
+  const MTBRs232Cables = {
+    renderRs232Cables: typeof renderRs232Cables !== 'undefined' ? renderRs232Cables : undefined,
+    showRs232Schematic: typeof showRs232Schematic !== 'undefined' ? showRs232Schematic : undefined
+  };
+
+  global.MTBRs232Cables = MTBRs232Cables;
+  if (typeof renderRs232Cables !== 'undefined') global.renderRs232Cables = renderRs232Cables;
+  if (typeof showRs232Schematic !== 'undefined') global.showRs232Schematic = showRs232Schematic;
 })(window);

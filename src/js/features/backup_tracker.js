@@ -1,9 +1,8 @@
 /**
  * Backup Tracker
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBBackupTracker(global) {
+(function(global) {
   'use strict';
 
 // ════════════════════════════════════════════════════════════════
@@ -669,9 +668,32 @@ function runBackupInspectorOnFile(file) {
 
 
 
-  // ── Global Exports ──
-  global.renderBackupWizard = renderBackupWizard;
-  global.renderBackupTracker = renderBackupTracker;
-  global.filterBackupTracker = filterBackupTracker;
-  global.runBackupInspectorOnFile = runBackupInspectorOnFile;
+  const MTBBackupTracker = {
+    renderBackupWizard: typeof renderBackupWizard !== 'undefined' ? renderBackupWizard : undefined,
+    renderBackupTracker: typeof renderBackupTracker !== 'undefined' ? renderBackupTracker : undefined,
+    filterBackupTracker: typeof filterBackupTracker !== 'undefined' ? filterBackupTracker : undefined,
+    runBackupInspectorOnFile: typeof runBackupInspectorOnFile !== 'undefined' ? runBackupInspectorOnFile : undefined,
+    switchBackupTab: typeof switchBackupTab !== 'undefined' ? switchBackupTab : undefined,
+    setWizardConfig: typeof setWizardConfig !== 'undefined' ? setWizardConfig : undefined,
+    checkWizardStepsCompletion: typeof checkWizardStepsCompletion !== 'undefined' ? checkWizardStepsCompletion : undefined,
+    showNewBackupLogModal: typeof showNewBackupLogModal !== 'undefined' ? showNewBackupLogModal : undefined,
+    createNewBackupLog: typeof createNewBackupLog !== 'undefined' ? createNewBackupLog : undefined,
+    showBackupHistoryModal: typeof showBackupHistoryModal !== 'undefined' ? showBackupHistoryModal : undefined,
+    handleBackupFileDrop: typeof handleBackupFileDrop !== 'undefined' ? handleBackupFileDrop : undefined,
+    handleBackupFileSelect: typeof handleBackupFileSelect !== 'undefined' ? handleBackupFileSelect : undefined
+  };
+
+  global.MTBBackupTracker = MTBBackupTracker;
+  if (typeof renderBackupWizard !== 'undefined') global.renderBackupWizard = renderBackupWizard;
+  if (typeof renderBackupTracker !== 'undefined') global.renderBackupTracker = renderBackupTracker;
+  if (typeof filterBackupTracker !== 'undefined') global.filterBackupTracker = filterBackupTracker;
+  if (typeof runBackupInspectorOnFile !== 'undefined') global.runBackupInspectorOnFile = runBackupInspectorOnFile;
+  if (typeof switchBackupTab !== 'undefined') global.switchBackupTab = switchBackupTab;
+  if (typeof setWizardConfig !== 'undefined') global.setWizardConfig = setWizardConfig;
+  if (typeof checkWizardStepsCompletion !== 'undefined') global.checkWizardStepsCompletion = checkWizardStepsCompletion;
+  if (typeof showNewBackupLogModal !== 'undefined') global.showNewBackupLogModal = showNewBackupLogModal;
+  if (typeof createNewBackupLog !== 'undefined') global.createNewBackupLog = createNewBackupLog;
+  if (typeof showBackupHistoryModal !== 'undefined') global.showBackupHistoryModal = showBackupHistoryModal;
+  if (typeof handleBackupFileDrop !== 'undefined') global.handleBackupFileDrop = handleBackupFileDrop;
+  if (typeof handleBackupFileSelect !== 'undefined') global.handleBackupFileSelect = handleBackupFileSelect;
 })(window);

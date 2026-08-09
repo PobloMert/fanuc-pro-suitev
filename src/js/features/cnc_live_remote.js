@@ -1,9 +1,8 @@
 /**
  * CNC Live Remote
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBCncLiveRemote(global) {
+(function(global) {
   'use strict';
 
 function renderCncDashboard() {
@@ -589,7 +588,24 @@ window.exportScannerResultsCSV = function() {
 window.triggerParamFileUpload = function() { window.ParamInspectorFeature?.triggerParamFileUpload(); };
 window.onParamFileSelected = function(e) { window.ParamInspectorFeature?.onParamFileSelected(e); };
 
-  // ── Global Exports ──
-  global.renderCncDashboard = renderCncDashboard;
-  global.renderCncScreenViewer = renderCncScreenViewer;
+  const MTBCncLiveRemote = {
+    renderCncDashboard: typeof renderCncDashboard !== 'undefined' ? renderCncDashboard : undefined,
+    renderCncScreenViewer: typeof renderCncScreenViewer !== 'undefined' ? renderCncScreenViewer : undefined,
+    onCncScreenMachineChange: typeof onCncScreenMachineChange !== 'undefined' ? onCncScreenMachineChange : undefined,
+    showFocasScannerModal: typeof showFocasScannerModal !== 'undefined' ? showFocasScannerModal : undefined,
+    runFocasScanner: typeof runFocasScanner !== 'undefined' ? runFocasScanner : undefined,
+    saveDiscoveredMachine: typeof saveDiscoveredMachine !== 'undefined' ? saveDiscoveredMachine : undefined,
+    autoCreateMachineFromScan: typeof autoCreateMachineFromScan !== 'undefined' ? autoCreateMachineFromScan : undefined,
+    exportScannerResultsCSV: typeof exportScannerResultsCSV !== 'undefined' ? exportScannerResultsCSV : undefined
+  };
+
+  global.MTBCncLiveRemote = MTBCncLiveRemote;
+  if (typeof renderCncDashboard !== 'undefined') global.renderCncDashboard = renderCncDashboard;
+  if (typeof renderCncScreenViewer !== 'undefined') global.renderCncScreenViewer = renderCncScreenViewer;
+  if (typeof onCncScreenMachineChange !== 'undefined') global.onCncScreenMachineChange = onCncScreenMachineChange;
+  if (typeof showFocasScannerModal !== 'undefined') global.showFocasScannerModal = showFocasScannerModal;
+  if (typeof runFocasScanner !== 'undefined') global.runFocasScanner = runFocasScanner;
+  if (typeof saveDiscoveredMachine !== 'undefined') global.saveDiscoveredMachine = saveDiscoveredMachine;
+  if (typeof autoCreateMachineFromScan !== 'undefined') global.autoCreateMachineFromScan = autoCreateMachineFromScan;
+  if (typeof exportScannerResultsCSV !== 'undefined') global.exportScannerResultsCSV = exportScannerResultsCSV;
 })(window);

@@ -1,9 +1,8 @@
 /**
  * G-Code Tools
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBGcodeTools(global) {
+(function(global) {
   'use strict';
 
 // ════════════════════════════════════════════════════════════════
@@ -491,7 +490,22 @@ window.runGcodeCheck = function() {
 //  CNC PARAMETRE KARŞILAŞTIRICI
 // ════════════════════════════════════════════════════════════════
 
-  // ── Global Exports ──
-  global.renderGenerator = renderGenerator;
-  global.renderGcodeChecker = renderGcodeChecker;
+  const MTBGcodeTools = {
+    renderGenerator: typeof renderGenerator !== 'undefined' ? renderGenerator : undefined,
+    renderGcodeChecker: typeof renderGcodeChecker !== 'undefined' ? renderGcodeChecker : undefined,
+    toggleGeneratorFields: typeof toggleGeneratorFields !== 'undefined' ? toggleGeneratorFields : undefined,
+    generateGcode: typeof generateGcode !== 'undefined' ? generateGcode : undefined,
+    copyGcodeToClipboard: typeof copyGcodeToClipboard !== 'undefined' ? copyGcodeToClipboard : undefined,
+    loadDefaultGcodeBug: typeof loadDefaultGcodeBug !== 'undefined' ? loadDefaultGcodeBug : undefined,
+    runGcodeCheck: typeof runGcodeCheck !== 'undefined' ? runGcodeCheck : undefined
+  };
+
+  global.MTBGcodeTools = MTBGcodeTools;
+  if (typeof renderGenerator !== 'undefined') global.renderGenerator = renderGenerator;
+  if (typeof renderGcodeChecker !== 'undefined') global.renderGcodeChecker = renderGcodeChecker;
+  if (typeof toggleGeneratorFields !== 'undefined') global.toggleGeneratorFields = toggleGeneratorFields;
+  if (typeof generateGcode !== 'undefined') global.generateGcode = generateGcode;
+  if (typeof copyGcodeToClipboard !== 'undefined') global.copyGcodeToClipboard = copyGcodeToClipboard;
+  if (typeof loadDefaultGcodeBug !== 'undefined') global.loadDefaultGcodeBug = loadDefaultGcodeBug;
+  if (typeof runGcodeCheck !== 'undefined') global.runGcodeCheck = runGcodeCheck;
 })(window);

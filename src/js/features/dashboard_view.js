@@ -1,9 +1,8 @@
 /**
  * Dashboard View
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBDashboardView(global) {
+(function(global) {
   'use strict';
 
 // ════════════════════════════════════════════════════════════════
@@ -276,7 +275,12 @@ function alarmCategoryTag(cat) {
 }
 
 
-  // ── Global Exports ──
-  global.renderDashboard = renderDashboard;
-  global.alarmCategoryTag = alarmCategoryTag;
+  const MTBDashboardView = {
+    renderDashboard: typeof renderDashboard !== 'undefined' ? renderDashboard : undefined,
+    alarmCategoryTag: typeof alarmCategoryTag !== 'undefined' ? alarmCategoryTag : undefined
+  };
+
+  global.MTBDashboardView = MTBDashboardView;
+  if (typeof renderDashboard !== 'undefined') global.renderDashboard = renderDashboard;
+  if (typeof alarmCategoryTag !== 'undefined') global.alarmCategoryTag = alarmCategoryTag;
 })(window);

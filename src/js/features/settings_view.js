@@ -1,9 +1,8 @@
 /**
  * Settings View
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBSettingsView(global) {
+(function(global) {
   'use strict';
 
 function renderSettings() {
@@ -561,8 +560,38 @@ window.openDataDir = function() {
 
 
 
-  // ── Global Exports ──
-  global.renderSettings = renderSettings;
-  global.saveKnowledgePreferences = saveKnowledgePreferences;
-  global.applyAccessibilitySettings = applyAccessibilitySettings;
+  const MTBSettingsView = {
+    renderSettings: typeof renderSettings !== 'undefined' ? renderSettings : undefined,
+    getAlarmParameterScreens: typeof getAlarmParameterScreens !== 'undefined' ? getAlarmParameterScreens : undefined,
+    getKnowledgeScreens: typeof getKnowledgeScreens !== 'undefined' ? getKnowledgeScreens : undefined,
+    renderAlarms: typeof renderAlarms !== 'undefined' ? renderAlarms : undefined,
+    renderParameters: typeof renderParameters !== 'undefined' ? renderParameters : undefined,
+    renderLibrary: typeof renderLibrary !== 'undefined' ? renderLibrary : undefined,
+    renderPdfViewer: typeof renderPdfViewer !== 'undefined' ? renderPdfViewer : undefined,
+    renderProjects: typeof renderProjects !== 'undefined' ? renderProjects : undefined,
+    setThemeOption: typeof setThemeOption !== 'undefined' ? setThemeOption : undefined,
+    addNewUser: typeof addNewUser !== 'undefined' ? addNewUser : undefined,
+    deleteUser: typeof deleteUser !== 'undefined' ? deleteUser : undefined,
+    changeMyPin: typeof changeMyPin !== 'undefined' ? changeMyPin : undefined,
+    openDataDir: typeof openDataDir !== 'undefined' ? openDataDir : undefined,
+    saveKnowledgePreferences: typeof saveKnowledgePreferences !== 'undefined' ? saveKnowledgePreferences : undefined,
+    applyAccessibilitySettings: typeof applyAccessibilitySettings !== 'undefined' ? applyAccessibilitySettings : undefined
+  };
+
+  global.MTBSettingsView = MTBSettingsView;
+  if (typeof renderSettings !== 'undefined') global.renderSettings = renderSettings;
+  if (typeof getAlarmParameterScreens !== 'undefined') global.getAlarmParameterScreens = getAlarmParameterScreens;
+  if (typeof getKnowledgeScreens !== 'undefined') global.getKnowledgeScreens = getKnowledgeScreens;
+  if (typeof renderAlarms !== 'undefined') global.renderAlarms = renderAlarms;
+  if (typeof renderParameters !== 'undefined') global.renderParameters = renderParameters;
+  if (typeof renderLibrary !== 'undefined') global.renderLibrary = renderLibrary;
+  if (typeof renderPdfViewer !== 'undefined') global.renderPdfViewer = renderPdfViewer;
+  if (typeof renderProjects !== 'undefined') global.renderProjects = renderProjects;
+  if (typeof setThemeOption !== 'undefined') global.setThemeOption = setThemeOption;
+  if (typeof addNewUser !== 'undefined') global.addNewUser = addNewUser;
+  if (typeof deleteUser !== 'undefined') global.deleteUser = deleteUser;
+  if (typeof changeMyPin !== 'undefined') global.changeMyPin = changeMyPin;
+  if (typeof openDataDir !== 'undefined') global.openDataDir = openDataDir;
+  if (typeof saveKnowledgePreferences !== 'undefined') global.saveKnowledgePreferences = saveKnowledgePreferences;
+  if (typeof applyAccessibilitySettings !== 'undefined') global.applyAccessibilitySettings = applyAccessibilitySettings;
 })(window);

@@ -1,9 +1,8 @@
 /**
  * Param Comparator
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBParamComparator(global) {
+(function(global) {
   'use strict';
 
 function renderParamComparator() {
@@ -492,8 +491,38 @@ function getBitDifferenceDetails(no, valA, valB) {
 }
 
 
-  // ── Global Exports ──
-  global.renderParamComparator = renderParamComparator;
-  global.renderDiffTableRows = renderDiffTableRows;
-  global.getBitDifferenceDetails = getBitDifferenceDetails;
+  const MTBParamComparator = {
+    renderParamComparator: typeof renderParamComparator !== 'undefined' ? renderParamComparator : undefined,
+    renderDiffTableRows: typeof renderDiffTableRows !== 'undefined' ? renderDiffTableRows : undefined,
+    getBitDifferenceDetails: typeof getBitDifferenceDetails !== 'undefined' ? getBitDifferenceDetails : undefined,
+    handleParamDragOver: typeof handleParamDragOver !== 'undefined' ? handleParamDragOver : undefined,
+    handleParamDragLeave: typeof handleParamDragLeave !== 'undefined' ? handleParamDragLeave : undefined,
+    handleParamDrop: typeof handleParamDrop !== 'undefined' ? handleParamDrop : undefined,
+    clearParamInput: typeof clearParamInput !== 'undefined' ? clearParamInput : undefined,
+    uploadParamFile: typeof uploadParamFile !== 'undefined' ? uploadParamFile : undefined,
+    loadDefaultParamDiff: typeof loadDefaultParamDiff !== 'undefined' ? loadDefaultParamDiff : undefined,
+    compareParameterFiles: typeof compareParameterFiles !== 'undefined' ? compareParameterFiles : undefined,
+    filterDiffRows: typeof filterDiffRows !== 'undefined' ? filterDiffRows : undefined,
+    filterDiffMode: typeof filterDiffMode !== 'undefined' ? filterDiffMode : undefined,
+    exportDiffPDF: typeof exportDiffPDF !== 'undefined' ? exportDiffPDF : undefined,
+    exportDiffCSV: typeof exportDiffCSV !== 'undefined' ? exportDiffCSV : undefined,
+    loadPresetBackupForDiff: typeof loadPresetBackupForDiff !== 'undefined' ? loadPresetBackupForDiff : undefined
+  };
+
+  global.MTBParamComparator = MTBParamComparator;
+  if (typeof renderParamComparator !== 'undefined') global.renderParamComparator = renderParamComparator;
+  if (typeof renderDiffTableRows !== 'undefined') global.renderDiffTableRows = renderDiffTableRows;
+  if (typeof getBitDifferenceDetails !== 'undefined') global.getBitDifferenceDetails = getBitDifferenceDetails;
+  if (typeof handleParamDragOver !== 'undefined') global.handleParamDragOver = handleParamDragOver;
+  if (typeof handleParamDragLeave !== 'undefined') global.handleParamDragLeave = handleParamDragLeave;
+  if (typeof handleParamDrop !== 'undefined') global.handleParamDrop = handleParamDrop;
+  if (typeof clearParamInput !== 'undefined') global.clearParamInput = clearParamInput;
+  if (typeof uploadParamFile !== 'undefined') global.uploadParamFile = uploadParamFile;
+  if (typeof loadDefaultParamDiff !== 'undefined') global.loadDefaultParamDiff = loadDefaultParamDiff;
+  if (typeof compareParameterFiles !== 'undefined') global.compareParameterFiles = compareParameterFiles;
+  if (typeof filterDiffRows !== 'undefined') global.filterDiffRows = filterDiffRows;
+  if (typeof filterDiffMode !== 'undefined') global.filterDiffMode = filterDiffMode;
+  if (typeof exportDiffPDF !== 'undefined') global.exportDiffPDF = exportDiffPDF;
+  if (typeof exportDiffCSV !== 'undefined') global.exportDiffCSV = exportDiffCSV;
+  if (typeof loadPresetBackupForDiff !== 'undefined') global.loadPresetBackupForDiff = loadPresetBackupForDiff;
 })(window);

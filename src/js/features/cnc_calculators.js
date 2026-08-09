@@ -1,9 +1,8 @@
 /**
  * CNC Calculators
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBCncCalculators(global) {
+(function(global) {
   'use strict';
 
 // ════════════════════════════════════════════════════════════════
@@ -985,11 +984,40 @@ window.calculateNewLimits = function() {
 };
 
 
-  // ── Global Exports ──
-  global.renderTuning = renderTuning;
-  global.renderGearRatio = renderGearRatio;
-  global.renderReliability = renderReliability;
-  global.renderBacklashHelper = renderBacklashHelper;
-  global.renderSpindleDiagnostics = renderSpindleDiagnostics;
-  global.renderAxisLimitsHelper = renderAxisLimitsHelper;
+  const MTBCncCalculators = {
+    renderTuning: typeof renderTuning !== 'undefined' ? renderTuning : undefined,
+    renderGearRatio: typeof renderGearRatio !== 'undefined' ? renderGearRatio : undefined,
+    renderReliability: typeof renderReliability !== 'undefined' ? renderReliability : undefined,
+    renderBacklashHelper: typeof renderBacklashHelper !== 'undefined' ? renderBacklashHelper : undefined,
+    renderSpindleDiagnostics: typeof renderSpindleDiagnostics !== 'undefined' ? renderSpindleDiagnostics : undefined,
+    renderAxisLimitsHelper: typeof renderAxisLimitsHelper !== 'undefined' ? renderAxisLimitsHelper : undefined,
+    selectTuningWizard: typeof selectTuningWizard !== 'undefined' ? selectTuningWizard : undefined,
+    calculateFlexibleGearRatio: typeof calculateFlexibleGearRatio !== 'undefined' ? calculateFlexibleGearRatio : undefined,
+    generateBacklashGcode: typeof generateBacklashGcode !== 'undefined' ? generateBacklashGcode : undefined,
+    copyBacklashGcode: typeof copyBacklashGcode !== 'undefined' ? copyBacklashGcode : undefined,
+    calculateNewBacklash: typeof calculateNewBacklash !== 'undefined' ? calculateNewBacklash : undefined,
+    switchSpindleTab: typeof switchSpindleTab !== 'undefined' ? switchSpindleTab : undefined,
+    calculateSpindleGearRatio: typeof calculateSpindleGearRatio !== 'undefined' ? calculateSpindleGearRatio : undefined,
+    showSpindleAlarmDetail: typeof showSpindleAlarmDetail !== 'undefined' ? showSpindleAlarmDetail : undefined,
+    switchLimitTab: typeof switchLimitTab !== 'undefined' ? switchLimitTab : undefined,
+    calculateNewLimits: typeof calculateNewLimits !== 'undefined' ? calculateNewLimits : undefined
+  };
+
+  global.MTBCncCalculators = MTBCncCalculators;
+  if (typeof renderTuning !== 'undefined') global.renderTuning = renderTuning;
+  if (typeof renderGearRatio !== 'undefined') global.renderGearRatio = renderGearRatio;
+  if (typeof renderReliability !== 'undefined') global.renderReliability = renderReliability;
+  if (typeof renderBacklashHelper !== 'undefined') global.renderBacklashHelper = renderBacklashHelper;
+  if (typeof renderSpindleDiagnostics !== 'undefined') global.renderSpindleDiagnostics = renderSpindleDiagnostics;
+  if (typeof renderAxisLimitsHelper !== 'undefined') global.renderAxisLimitsHelper = renderAxisLimitsHelper;
+  if (typeof selectTuningWizard !== 'undefined') global.selectTuningWizard = selectTuningWizard;
+  if (typeof calculateFlexibleGearRatio !== 'undefined') global.calculateFlexibleGearRatio = calculateFlexibleGearRatio;
+  if (typeof generateBacklashGcode !== 'undefined') global.generateBacklashGcode = generateBacklashGcode;
+  if (typeof copyBacklashGcode !== 'undefined') global.copyBacklashGcode = copyBacklashGcode;
+  if (typeof calculateNewBacklash !== 'undefined') global.calculateNewBacklash = calculateNewBacklash;
+  if (typeof switchSpindleTab !== 'undefined') global.switchSpindleTab = switchSpindleTab;
+  if (typeof calculateSpindleGearRatio !== 'undefined') global.calculateSpindleGearRatio = calculateSpindleGearRatio;
+  if (typeof showSpindleAlarmDetail !== 'undefined') global.showSpindleAlarmDetail = showSpindleAlarmDetail;
+  if (typeof switchLimitTab !== 'undefined') global.switchLimitTab = switchLimitTab;
+  if (typeof calculateNewLimits !== 'undefined') global.calculateNewLimits = calculateNewLimits;
 })(window);

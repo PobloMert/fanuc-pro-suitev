@@ -1,9 +1,8 @@
 /**
  * PDF Builders
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBPdfBuilders(global) {
+(function(global) {
   'use strict';
 
 // ════════════════════════════════════════════════════════════════
@@ -387,8 +386,14 @@ window.ReportBuilders = Object.freeze({
 });
 
 
-  // ── Global Exports ──
-  global.getPdfBaseStyles = getPdfBaseStyles;
-  global.buildMaintenanceReportHTML = buildMaintenanceReportHTML;
-  global.buildMachineCardHTML = buildMachineCardHTML;
+  const MTBPdfBuilders = {
+    getPdfBaseStyles: typeof getPdfBaseStyles !== 'undefined' ? getPdfBaseStyles : undefined,
+    buildMaintenanceReportHTML: typeof buildMaintenanceReportHTML !== 'undefined' ? buildMaintenanceReportHTML : undefined,
+    buildMachineCardHTML: typeof buildMachineCardHTML !== 'undefined' ? buildMachineCardHTML : undefined
+  };
+
+  global.MTBPdfBuilders = MTBPdfBuilders;
+  if (typeof getPdfBaseStyles !== 'undefined') global.getPdfBaseStyles = getPdfBaseStyles;
+  if (typeof buildMaintenanceReportHTML !== 'undefined') global.buildMaintenanceReportHTML = buildMaintenanceReportHTML;
+  if (typeof buildMachineCardHTML !== 'undefined') global.buildMachineCardHTML = buildMachineCardHTML;
 })(window);

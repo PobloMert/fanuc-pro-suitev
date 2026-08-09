@@ -1,9 +1,8 @@
 /**
  * Troubleshooter
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBTroubleshooter(global) {
+(function(global) {
   'use strict';
 
 // ════════════════════════════════════════════════════════════════
@@ -634,9 +633,30 @@ window.deleteWikiArticle = async function(id) {
 };
 
 
-  // ── Global Exports ──
-  global.renderTroubleshooter = renderTroubleshooter;
-  global.renderTroubleshootButtons = renderTroubleshootButtons;
-  global.renderTroubleshootWiki = renderTroubleshootWiki;
-  global.filterWikiArticles = filterWikiArticles;
+  const MTBTroubleshooter = {
+    renderTroubleshooter: typeof renderTroubleshooter !== 'undefined' ? renderTroubleshooter : undefined,
+    renderTroubleshootButtons: typeof renderTroubleshootButtons !== 'undefined' ? renderTroubleshootButtons : undefined,
+    renderTroubleshootWiki: typeof renderTroubleshootWiki !== 'undefined' ? renderTroubleshootWiki : undefined,
+    filterWikiArticles: typeof filterWikiArticles !== 'undefined' ? filterWikiArticles : undefined,
+    selectOfflinePreset: typeof selectOfflinePreset !== 'undefined' ? selectOfflinePreset : undefined,
+    runOfflineRootCauseAnalysis: typeof runOfflineRootCauseAnalysis !== 'undefined' ? runOfflineRootCauseAnalysis : undefined,
+    printOfflineDiagnosticPDF: typeof printOfflineDiagnosticPDF !== 'undefined' ? printOfflineDiagnosticPDF : undefined,
+    navigateTroubleshootNode: typeof navigateTroubleshootNode !== 'undefined' ? navigateTroubleshootNode : undefined,
+    showNewWikiArticleModal: typeof showNewWikiArticleModal !== 'undefined' ? showNewWikiArticleModal : undefined,
+    createNewWikiArticle: typeof createNewWikiArticle !== 'undefined' ? createNewWikiArticle : undefined,
+    deleteWikiArticle: typeof deleteWikiArticle !== 'undefined' ? deleteWikiArticle : undefined
+  };
+
+  global.MTBTroubleshooter = MTBTroubleshooter;
+  if (typeof renderTroubleshooter !== 'undefined') global.renderTroubleshooter = renderTroubleshooter;
+  if (typeof renderTroubleshootButtons !== 'undefined') global.renderTroubleshootButtons = renderTroubleshootButtons;
+  if (typeof renderTroubleshootWiki !== 'undefined') global.renderTroubleshootWiki = renderTroubleshootWiki;
+  if (typeof filterWikiArticles !== 'undefined') global.filterWikiArticles = filterWikiArticles;
+  if (typeof selectOfflinePreset !== 'undefined') global.selectOfflinePreset = selectOfflinePreset;
+  if (typeof runOfflineRootCauseAnalysis !== 'undefined') global.runOfflineRootCauseAnalysis = runOfflineRootCauseAnalysis;
+  if (typeof printOfflineDiagnosticPDF !== 'undefined') global.printOfflineDiagnosticPDF = printOfflineDiagnosticPDF;
+  if (typeof navigateTroubleshootNode !== 'undefined') global.navigateTroubleshootNode = navigateTroubleshootNode;
+  if (typeof showNewWikiArticleModal !== 'undefined') global.showNewWikiArticleModal = showNewWikiArticleModal;
+  if (typeof createNewWikiArticle !== 'undefined') global.createNewWikiArticle = createNewWikiArticle;
+  if (typeof deleteWikiArticle !== 'undefined') global.deleteWikiArticle = deleteWikiArticle;
 })(window);

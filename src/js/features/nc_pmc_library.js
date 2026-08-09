@@ -1,9 +1,8 @@
 /**
  * NC/PMC Library
  * Extracted from renderer.js for modular architecture.
- * Auto-generated — do not hand-edit without updating renderer.js delegation.
  */
-(function MTBNcPmcLibrary(global) {
+(function(global) {
   'use strict';
 
 function renderNcCodes() {
@@ -516,16 +515,50 @@ window.deleteCustomAlarm = async function(id) {
 
 
 
-  // ── Global Exports ──
-  global.renderNcCodes = renderNcCodes;
-  global.filterNc = filterNc;
-  global.renderNcTable = renderNcTable;
-  global.renderPmcSignals = renderPmcSignals;
-  global.filterPmc = filterPmc;
-  global.renderPmcTable = renderPmcTable;
-  global.renderReports = renderReports;
-  global.renderPredictive = renderPredictive;
-  global.calculateMachineHealth = calculateMachineHealth;
-  global.renderCustomBuilderLibrary = renderCustomBuilderLibrary;
-  global.filterBuilderList = filterBuilderList;
+  const MTBNcPmcLibrary = {
+    renderNcCodes: typeof renderNcCodes !== 'undefined' ? renderNcCodes : undefined,
+    filterNc: typeof filterNc !== 'undefined' ? filterNc : undefined,
+    renderNcTable: typeof renderNcTable !== 'undefined' ? renderNcTable : undefined,
+    renderPmcSignals: typeof renderPmcSignals !== 'undefined' ? renderPmcSignals : undefined,
+    filterPmc: typeof filterPmc !== 'undefined' ? filterPmc : undefined,
+    renderPmcTable: typeof renderPmcTable !== 'undefined' ? renderPmcTable : undefined,
+    renderReports: typeof renderReports !== 'undefined' ? renderReports : undefined,
+    renderPredictive: typeof renderPredictive !== 'undefined' ? renderPredictive : undefined,
+    calculateMachineHealth: typeof calculateMachineHealth !== 'undefined' ? calculateMachineHealth : undefined,
+    renderCustomBuilderLibrary: typeof renderCustomBuilderLibrary !== 'undefined' ? renderCustomBuilderLibrary : undefined,
+    filterBuilderList: typeof filterBuilderList !== 'undefined' ? filterBuilderList : undefined,
+    showNcDetail: typeof showNcDetail !== 'undefined' ? showNcDetail : undefined,
+    askAIAboutNc: typeof askAIAboutNc !== 'undefined' ? askAIAboutNc : undefined,
+    showPmcDetail: typeof showPmcDetail !== 'undefined' ? showPmcDetail : undefined,
+    askAIAboutPmc: typeof askAIAboutPmc !== 'undefined' ? askAIAboutPmc : undefined,
+    switchBuilderTab: typeof switchBuilderTab !== 'undefined' ? switchBuilderTab : undefined,
+    showNewBuilderItemModal: typeof showNewBuilderItemModal !== 'undefined' ? showNewBuilderItemModal : undefined,
+    createNewCustomMcode: typeof createNewCustomMcode !== 'undefined' ? createNewCustomMcode : undefined,
+    createNewCustomAlarm: typeof createNewCustomAlarm !== 'undefined' ? createNewCustomAlarm : undefined,
+    deleteCustomMcode: typeof deleteCustomMcode !== 'undefined' ? deleteCustomMcode : undefined,
+    deleteCustomAlarm: typeof deleteCustomAlarm !== 'undefined' ? deleteCustomAlarm : undefined
+  };
+
+  global.MTBNcPmcLibrary = MTBNcPmcLibrary;
+  if (typeof renderNcCodes !== 'undefined') global.renderNcCodes = renderNcCodes;
+  if (typeof filterNc !== 'undefined') global.filterNc = filterNc;
+  if (typeof renderNcTable !== 'undefined') global.renderNcTable = renderNcTable;
+  if (typeof renderPmcSignals !== 'undefined') global.renderPmcSignals = renderPmcSignals;
+  if (typeof filterPmc !== 'undefined') global.filterPmc = filterPmc;
+  if (typeof renderPmcTable !== 'undefined') global.renderPmcTable = renderPmcTable;
+  if (typeof renderReports !== 'undefined') global.renderReports = renderReports;
+  if (typeof renderPredictive !== 'undefined') global.renderPredictive = renderPredictive;
+  if (typeof calculateMachineHealth !== 'undefined') global.calculateMachineHealth = calculateMachineHealth;
+  if (typeof renderCustomBuilderLibrary !== 'undefined') global.renderCustomBuilderLibrary = renderCustomBuilderLibrary;
+  if (typeof filterBuilderList !== 'undefined') global.filterBuilderList = filterBuilderList;
+  if (typeof showNcDetail !== 'undefined') global.showNcDetail = showNcDetail;
+  if (typeof askAIAboutNc !== 'undefined') global.askAIAboutNc = askAIAboutNc;
+  if (typeof showPmcDetail !== 'undefined') global.showPmcDetail = showPmcDetail;
+  if (typeof askAIAboutPmc !== 'undefined') global.askAIAboutPmc = askAIAboutPmc;
+  if (typeof switchBuilderTab !== 'undefined') global.switchBuilderTab = switchBuilderTab;
+  if (typeof showNewBuilderItemModal !== 'undefined') global.showNewBuilderItemModal = showNewBuilderItemModal;
+  if (typeof createNewCustomMcode !== 'undefined') global.createNewCustomMcode = createNewCustomMcode;
+  if (typeof createNewCustomAlarm !== 'undefined') global.createNewCustomAlarm = createNewCustomAlarm;
+  if (typeof deleteCustomMcode !== 'undefined') global.deleteCustomMcode = deleteCustomMcode;
+  if (typeof deleteCustomAlarm !== 'undefined') global.deleteCustomAlarm = deleteCustomAlarm;
 })(window);
