@@ -80,6 +80,7 @@ export async function loadData() {
       loadJSONDatabase('maintenances.json', 'maintenances', []),
       loadJSONDatabase('batteries.json', 'batteries', []),
       loadJSONDatabase('keep_relays.json', 'keep_relays', []),
+      loadJSONDatabase('pmc_timers.json', 'pmc_timers', []),
       loadJSONDatabase('drive_alarms.json', 'drive_alarms', []),
       loadJSONDatabase('fans.json', 'fans', []),
       loadJSONDatabase('wiki.json', 'articles', []),
@@ -98,13 +99,14 @@ export async function loadData() {
     State.maintenances = results[6];
     State.batteries = results[7];
     State.keep_relays = results[8];
-    State.drive_alarms = results[9];
-    State.fans = results[10];
-    State.wiki = results[11];
-    State.backup_logs = results[12];
-    State.custom_mcodes = results[13];
-    State.custom_alarms = results[14];
-    State.custom_alarm_notes = results[15];
+    State.pmc_timers = results[9];
+    State.drive_alarms = results[10];
+    State.fans = results[11];
+    State.wiki = results[12];
+    State.backup_logs = results[13];
+    State.custom_mcodes = results[14];
+    State.custom_alarms = results[15];
+    State.custom_alarm_notes = results[16];
 
     if (StartupErrors.length > 0) {
       console.warn('Veri yükleme sırasında uyarılar oluştu:\n', StartupErrors.join('\n'));

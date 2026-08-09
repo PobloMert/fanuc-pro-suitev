@@ -16,6 +16,7 @@ export const State = (typeof window !== 'undefined' && window.State) || {
   maintenances: [],
   batteries: [],
   keep_relays: [],
+  pmc_timers: [],
   drive_alarms: [],
   fans: [],
   wiki: [],

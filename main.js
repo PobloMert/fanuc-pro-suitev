@@ -867,9 +867,22 @@ ipcMain.handle('ai-complete', async (event, request) => {
     }
     if (provider === 'gemini') {
       const model = String(request.model || 'gemini-pro').replace(/[^a-zA-Z0-9._-]/g, '');
+      const geminiContents = [
+        { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userMessage}` }] }
+      ];
+      if (Array.isArray(history) && history.length > 0) {
+        history.forEach(h => {
+          if (h && h.content) {
+            geminiContents.push({
+              role: h.role === 'assistant' ? 'model' : 'user',
+              parts: [{ text: String(h.content) }]
+            });
+          }
+        });
+      }
       response = await net.fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userMessage}` }] }] })
+        body: JSON.stringify({ contents: geminiContents })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(`Gemini API hatası: ${response.status}`);
@@ -1335,7 +1348,9 @@ ipcMain.handle('export-csv', async (event, csvContent, defaultName) => {
       fs.mkdirSync(parentDir, { recursive: true });
     }
 
-    fs.writeFileSync(resolved, '\ufeff' + csvContent, 'utf8'); // BOM for Excel
+    const cleanCsv = csvContent.startsWith('\ufeff') ? csvContent.slice(1) : csvContent;
+    const normalizedCsv = cleanCsv.replace(/\r?\n/g, '\r\n');
+    fs.writeFileSync(resolved, '\ufeff' + normalizedCsv, 'utf8'); // Single BOM for Excel
     return { ok: true, filePath: resolved };
   } catch (err) {
     return { ok: false, error: err.message };

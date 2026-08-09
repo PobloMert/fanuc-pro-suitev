@@ -264,13 +264,15 @@ window.sendAIMessage = async function() {
 
   let response;
   try {
-    const apiMsg = `${msg}\n\n${machineContext}\n\n${ragContext || '[YEREL KAYNAK EŞLEŞMESİ YOK — kesin teknik iddia üretme]'}`;
+    const structuredRag = ragContext ? `<rag_context>\n${ragContext}\n</rag_context>` : '<rag_context>[YEREL KAYNAK EŞLEŞMESİ YOK — Kesin teknik teşhis veya sayısal değer ÜRETME, belirsizliği açıkça ifade et]</rag_context>';
+    const structuredMachine = machineContext ? `<machine_context>\n${machineContext}\n</machine_context>` : '';
+    const searchModeNotice = State.onlineSearchEnabled ? '[Sistem Notu: Web araması aktif. Güncel teknik FANUC verilerinden yararlanabilirsiniz.]\n' : '';
+
+    const apiMsg = `${searchModeNotice}${structuredMachine}\n${structuredRag}\n\n<user_query>\n${msg}\n</user_query>`;
+
     if (State.settings.aiProvider !== 'offline') {
-      const finalMsg = State.onlineSearchEnabled
-        ? `[Sistem Notu: Web araması aktif. Lütfen internetten aldığın en güncel teknik FANUC verilerini kullanarak cevap ver.] ${apiMsg}`
-        : apiMsg;
       const safeHistory = ChatHistory.slice(-10).map(item => ({ ...item, content: maskSensitiveForCloud(item.content) }));
-      response = await callAIAPI(maskSensitiveForCloud(finalMsg), safeHistory);
+      response = await callAIAPI(maskSensitiveForCloud(apiMsg), safeHistory);
     } else {
       const offlineAns = offlineAI(msg);
       const isGenericFallback = String(offlineAns).startsWith('MTB Elektrik Bakım Asistanı — Çevrimdışı Mod');
@@ -280,11 +282,13 @@ window.sendAIMessage = async function() {
     }
   } catch (e) {
     const offlineAns = offlineAI(msg);
-    const combinedAns = ragContext ? `${offlineAns}\n\n---\n${ragContext}` : offlineAns;
     response = `API hatası: ${e.message}\n\nOffline veritabanına geçildi:\n\n` + (ragResult.sources.length ? offlineAns : 'Doğrulanmış yerel kaynak bulunamadı.');
   }
 
-  response += citations + '\n\n⚠️ Bu yalnızca öneridir; yetkili teknisyen doğrulaması gerekir. Uygulama CNC’ye komut gönderemez.';
+  response += citations;
+  if (!response.includes('yetkili teknisyen')) {
+    response += '\n\n⚠️ Bu yalnızca öneridir; yetkili teknisyen doğrulaması gerekir. Uygulama CNC’ye komut gönderemez.';
+  }
 
   removeTyping(typingId);
   appendMessage('ai', response, { sources: ragResult.sources, confidence: ragResult.sources.length ? 'Yerel kaynakla destekli' : 'Düşük güven — kaynak eşleşmedi' });
@@ -400,7 +404,8 @@ function offlineAI(msg) {
   const tMatch = msg.match(/\b(T\d{1,3})\b/i);
   if (tMatch) {
     const id = tMatch[1].toUpperCase();
-    const item = State.keep_relays.find(x => x.id.toUpperCase() === id || x.id.toUpperCase().startsWith(id));
+    const item = (State.pmc_timers || []).find(x => x.id.toUpperCase() === id || x.id.toUpperCase().startsWith(id)) ||
+                 (State.keep_relays || []).find(x => x.id.toUpperCase() === id || x.id.toUpperCase().startsWith(id));
     if (item) {
       return `## PMC Timer: ${item.id} — ${item.name}\n\n**Açıklama:** ${item.description}\n\n💡 **Özel Not:** ${item.note || '—'}`;
     }

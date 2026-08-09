@@ -414,11 +414,11 @@ N04003 P 00000100
       return;
     }
 
-    let csv = '\uFEFFParametre No;Okunan Değer;Biçim;Açıklama & İşlev\n';
+    let csv = 'Parametre No;Okunan Değer;Biçim;Açıklama & İşlev\r\n';
     currentParsedParams.forEach(p => {
-      const desc = getParamDbDesc(p.no).replace(/;/g, ' ');
+      const desc = getParamDbDesc(p.no).replace(/"/g, '""').replace(/[\r\n]+/g, ' ');
       const isBinary = /^[01]{8}$/.test(p.value) ? '8-Bit Binary' : 'Sayısal';
-      csv += `${p.no};${p.value};${isBinary};${desc}\n`;
+      csv += `"${p.no}";"${p.value}";"${isBinary}";"${desc}"\r\n`;
     });
 
     if (window.electronAPI && window.electronAPI.exportCSV) {

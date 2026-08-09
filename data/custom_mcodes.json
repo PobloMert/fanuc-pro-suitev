@@ -1,3 +1,102 @@
 {
-  "mcodes": []
+  "mcodes": [
+    {
+      "id": 1,
+      "code": "M10",
+      "name": "AYNA SIKMA (CHUCK CLAMP)",
+      "signal": "Y22.4",
+      "description": "Ana fener mili hidrolik aynasını sıkar. Okuma sensörü: X10.0 (Ayna Sıkı Sinyali)."
+    },
+    {
+      "id": 2,
+      "code": "M11",
+      "name": "AYNA AÇMA (CHUCK UNCLAMP)",
+      "signal": "Y22.5",
+      "description": "Ana fener mili hidrolik aynasını açar. İş mili dönerken M11 komutu PMC tarafından kilitlenir."
+    },
+    {
+      "id": 3,
+      "code": "M12",
+      "name": "PUNTO GÖVDESİ İLERİ (QUILL ADVANCE)",
+      "signal": "Y23.0",
+      "description": "Karşı punto pinolünü iş parçasına doğru ilerletir. Basınç anahtarı X11.2 aktif olana kadar bekler."
+    },
+    {
+      "id": 4,
+      "code": "M13",
+      "name": "PUNTO GÖVDESİ GERİ (QUILL RETRACT)",
+      "signal": "Y23.1",
+      "description": "Karşı punto pinolünü geriye çeker."
+    },
+    {
+      "id": 5,
+      "code": "M50",
+      "name": "PALET DEĞİŞTİRME BAŞLAT (APC PALLET CHANGE)",
+      "signal": "Y30.0",
+      "description": "Otomatik Palet Değiştirici (APC) çevrimini başlatır. O9005 alt programını çağırır."
+    },
+    {
+      "id": 6,
+      "code": "M68",
+      "name": "C-EKSENİ FREN SIKMA (SPINDLE BRAKE CLAMP)",
+      "signal": "Y24.1",
+      "description": "C ekseni modunda iş milini hidrolik olarak kilitler / frenler."
+    },
+    {
+      "id": 7,
+      "code": "M69",
+      "name": "C-EKSENİ FREN BIRAKMA (SPINDLE BRAKE UNCLAMP)",
+      "signal": "Y24.2",
+      "description": "C ekseni hidrolik frenini serbest bırakır."
+    },
+    {
+      "id": 8,
+      "code": "M78",
+      "name": "SABİT YATAK SIKMA (STEADY REST CLAMP)",
+      "signal": "Y25.3",
+      "description": "Hidrolik sabit yatak (steady rest) ayaklarını sıkar."
+    },
+    {
+      "id": 9,
+      "code": "M79",
+      "name": "SABİT YATAK AÇMA (STEADY REST UNCLAMP)",
+      "signal": "Y25.4",
+      "description": "Hidrolik sabit yatak ayaklarını serbest bırakır."
+    },
+    {
+      "id": 10,
+      "code": "M88",
+      "name": "TAKIM İÇİ YÜKSEK BASINÇ SOĞUTMA AÇIK (HIGH PRESSURE CTS ON)",
+      "signal": "Y12.6",
+      "description": "Takım içinden yüksek basınçlı soğutma sıvısını (CTS - Coolant Through Spindle) başlatır."
+    },
+    {
+      "id": 11,
+      "code": "M89",
+      "name": "TAKIM İÇİ YÜKSEK BASINÇ SOĞUTMA KAPALI (CTS OFF)",
+      "signal": "Y12.7",
+      "description": "Takım içi yüksek basınçlı soğutmayı durdurur."
+    },
+    {
+      "id": 12,
+      "code": "M100",
+      "name": "PARÇA YAKALAYICI İLERİ (PARTS CATCHER EXTEND)",
+      "signal": "Y28.0",
+      "description": "Bitmiş parçayı yakalamak için parça yakalama kolunu iş mili altına uzatır."
+    },
+    {
+      "id": 13,
+      "code": "M101",
+      "name": "PARÇA YAKALAYICI GERİ (PARTS CATCHER RETRACT)",
+      "signal": "Y28.1",
+      "description": "Parça yakalama kolunu ev pozisyonuna çeker."
+    },
+    {
+      "id": 14,
+      "code": "M601",
+      "name": "ÖZEL TAKIM DEĞİŞTİRME MAKROSU (ATC MACRO CALL)",
+      "signal": "PRM 6080",
+      "description": "Parametre No.6080 ile O9001 makro programına bağlanmıştır. Takım değiştirme güvenlik kontrollerini yapar."
+    }
+  ]
 }
