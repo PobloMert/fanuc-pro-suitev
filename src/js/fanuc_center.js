@@ -48,7 +48,11 @@
     message: 'FANUC profilini ve modül envanterini değiştirmek için düzenleme yetkisine sahip bir kullanıcıyla giriş yapın.'
   });
   const selectedMachine = () => {
-    const machines = state().machines || [];
+    const machines = [...(state().machines || [])].sort((a, b) => {
+      const nameA = String(a.numarasi || a.name || '');
+      const nameB = String(b.numarasi || b.name || '');
+      return nameA.localeCompare(nameB, 'tr', { numeric: true, sensitivity: 'base' });
+    });
     const stored = Number(window.ActiveFanucMachineId);
     return machines.find(item => item.id === stored) || machines[0] || null;
   };
@@ -158,7 +162,11 @@
     const page = document.createElement('section');
     page.className = 'page active fanuc-center-page';
     page.id = 'page-fanuc_center';
-    const machines = state().machines || [];
+    const machines = [...(state().machines || [])].sort((a, b) => {
+      const nameA = String(a.numarasi || a.name || '');
+      const nameB = String(b.numarasi || b.name || '');
+      return nameA.localeCompare(nameB, 'tr', { numeric: true, sensitivity: 'base' });
+    });
     if (!window.ActiveFanucMachineId && machines[0]) window.ActiveFanucMachineId = machines[0].id;
     page.innerHTML = `<div class="page-header fanuc-center-header"><div><span class="fanuc-eyebrow">FANUC READ-ONLY SERVICE WORKSPACE</span><h1>FANUC Bakım & Teşhis Merkezi</h1><p>Tezgâh profili, teşhis senaryoları, parametre analizi, yedek sağlığı ve sürücü LED rehberi</p></div><label class="fanuc-machine-picker"><span>AKTİF TEZGÂH</span><select id="fanuc-machine-select">${machines.map(m => `<option value="${m.id}" ${Number(m.id) === Number(window.ActiveFanucMachineId) ? 'selected' : ''}>${esc(m.numarasi || m.name)}</option>`).join('')}</select></label></div><div class="fanuc-tabbar">${tabs.map(([id,label]) => `<button class="${id === activeTab ? 'active' : ''}" data-fanuc-tab="${id}">${label}</button>`).join('')}</div><div class="page-body" id="fanuc-center-content">${renderContent(selectedMachine())}</div>`;
     return page;
