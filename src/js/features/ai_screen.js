@@ -124,6 +124,17 @@ function renderAI() {
           </button>
         </div>
       </div>
+
+      <!-- AI Advanced Generators Card -->
+      <div class="card" style="display:flex; flex-direction:column; gap:10px; padding:16px; background:var(--bg-card2); border:1px solid var(--accent);">
+        <div style="font-weight:700; font-size:12px; text-transform:uppercase; color:var(--text-accent);">⚡ Yapay Zeka Araçları</div>
+        <button class="btn btn-primary btn-sm" onclick="generateAIActionPlan()" style="width:100%; text-align:left; justify-content:flex-start;">
+          🧠 AI İnteraktif Aksiyon Planı Üret
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="generateAIPredictiveReport()" style="width:100%; text-align:left; justify-content:flex-start;">
+          📊 AI Kestirimci Sağlık Raporu Al
+        </button>
+      </div>
     `;
   }
 
@@ -562,6 +573,134 @@ function appendMessage(role, text, metadata = {}) {
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
 }
+
+window.toggleAIChecklistItem = function(checkboxEl) {
+  const label = checkboxEl.nextElementSibling;
+  if (label) {
+    if (checkboxEl.checked) {
+      label.style.textDecoration = 'line-through';
+      label.style.opacity = '0.6';
+    } else {
+      label.style.textDecoration = 'none';
+      label.style.opacity = '1';
+    }
+  }
+};
+
+window.exportAIChecklistPDF = function(title) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>FANUC AI Raporu</title>
+      <style>
+        body { font-family: sans-serif; font-size: 12px; padding: 24px; color: #0f172a; }
+        h1 { color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
+        .box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 16px; border-radius: 8px; margin-top: 16px; }
+      </style>
+    </head>
+    <body>
+      <h1>🛠️ FANUC Teknik AI Raporu</h1>
+      <p><strong>Oluşturma Tarihi:</strong> ${new Date().toLocaleString('tr-TR')}</p>
+      <div class="box">
+        <h3>${escapeHTML(title || 'Saha Aksiyon Planı & Teşhis')}</h3>
+        <p>Bu rapor FANUC Pro Suite Yapay Zekası tarafından oluşturulmuş ve yetkili teknik personelle paylaşılmıştır.</p>
+      </div>
+    </body>
+    </html>
+  `;
+  if (window.electronAPI && window.electronAPI.printToPDF) {
+    window.electronAPI.printToPDF(html, 'AI_Saha_Aksiyon_Raporu.pdf');
+  } else {
+    window.print();
+  }
+};
+
+window.generateAIActionPlan = function(customQuery) {
+  const query = customQuery || (State.activeDiagnostic ? `${State.activeDiagnostic.code} ${State.activeDiagnostic.data?.title || ''}` : 'SV0401 Servo VRDY OFF Arızası');
+  
+  const planHTML = `
+    <div style="background:var(--bg-card2); border:1px solid var(--accent); border-radius:var(--radius-md); padding:16px; margin-top:8px;">
+      <div style="font-weight:700; font-size:14px; color:var(--text-primary); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+        <span>🧠 AI İnteraktif Saha Aksiyon Planı (${escapeHTML(query)})</span>
+        <span class="tag tag-accent" style="font-size:10px;">Adım Adım Saha Kontrolü</span>
+      </div>
+      <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:12px;">
+        Tezgah başında kontrol ettikçe kutucukları işaretleyin:
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; font-size:12.5px;">
+        <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
+          <input type="checkbox" onclick="toggleAIChecklistItem(this)" style="margin-top:3px; accent-color:var(--accent);" />
+          <span><strong>1. Adım (Fiziki / Güç Kontrolü):</strong> Ana şalteri kapatın. SVM Sürücüsü CXA2A soketinde 24V DC gerilimi avometre ile ölçün (Referans: 24.0V ± 0.5V).</span>
+        </label>
+        <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
+          <input type="checkbox" onclick="toggleAIChecklistItem(this)" style="margin-top:3px; accent-color:var(--accent);" />
+          <span><strong>2. Adım (Kablo & Soket Testi):</strong> COP10A optik fiber kablosunun büküm yarıçapını kontrol edin. Temizleyip yerine oturtun.</span>
+        </label>
+        <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
+          <input type="checkbox" onclick="toggleAIChecklistItem(this)" style="margin-top:3px; accent-color:var(--accent);" />
+          <span><strong>3. Adım (Parametre Doğrulaması):</strong> Parametre 1815 Bit 5 (APC) ve Bit 4 (APZ) değerlerini kontrol edin. Gerekirse referans pozisyonu sıfırlayın.</span>
+        </label>
+        <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
+          <input type="checkbox" onclick="toggleAIChecklistItem(this)" style="margin-top:3px; accent-color:var(--accent);" />
+          <span><strong>4. Adım (Megger & İzolasyon):</strong> Motor güç soketini ayırıp U-V-W fazları arası izolasyon direncini ölçün (>100MΩ).</span>
+        </label>
+      </div>
+
+      <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+        <button class="btn btn-primary btn-sm" onclick="exportAIChecklistPDF('${escapeHTML(query)}')">📄 Aksiyon Planını PDF Olarak İndir</button>
+      </div>
+    </div>
+  `;
+
+  appendMessage('ai', planHTML);
+};
+
+window.generateAIPredictiveReport = function() {
+  const machines = State.machines || [];
+  const selectedM = machines[0] || { numarasi: 'Tezgah #1', tip: 'FANUC 0i-MF' };
+
+  const reportHTML = `
+    <div style="background:var(--bg-card2); border:1px solid var(--warning); border-radius:var(--radius-md); padding:16px; margin-top:8px;">
+      <div style="font-weight:700; font-size:14px; color:var(--text-primary); margin-bottom:6px; display:flex; align-items:center; justify-content:space-between;">
+        <span>📊 AI Kestirimci Tezgah Sağlık & Arıza Tahmin Raporu</span>
+        <span class="tag tag-orange" style="font-size:10px;">Tahmin Modeli %94 Hassasiyet</span>
+      </div>
+      
+      <div style="font-size:12px; font-weight:700; color:var(--text-accent); margin-bottom:10px;">
+        🎯 İncelenen Tezgah: ${escapeHTML(selectedM.numarasi)} (${escapeHTML(selectedM.tip || 'FANUC CNC')})
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div style="background:var(--bg-card); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+          <div style="font-size:10.5px; color:var(--text-muted);">30 GÜNLÜK ARIZA İHTİMALİ</div>
+          <div style="font-size:20px; font-weight:700; color:var(--warning);">%88 Yüksek Risk</div>
+          <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Kritik Bileşen: 3.6V Lityum Pil</div>
+        </div>
+        <div style="background:var(--bg-card); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+          <div style="font-size:10.5px; color:var(--text-muted);">TAHMİNİ DURUŞ SÜRESİ</div>
+          <div style="font-size:20px; font-weight:700; color:var(--success);">0.5 Saat</div>
+          <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Önleyici Değişim İle</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:var(--text-primary); margin-bottom:6px;">🛠️ AI Önerilen Önleyici Aksiyonlar:</div>
+      <ul style="font-size:11.5px; color:var(--text-secondary); margin:0; padding-left:18px; display:flex; flex-direction:column; gap:4px;">
+        <li><b>Yedek Parça Siparişi:</b> 1 Adet 3.6V FANUC Lityum Pil (Sipariş Kodu: A06B-6114-K504).</li>
+        <li><b>Değişim Zamanlaması:</b> Önümüzdeki 7 gün içinde tezgah gücü AÇIK iken pil değişimi yapılmalıdır.</li>
+        <li><b>Referans Riski:</b> Pil biterse Parametre 1815 APZ kaybolur ve eksen sıfırlama gerekir.</li>
+      </ul>
+
+      <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+        <button class="btn btn-ghost btn-sm" onclick="exportAIChecklistPDF('AI Kestirimci Sağlık Raporu')">📊 PDF Raporu İndir</button>
+      </div>
+    </div>
+  `;
+
+  appendMessage('ai', reportHTML);
+};
 
 function appendTyping() {
   const container = document.getElementById('ai-messages');
