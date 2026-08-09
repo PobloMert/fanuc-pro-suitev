@@ -31,7 +31,7 @@
     runKeepRelayDiffComparison loadDefaultKeepRelayDiff exportKeepRelayDiffPDF exportKeepRelayDiffCSV filterKeepRelayDiffRows filterKeepRelayDiffMode uploadKeepRelayFile clearKeepRelayInput
     triggerCloudSyncNow exportFullCloudBundle importFullCloudBundle pullDirectFromGoogleDrive
     triggerParamFileUpload onParamFileSelected handleParamDragOver handleParamDragLeave handleParamFileDrop loadSamplePrmBackup filterParamInspectorRows inspectParamBitDetail closeParamBitDetail exportParamInspectorCSV exportParamInspectorPDF
-    generateAIActionPlan generateAIPredictiveReport toggleAIChecklistItem exportAIChecklistPDF
+    generateAIActionPlan generateAIPredictiveReport toggleAIChecklistItem exportAIChecklistPDF aiAutoFixGcode
   `.trim().split(/\s+/));
 
   function splitTopLevel(source, separator) {

@@ -42,18 +42,19 @@ export function buildRAGContext(query) {
     });
   }
 
-  // Helper for PMC Address Normalization (X4.2 <-> X0004.2, G8.4 <-> G0008.4)
+  // Helper for PMC Address & Parameter Normalization (X4.2 <-> X0004.2, P1815 <-> 1815)
   function normalizeAddr(addrStr) {
     if (!addrStr) return '';
     const clean = String(addrStr).toLowerCase().trim();
-    // Convert X4.2 -> X0004.2 or X0004.2 -> X4.2
-    return clean.replace(/([xygfk])0*(\d+)\.(\d+)/g, '$1$2.$3');
+    // Convert X4.2 -> X0004.2 or P1815 -> 1815
+    return clean.replace(/([xygfkredatcp])0*(\d+)(?:\.(\d+))?/g, (match, p1, p2, p3) => p1 + p2 + (p3 ? "." + p3 : ""));
   }
 
   const normalizedQuery = normalizeAddr(q);
 
   // 3. Parameters Match (Support 1 to 5 digit parameter numbers e.g. P20, P102, P1320, P1815, P12000)
-  const paramNumbers = q.match(/\b\d{1,5}\b/g) || [];
+  const rawParams = q.match(/(?:p|param(?:etre)?)?\s*(\d{1,5})\b/gi) || [];
+  const paramNumbers = rawParams.map(numStr => numStr.replace(/[^0-9]/g, ''));
   const paramMatches = State.parameters.filter(p => {
     const pNo = String(p.no || p.number || '');
     return paramNumbers.includes(pNo) || (p.name && q.includes(p.name.toLowerCase()));
@@ -66,7 +67,7 @@ export function buildRAGContext(query) {
     });
   }
 
-  // 4. PMC Signals Match (Supports normalized short forms like X4.2, G8.4, F1.0)
+  // 4. PMC Signals Match (Supports normalized short forms like X4.2, G8.4, F1.0, R500.0)
   const pmcMatches = State.pmc_signals.filter(s => {
     const addr = (s.address || '').toLowerCase();
     const normAddr = normalizeAddr(addr);
@@ -121,7 +122,7 @@ export function buildRAGContext(query) {
   if (matchedPdfs.length > 0) {
     contextParts.push("### 📖 Eşleşen Resmi FANUC PDF El Kitapçıkları & Sayfa Referansları:");
     matchedPdfs.forEach(pm => {
-      contextParts.push(`- **[${pm.manualNo}] ${pm.title}** (${pm.section})\n  *Google Drive Kütüphanesi:* https://drive.google.com/drive/folders/1UEJP5MTj6cAkYvGmHI8DDMfEiKnQFIAx\n`);
+      contextParts.push(`- **[${pm.manualNo}] ${pm.title}** (${pm.section})\n  *Kullanılabilir Konular:* ${pm.keywords.slice(0, 6).join(', ')}\n`);
     });
   }
 
@@ -138,7 +139,8 @@ export function buildRAGResult(query) {
   const sources = [];
   State.alarms.filter(a => q.includes(String(a.code || '').toLowerCase())).slice(0, 3)
     .forEach(a => sources.push({ type: 'Alarm kataloğu', id: a.code, title: a.title }));
-  const numbers = q.match(/\b\d{4}\b/g) || [];
+  const rawParams = q.match(/(?:p|param(?:etre)?)?\s*(\d{1,5})\b/gi) || [];
+  const numbers = rawParams.map(numStr => numStr.replace(/[^0-9]/g, ''));
   State.parameters.filter(p => numbers.includes(String(p.no || p.number || ''))).slice(0, 3)
     .forEach(p => sources.push({ type: 'Parametre veritabanı', id: String(p.no || p.number), title: p.name }));
   State.pmc_signals.filter(s => q.includes(String(s.address || '').toLowerCase()) || q.includes(String(s.symbol || '').toLowerCase())).slice(0, 3)

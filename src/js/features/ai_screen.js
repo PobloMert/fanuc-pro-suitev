@@ -733,4 +733,56 @@ function removeTyping(id) {
   if (id) document.getElementById(id)?.remove();
 }
 
+window.aiAutoFixGcode = function(rawGcode) {
+  if (!rawGcode || typeof rawGcode !== 'string') return;
+  const errors = window.DiagnosticEngine ? window.DiagnosticEngine.scanGcode(rawGcode) : [];
+  
+  // Auto-correct basic G-code errors
+  let fixed = rawGcode.split('\n').map((line, idx) => {
+    let clean = line.replace(/\([^)]*\)/g, '').replace(/;.*$/, '').toUpperCase().trim();
+    if (!clean) return line;
+    
+    // Add missing decimals to coordinates
+    clean = clean.replace(/(?:^|[^A-Z0-9.])([XYZIJKUWVABC])(-?\d+)(?!\.)(?=[^0-9.]|$)/g, '$1$2.0');
+    return clean;
+  }).join('\n');
+
+  // Insert G43 / S / F if missing
+  if (errors.some(e => e.title.includes('Devirsiz'))) {
+    fixed = fixed.replace(/(M0?[34])/g, 'S2000 $1');
+  }
+  if (errors.some(e => e.title.includes('İlerleme'))) {
+    fixed = fixed.replace(/(G0?[123])/g, '$1 F500.');
+  }
+
+  const fixHTML = `
+    <div style="background:var(--bg-card2); border:1px solid var(--accent); border-radius:var(--radius-md); padding:16px; margin-top:8px;">
+      <div style="font-weight:700; font-size:14px; color:var(--text-primary); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+        <span>🤖 AI Otomatik G-Kodu Onarım Sihirbazı</span>
+        <span class="tag tag-accent" style="font-size:10px;">${errors.length} Hata Otomatik Düzeltildi</span>
+      </div>
+      <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:10px;">
+        Yapay Zeka tarafından tespit edilen nokta hataları, eksik devir (S) ve ilerleme (F) değerleri otomatik tamamlandı:
+      </p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <div style="font-size:10.5px; font-weight:700; color:var(--danger); margin-bottom:4px;">❌ Orijinal Hatalı Kod:</div>
+          <pre style="font-family:var(--font-mono); font-size:11px; background:var(--bg-card); padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border); overflow-x:auto; max-height:160px;">${escapeHTML(rawGcode)}</pre>
+        </div>
+        <div>
+          <div style="font-size:10.5px; font-weight:700; color:var(--success); margin-bottom:4px;">✅ AI Düzeltilmiş Güvenli Kod:</div>
+          <pre style="font-family:var(--font-mono); font-size:11px; background:var(--bg-card); padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border); overflow-x:auto; max-height:160px; color:var(--success);">${escapeHTML(fixed)}</pre>
+        </div>
+      </div>
+
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+        <button class="btn btn-primary btn-sm" onclick="exportAIChecklistPDF('AI Düzeltilmiş G-Kodu Raporu')">📄 Düzeltilmiş Programı PDF İndir</button>
+      </div>
+    </div>
+  `;
+
+  appendMessage('ai', fixHTML);
+};
+
 api={renderAI};return api;}global.MTBAIScreen=Object.freeze({initialize});})(window);

@@ -10,23 +10,56 @@
     let hasFeedrate = false;
     let hasSpindleSpeed = false;
     let hasG43 = false;
+    let hasHadToolChange = false;
     let inRapidMode = true;
+
     String(source || '').split('\n').forEach((line, index) => {
-      const clean = line.replace(/\([^)]*\)/g, '').toUpperCase().trim();
+      const clean = line.replace(/\([^)]*\)/g, '').replace(/;.*$/, '').toUpperCase().trim();
       if (!clean) return;
-      if (clean.includes('G00')) inRapidMode = true;
-      if (/G0[123]/.test(clean)) inRapidMode = false;
-      if (clean.includes('G43')) hasG43 = true;
-      if (clean.includes('T') && clean.includes('M06')) hasG43 = false;
-      if (clean.includes('S')) hasSpindleSpeed = true;
-      if (/M0[34]/.test(clean) && !hasSpindleSpeed && !clean.includes('S')) errors.push({ line: index + 1, type: 'warning', title: 'Devirsiz Mil Dönüşü', desc: 'M03/M04 komutu verildi fakat mil devri (S) tanımlanmadı.' });
-      if (clean.includes('F')) hasFeedrate = true;
-      if (/G0[123]/.test(clean) && !hasFeedrate && !clean.includes('F')) errors.push({ line: index + 1, type: 'danger', title: 'Tanımsız İlerleme Hızı (F)', desc: 'Kesme hareketi başlatıldı fakat ilerleme hızı (F) tanımlanmadı.' });
-      const coordinates = clean.match(/\b([XYZIJKUWV])(-?\d+)(?!\.)\b/g) || [];
-      coordinates.forEach(value => errors.push({ line: index + 1, type: 'danger', title: 'Nokta Hatası Algılandı', desc: `"${value}" komutunda ondalık nokta eksik.` }));
-      if (inRapidMode && clean.includes('Z-')) errors.push({ line: index + 1, type: 'danger', title: 'Hızlı Hareketle Z- Dalışı', desc: 'G00 modunda Z- hareketi tespit edildi; çarpışma riski operatör tarafından doğrulanmalıdır.' });
-      if (clean.includes('Z') && !hasG43 && /G0[01]/.test(clean)) errors.push({ line: index + 1, type: 'warning', title: 'G43 Boy Telafisi Eksik', desc: 'Takım değişiminden sonra Z hareketinde G43 etkin görünmüyor.' });
+
+      const hasRapid = /\bG0*0\b/.test(clean);
+      const hasFeedMotion = /\bG0*[123]\b/.test(clean);
+      if (hasRapid && !hasFeedMotion) inRapidMode = true;
+      if (hasFeedMotion && !hasRapid) inRapidMode = false;
+
+      if (/\bG43\b/.test(clean)) hasG43 = true;
+      if (/\bG49\b/.test(clean)) hasG43 = false;
+
+      if (/\bM0*6\b/.test(clean) || /\bT\d+\b/.test(clean)) {
+        if (/\bM0*6\b/.test(clean)) {
+          hasG43 = false;
+          hasHadToolChange = true;
+        }
+      }
+
+      const sMatch = clean.match(/\bS(\d+)\b/);
+      if (sMatch && Number(sMatch[1]) > 0) hasSpindleSpeed = true;
+      if (/\bM0*[34]\b/.test(clean) && !hasSpindleSpeed && (!sMatch || Number(sMatch[1]) <= 0)) {
+        errors.push({ line: index + 1, type: 'warning', title: 'Devirsiz Mil Dönüşü', desc: 'M03/M04 komutu verildi fakat mil devri (S > 0) tanımlanmadı.' });
+      }
+
+      const fMatch = clean.match(/\bF(\d+(?:\.\d+)?)\b/);
+      if (fMatch && Number(fMatch[1]) > 0) hasFeedrate = true;
+      if (hasFeedMotion && !hasFeedrate && (!fMatch || Number(fMatch[1]) <= 0)) {
+        errors.push({ line: index + 1, type: 'danger', title: 'Tanımsız İlerleme Hızı (F)', desc: 'Kesme hareketi başlatıldı fakat ilerleme hızı (F > 0) tanımlanmadı.' });
+      }
+
+      const noDecimalRegex = /(?:^|[^A-Z0-9.])([XYZIJKUWVABC])(-?\d+)(?!\.)(?=[^0-9.]|$)/g;
+      let match;
+      while ((match = noDecimalRegex.exec(clean)) !== null) {
+        errors.push({ line: index + 1, type: 'danger', title: 'Nokta Hatası Algılandı', desc: `"${match[1]}${match[2]}" komutunda ondalık nokta eksik.` });
+      }
+
+      const zMatch = clean.match(/\bZ(-?\d+(?:\.\d+)?)\b/);
+      if (inRapidMode && zMatch && Number(zMatch[1]) < 0) {
+        errors.push({ line: index + 1, type: 'danger', title: 'Hızlı Hareketle Z- Dalışı', desc: 'G00 modunda Z- hareketi tespit edildi; çarpışma riski operatör tarafından doğrulanmalıdır.' });
+      }
+
+      if (hasHadToolChange && zMatch && !hasG43 && (inRapidMode || hasFeedMotion)) {
+        errors.push({ line: index + 1, type: 'warning', title: 'G43 Boy Telafisi Eksik', desc: 'Takım değişiminden sonra Z hareketinde G43 etkin görünmüyor.' });
+      }
     });
+
     return errors;
   }
 
