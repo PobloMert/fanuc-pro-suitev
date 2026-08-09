@@ -42,8 +42,18 @@ export function buildRAGContext(query) {
     });
   }
 
-  // 3. Parameters Match
-  const paramNumbers = q.match(/\b\d{4}\b/g) || [];
+  // Helper for PMC Address Normalization (X4.2 <-> X0004.2, G8.4 <-> G0008.4)
+  function normalizeAddr(addrStr) {
+    if (!addrStr) return '';
+    const clean = String(addrStr).toLowerCase().trim();
+    // Convert X4.2 -> X0004.2 or X0004.2 -> X4.2
+    return clean.replace(/([xygfk])0*(\d+)\.(\d+)/g, '$1$2.$3');
+  }
+
+  const normalizedQuery = normalizeAddr(q);
+
+  // 3. Parameters Match (Support 1 to 5 digit parameter numbers e.g. P20, P102, P1320, P1815, P12000)
+  const paramNumbers = q.match(/\b\d{1,5}\b/g) || [];
   const paramMatches = State.parameters.filter(p => {
     const pNo = String(p.no || p.number || '');
     return paramNumbers.includes(pNo) || (p.name && q.includes(p.name.toLowerCase()));
@@ -56,11 +66,12 @@ export function buildRAGContext(query) {
     });
   }
 
-  // 4. PMC Signals Match
+  // 4. PMC Signals Match (Supports normalized short forms like X4.2, G8.4, F1.0)
   const pmcMatches = State.pmc_signals.filter(s => {
     const addr = (s.address || '').toLowerCase();
+    const normAddr = normalizeAddr(addr);
     const sym = (s.symbol || '').toLowerCase();
-    return (addr && q.includes(addr)) || (sym && q.includes(sym));
+    return (addr && (q.includes(addr) || normalizedQuery.includes(normAddr))) || (sym && q.includes(sym));
   }).slice(0, 3);
 
   if (pmcMatches.length > 0) {
@@ -73,8 +84,9 @@ export function buildRAGContext(query) {
   // 5. Keep Relays Match
   const krMatches = State.keep_relays.filter(k => {
     const id = (k.id || '').toLowerCase();
+    const normId = normalizeAddr(id);
     const name = (k.name || '').toLowerCase();
-    return (id && q.includes(id)) || (name && q.includes(name));
+    return (id && (q.includes(id) || normalizedQuery.includes(normId))) || (name && q.includes(name));
   }).slice(0, 3);
 
   if (krMatches.length > 0) {
@@ -99,10 +111,10 @@ export function buildRAGContext(query) {
 
   // 7. Official FANUC PDF Manuals Knowledge & Citation Mapping
   const pdfManualCitations = [
-    { keywords: ['1815', 'apc', 'apz', '3202', 'ne9', '1320', 'stroke', '3111', '1851', 'backlash', 'parametre'], title: 'FANUC Series 0i-MF / 31i-B Parametre El Kitabı', manualNo: 'B-64310EN', section: 'Bölüm 4 — Sistem & Eksen Parametreleri' },
-    { keywords: ['sv0401', 'sv0438', 'sv0449', 'vrdy', 'servo', 'overcurrent', 'hcam', 'a06b-6114', 'a06b-6124'], title: 'FANUC Servo Sürücü Alpha i / Beta i Bakım Kılavuzu', manualNo: 'B-65270EN', section: 'Bölüm 7 — Servo Alarm & LED Teşhis Adımları' },
-    { keywords: ['sp9011', 'sp9012', 'ssm', 'spindle', 'a06b-6117', 'a06b-6127', 'motor'], title: 'FANUC Spindle Sürücü & Amplifikatör Arıza Kılavuzu', manualNo: 'B-65282EN', section: 'Bölüm 5 — Spindle LED & Yük Teşhisi' },
-    { keywords: ['pmc', 'ladder', 'k00', 'keep relay', 'g8.4', 'f1.0', 'x4.2', 'y2.1'], title: 'FANUC PMC Ladder & Sinyal Adres Spesifikasyonu', manualNo: 'B-64303EN', section: 'Bölüm 3 — PMC X/Y/G/F Sinyal Tablosu' }
+    { keywords: ['1815', '1850', 'grid shift', 'apc', 'apz', '3202', 'ne9', '1320', 'stroke', '3111', '1851', 'backlash', 'parametre', '6000', 'thermal'], title: 'FANUC Series 0i-MF / 31i-B Parametre El Kitabı', manualNo: 'B-64310EN', section: 'Bölüm 4 — Sistem, Eksen & Termal Kompanzasyon Parametreleri' },
+    { keywords: ['sv0401', 'sv0438', 'sv0449', 'vrdy', 'servo', 'overcurrent', 'hcam', 'a06b-6114', 'a06b-6124', 'encoder', 'pil', 'batarya'], title: 'FANUC Servo Sürücü Alpha i / Beta i Bakım Kılavuzu', manualNo: 'B-65270EN', section: 'Bölüm 7 — Servo Alarm & LED Teşhis Adımları' },
+    { keywords: ['sp9011', 'sp9012', 'ssm', 'spindle', 'a06b-6117', 'a06b-6127', 'motor', 'overheat'], title: 'FANUC Spindle Sürücü & Amplifikatör Arıza Kılavuzu', manualNo: 'B-65282EN', section: 'Bölüm 5 — Spindle LED & Yük Teşhisi' },
+    { keywords: ['pmc', 'ladder', 'k00', 'keep relay', 'g8.4', 'f1.0', 'x4.2', 'y2.1', 'x0004.2', 'g0008.4', 'rs232', 'sr0085', 'sr0086', 'ps0085', 'p0101', 'p0103'], title: 'FANUC PMC Ladder & Sinyal Adres Spesifikasyonu', manualNo: 'B-64303EN', section: 'Bölüm 3 — PMC X/Y/G/F Sinyal Tablosu & Haberleşme' }
   ];
 
   const matchedPdfs = pdfManualCitations.filter(pm => pm.keywords.some(kw => q.includes(kw)));

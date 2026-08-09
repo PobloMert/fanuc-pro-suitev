@@ -272,8 +272,10 @@ window.sendAIMessage = async function() {
       const safeHistory = ChatHistory.slice(-10).map(item => ({ ...item, content: maskSensitiveForCloud(item.content) }));
       response = await callAIAPI(maskSensitiveForCloud(finalMsg), safeHistory);
     } else {
-      response = ragResult.sources.length
-        ? offlineAI(msg)
+      const offlineAns = offlineAI(msg);
+      const isGenericFallback = String(offlineAns).startsWith('MTB Elektrik Bakım Asistanı — Çevrimdışı Mod');
+      response = (!isGenericFallback || (ragResult.sources && ragResult.sources.length > 0))
+        ? offlineAns
         : 'Doğrulanmış yerel kaynak eşleşmesi bulunamadı. Alarm kodunu, parametre numarasını, PMC adresini veya ilgili kılavuz kimliğini belirterek tekrar sorun.';
     }
   } catch (e) {
