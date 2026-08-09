@@ -276,4 +276,7 @@ function alarmCategoryTag(cat) {
 }
 
 
+  // ── Global Exports ──
+  global.renderDashboard = renderDashboard;
+  global.alarmCategoryTag = alarmCategoryTag;
 })(window);

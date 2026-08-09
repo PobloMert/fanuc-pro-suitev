@@ -6,20 +6,6 @@
 (function MTBSettingsView(global) {
   'use strict';
 
-// ════════════════════════════════════════════════════════════════
-//  LIBRARY
-// ════════════════════════════════════════════════════════════════
-let KnowledgeScreens;
-let AlarmParameterScreens;
-const sendAIMessage = (...args) => { getAIScreen(); return window.sendAIMessage(...args); };
-function getAlarmParameterScreens(){if(!AlarmParameterScreens)AlarmParameterScreens=window.MTBAlarmParameterScreens.initialize({State,createPage,escapeHTML,showToast,showModal,closeModal,canEdit,saveCustomAlarmNotes,navigate,alarmCategoryTag,sendAIMessage});return AlarmParameterScreens;}
-function renderAlarms(){return getAlarmParameterScreens().renderAlarms();}
-function renderParameters(){return getAlarmParameterScreens().renderParameters();}
-function getKnowledgeScreens(){if(!KnowledgeScreens)KnowledgeScreens=window.MTBKnowledgeScreens.initialize({State,createPage,escapeHTML,showToast,navigate,saveKnowledgePreferences});return KnowledgeScreens;}
-function renderLibrary(){return getKnowledgeScreens().renderLibrary();}
-function renderPdfViewer(extraData){return getKnowledgeScreens().renderPdfViewer(extraData);}
-const renderProjects = (...args) => window.OperationsInsights.renderProjects(...args);
-
 function renderSettings() {
   const page = createPage('settings');
   const themeOptions = [
@@ -575,4 +561,8 @@ window.openDataDir = function() {
 
 
 
+  // ── Global Exports ──
+  global.renderSettings = renderSettings;
+  global.saveKnowledgePreferences = saveKnowledgePreferences;
+  global.applyAccessibilitySettings = applyAccessibilitySettings;
 })(window);

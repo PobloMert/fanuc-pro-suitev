@@ -387,4 +387,8 @@ window.ReportBuilders = Object.freeze({
 });
 
 
+  // ── Global Exports ──
+  global.getPdfBaseStyles = getPdfBaseStyles;
+  global.buildMaintenanceReportHTML = buildMaintenanceReportHTML;
+  global.buildMachineCardHTML = buildMachineCardHTML;
 })(window);

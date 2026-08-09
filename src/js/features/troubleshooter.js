@@ -634,4 +634,9 @@ window.deleteWikiArticle = async function(id) {
 };
 
 
+  // ── Global Exports ──
+  global.renderTroubleshooter = renderTroubleshooter;
+  global.renderTroubleshootButtons = renderTroubleshootButtons;
+  global.renderTroubleshootWiki = renderTroubleshootWiki;
+  global.filterWikiArticles = filterWikiArticles;
 })(window);

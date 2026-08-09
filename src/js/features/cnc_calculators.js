@@ -985,4 +985,11 @@ window.calculateNewLimits = function() {
 };
 
 
+  // ── Global Exports ──
+  global.renderTuning = renderTuning;
+  global.renderGearRatio = renderGearRatio;
+  global.renderReliability = renderReliability;
+  global.renderBacklashHelper = renderBacklashHelper;
+  global.renderSpindleDiagnostics = renderSpindleDiagnostics;
+  global.renderAxisLimitsHelper = renderAxisLimitsHelper;
 })(window);

@@ -516,4 +516,16 @@ window.deleteCustomAlarm = async function(id) {
 
 
 
+  // ── Global Exports ──
+  global.renderNcCodes = renderNcCodes;
+  global.filterNc = filterNc;
+  global.renderNcTable = renderNcTable;
+  global.renderPmcSignals = renderPmcSignals;
+  global.filterPmc = filterPmc;
+  global.renderPmcTable = renderPmcTable;
+  global.renderReports = renderReports;
+  global.renderPredictive = renderPredictive;
+  global.calculateMachineHealth = calculateMachineHealth;
+  global.renderCustomBuilderLibrary = renderCustomBuilderLibrary;
+  global.filterBuilderList = filterBuilderList;
 })(window);

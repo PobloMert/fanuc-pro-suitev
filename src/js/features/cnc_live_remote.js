@@ -589,4 +589,7 @@ window.exportScannerResultsCSV = function() {
 window.triggerParamFileUpload = function() { window.ParamInspectorFeature?.triggerParamFileUpload(); };
 window.onParamFileSelected = function(e) { window.ParamInspectorFeature?.onParamFileSelected(e); };
 
+  // ── Global Exports ──
+  global.renderCncDashboard = renderCncDashboard;
+  global.renderCncScreenViewer = renderCncScreenViewer;
 })(window);

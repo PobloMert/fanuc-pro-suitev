@@ -7,13 +7,6 @@
   'use strict';
 
 // ════════════════════════════════════════════════════════════════
-function getIOLinkFeature() {
-  if (!window.MTBIOLinkFeature) throw new Error('I/O Link modülü yüklenemedi');
-  return window.MTBIOLinkFeature.initialize({ createPage });
-}
-function renderIOLink() { return getIOLinkFeature().renderIOLink(); }
-
-// ════════════════════════════════════════════════════════════════
 window.BackupWizardState = {
   media: 'cf',  // 'cf', 'usb', 'rs232'
   action: 'backup', // 'backup', 'restore'
@@ -676,4 +669,9 @@ function runBackupInspectorOnFile(file) {
 
 
 
+  // ── Global Exports ──
+  global.renderBackupWizard = renderBackupWizard;
+  global.renderBackupTracker = renderBackupTracker;
+  global.filterBackupTracker = filterBackupTracker;
+  global.runBackupInspectorOnFile = runBackupInspectorOnFile;
 })(window);

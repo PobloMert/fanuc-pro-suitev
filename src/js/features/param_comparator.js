@@ -492,4 +492,8 @@ function getBitDifferenceDetails(no, valA, valB) {
 }
 
 
+  // ── Global Exports ──
+  global.renderParamComparator = renderParamComparator;
+  global.renderDiffTableRows = renderDiffTableRows;
+  global.getBitDifferenceDetails = getBitDifferenceDetails;
 })(window);

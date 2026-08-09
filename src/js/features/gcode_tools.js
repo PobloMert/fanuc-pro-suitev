@@ -491,4 +491,7 @@ window.runGcodeCheck = function() {
 //  CNC PARAMETRE KARŞILAŞTIRICI
 // ════════════════════════════════════════════════════════════════
 
+  // ── Global Exports ──
+  global.renderGenerator = renderGenerator;
+  global.renderGcodeChecker = renderGcodeChecker;
 })(window);

@@ -127,4 +127,6 @@ window.showRs232Schematic = function(page = document) {
 };
 
 
+  // ── Global Exports ──
+  global.renderRs232Cables = renderRs232Cables;
 })(window);
