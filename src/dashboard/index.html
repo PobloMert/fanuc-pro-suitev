@@ -113,6 +113,24 @@
                         </div>
                     </div>
 
+                    <!-- Live Power kW & Program ETA Row -->
+                    <div style="grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;">
+                        <div style="background: rgba(69, 143, 163, 0.08); border: 1px solid rgba(69, 143, 163, 0.25); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <span class="label" style="color: var(--neon-cyan); font-weight: 700; font-size: 0.75em; text-transform: uppercase;">ANLIK GÜÇ TÜKETİMİ</span>
+                                <div style="font-size: 0.7em; color: var(--text-secondary);">Şebekeden Çekilen Güç</div>
+                            </div>
+                            <span class="value" id="val-power-kw" style="font-size: 1.4rem; color: #a5f3fc; font-family: 'SFMono-Regular', Consolas, monospace; font-weight: bold;">0.00 kW</span>
+                        </div>
+                        <div style="background: rgba(211, 148, 46, 0.08); border: 1px solid rgba(211, 148, 46, 0.25); padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <span class="label" style="color: #fbbf24; font-weight: 700; font-size: 0.75em; text-transform: uppercase;">TAHMİNİ BİTİŞ (ETA)</span>
+                                <div style="font-size: 0.7em; color: var(--text-secondary);" id="val-eta-sub">Program Bekleniyor</div>
+                            </div>
+                            <span class="value" id="val-eta-countdown" style="font-size: 1.3rem; color: #fbbf24; font-family: 'SFMono-Regular', Consolas, monospace; font-weight: bold;">--:--</span>
+                        </div>
+                    </div>
+
                     <div class="status-item">
                         <span class="label">Çalışma Durumu</span>
                         <span class="value" id="val-execution">YÜKLENİYOR...</span>
@@ -126,8 +144,8 @@
                         <span class="value program-code" id="val-program">YÜKLENİYOR...</span>
                     </div>
                     <div class="status-item">
-                        <span class="label">Aktif Takım</span>
-                        <span class="value program-code" id="val-tool">T00</span>
+                        <span class="label">Aktif Takım & Ömür</span>
+                        <span class="value program-code" id="val-tool">T00 (100%)</span>
                     </div>
                     <div class="status-item">
                         <span class="label">Aktif Hareket (Motion)</span>

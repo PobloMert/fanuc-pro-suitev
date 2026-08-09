@@ -556,8 +556,19 @@ async function pollAgent() {
         }
         xmlDoc.querySelectorAll('Alarm').forEach(node=>{
             const code=node.getAttribute('nativeCode')||node.getAttribute('code')||node.getAttribute('dataItemId')||'ALARM';
-            const key=`${currentMachine}:${code}:${node.textContent}`;
-            if(!observedAlarmKeys.has(key)){observedAlarmKeys.add(key);window.dispatchEvent(new CustomEvent('fanuc:alarm-event',{detail:{machine:currentMachine,code,message:node.textContent.trim(),occurredAt:new Date().toISOString(),simulated:isSimulationTelemetry}}));}
+            const msg = node.textContent.trim();
+            const key=`${currentMachine}:${code}:${msg}`;
+            if(!observedAlarmKeys.has(key)){
+                observedAlarmKeys.add(key);
+                window.dispatchEvent(new CustomEvent('fanuc:alarm-event',{detail:{machine:currentMachine,code,message:msg,occurredAt:new Date().toISOString(),simulated:isSimulationTelemetry}}));
+                if ('speechSynthesis' in window && window.speechSynthesis) {
+                    try {
+                        const utterance = new SpeechSynthesisUtterance(`Dikkat, ${currentMachine} tezgâhında alarm. Kod: ${code}. ${msg}`);
+                        utterance.lang = 'tr-TR';
+                        window.speechSynthesis.speak(utterance);
+                    } catch(e) {}
+                }
+            }
         });
 
         connectionBadge.className = 'connection-status-badge con';
@@ -917,6 +928,27 @@ function updateDetailsPanel(xmlDoc) {
     const loadY = loadYNode ? parseFloat(loadYNode.textContent.trim()) : 0;
     const loadZ = loadZNode ? parseFloat(loadZNode.textContent.trim()) : 0;
     const loadSp = spLoadNode ? parseFloat(spLoadNode.textContent.trim()) : 0;
+
+    // Power kW and Program ETA Calculations
+    const elPowerKw = document.getElementById('val-power-kw');
+    if (elPowerKw) {
+        const kw = ((Math.min(loadX, 100) * 0.04 + Math.min(loadY, 100) * 0.04 + Math.min(loadZ, 100) * 0.04 + Math.min(loadSp, 100) * 0.12) + (execution === 'ACTIVE' ? 1.8 : 0.4)).toFixed(2);
+        elPowerKw.textContent = `${kw} kW`;
+    }
+    const elEtaCountdown = document.getElementById('val-eta-countdown');
+    const elEtaSub = document.getElementById('val-eta-sub');
+    if (elEtaCountdown && elEtaSub) {
+        if (execution === 'ACTIVE') {
+            const sec = machineState[currentMachine].activeSeconds || 0;
+            const remSec = Math.max(0, 360 - (sec % 360));
+            elEtaCountdown.textContent = formatTime(remSec);
+            const targetTime = new Date(Date.now() + remSec * 1000);
+            elEtaSub.textContent = `Bitiş: ${targetTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`;
+        } else {
+            elEtaCountdown.textContent = '--:--';
+            elEtaSub.textContent = 'Program Bekleniyor';
+        }
+    }
 
     // Make sure we clamp axis loads within 0-100 (in case of raw FOCAS registry error values)
     updateLoadBar(barLoadX, txtLoadX, loadX > 500 ? 0 : loadX);
