@@ -93,17 +93,19 @@ export function checkComponentDegradationAlerts() {
   if (Array.isArray(State.batteries)) {
     State.batteries.forEach(b => {
       const deg = calculateDegradation(b, 'battery');
-      if (deg.daysRemaining <= 30) {
+      if (deg.daysRemaining <= 60) {
         const notifId = `batt-alert-${b.id || (b.tezgah_id + '-' + b.eksen)}`;
         if (!existingAlertIds.has(notifId)) {
           const machName = b.tezgah_adi || b.machine_name || `Tezgah #${b.tezgah_id || ''}`;
+          const isCritical = deg.daysRemaining <= 30;
+          const alarmCode = isCritical ? 'SV0381 (APC BATTERY ZERO)' : 'SV0380 (APC BATTERY LOW)';
           State.notifications.unshift({
             id: notifId,
-            type: 'critical',
-            title: `🔋 Pil Değişim Uyarısı: ${machName}`,
-            message: `${b.eksen || 'Eksen'} pili ömrü bitmek üzere (${deg.statusText}).`,
+            type: isCritical ? 'critical' : 'warning',
+            title: `🔋 Pil Değişim Uyarısı [${alarmCode}]: ${machName}`,
+            message: `${b.eksen || 'Eksen'} pili ömrü bitmek üzere (${deg.statusText}). CNC açıkken 3.6V/6.0V yeni lityum pil ile değiştirin.`,
             time: 'Şimdi',
-            targetPage: 'batteries'
+            targetPage: 'battery'
           });
         }
       }
@@ -114,17 +116,19 @@ export function checkComponentDegradationAlerts() {
   if (Array.isArray(State.fans)) {
     State.fans.forEach(f => {
       const deg = calculateDegradation(f, 'fan');
-      if (deg.daysRemaining <= 30) {
+      if (deg.daysRemaining <= 60) {
         const notifId = `fan-alert-${f.id || (f.tezgah_id + '-' + f.konum)}`;
         if (!existingAlertIds.has(notifId)) {
           const machName = f.tezgah_adi || f.machine_name || `Tezgah #${f.tezgah_id || ''}`;
+          const isCritical = deg.daysRemaining <= 30;
+          const alarmCode = isCritical ? 'ALARM 700/704 (FAN OVERHEAT)' : 'FAN MAINT';
           State.notifications.unshift({
             id: notifId,
-            type: 'warning',
-            title: `🌀 Fan Bakım Uyarısı: ${machName}`,
-            message: `${f.konum || 'Kabin'} fanı kullanım süresi doluyor (${deg.statusText}).`,
+            type: isCritical ? 'critical' : 'warning',
+            title: `🌀 Fan Bakım Uyarısı [${alarmCode}]: ${machName}`,
+            message: `${f.konum || 'Kabin'} fanı kullanım süresi doluyor (${deg.statusText}). 20.000 saat periyodik bakımı yapın.`,
             time: 'Şimdi',
-            targetPage: 'maintenance'
+            targetPage: 'battery'
           });
         }
       }
