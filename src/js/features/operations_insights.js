@@ -808,6 +808,12 @@ function calculateReliabilityMetrics(page) {
 
 
 
+window.renderProjects = renderProjects;
+window.renderReports = renderReports;
+window.renderPredictive = renderPredictive;
+window.renderReliability = renderReliability;
+window.calculateMachineHealth = calculateMachineHealth;
+
 window.OperationsInsights = Object.freeze({
   renderProjects,
   renderReports,
