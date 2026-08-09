@@ -548,17 +548,22 @@ function appendMessage(role, text, metadata = {}) {
   const div = document.createElement('div');
   div.className = `msg-row ${role} animate-in`;
 
-  // Simple markdown rendering
-  const rendered = escapeHTML(text)
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/## (.+)/g, '<div style="font-weight:700; font-size:13px; margin:8px 0 4px; color:var(--text-accent)">$1</div>')
-    .replace(/\| (.+) \|/g, (m) => {
-      const cells = m.split('|').filter(c => c.trim() && !c.trim().match(/^-+$/));
-      return '<div style="display:flex; gap:12px; font-size:11.5px; margin:2px 0">' + cells.map(c => `<span>${c.trim()}</span>`).join('') + '</div>';
-    })
-    .replace(/\n/g, '<br>');
-  const html = window.DOMPurify ? window.DOMPurify.sanitize(rendered, { ALLOWED_TAGS: ['strong','code','div','span','br'], ALLOWED_ATTR: ['style','class'] }) : rendered;
+  // Simple markdown or HTML rendering
+  let html;
+  if (text.includes('<div') || text.includes('<ul') || text.includes('<table') || text.includes('<button')) {
+    html = text;
+  } else {
+    const rendered = escapeHTML(text)
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/## (.+)/g, '<div style="font-weight:700; font-size:13px; margin:8px 0 4px; color:var(--text-accent)">$1</div>')
+      .replace(/\| (.+) \|/g, (m) => {
+        const cells = m.split('|').filter(c => c.trim() && !c.trim().match(/^-+$/));
+        return '<div style="display:flex; gap:12px; font-size:11.5px; margin:2px 0">' + cells.map(c => `<span>${c.trim()}</span>`).join('') + '</div>';
+      })
+      .replace(/\n/g, '<br>');
+    html = window.DOMPurify ? window.DOMPurify.sanitize(rendered, { ALLOWED_TAGS: ['strong','code','div','span','br','a','p','ul','li','b'], ALLOWED_ATTR: ['style','class','href','target'] }) : rendered;
+  }
   const sourceHTML = isAI && metadata.sources?.length
     ? `<div class="ai-source-list">${metadata.sources.map(source => `<span class="ai-source-chip">${escapeHTML(source.type)} · ${escapeHTML(source.id)}</span>`).join('')}</div>` : '';
   const confidenceHTML = isAI ? `<span class="status-chip ai-confidence">${escapeHTML(metadata.confidence || 'Teknisyen doğrulaması gerekli')}</span>` : '';
