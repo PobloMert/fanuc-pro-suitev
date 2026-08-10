@@ -124,9 +124,14 @@ const BACKUP_BUSINESS_FILES = Object.freeze([
   'pmc_signals.json', 'library.json', 'wiki.json', 'nc_codes.json',
   'drive_alarms.json', 'custom_alarms.json', 'custom_mcodes.json',
   'custom_alarm_notes.json'
+  ,'diagnostic_history.json'
 ]);
 const BACKUP_BUSINESS_FILE_SET = new Set(BACKUP_BUSINESS_FILES);
 const SECRETS_FILE = path.join(ALLOWED_DATA_DIR, 'secrets.json');
+const DRIVE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxfGViF_BiGwFpbiS-pIsnhAit_eIBtGKx9GKKESlUxb9vncTEh3vsnoJDbHDd6v4Z4NA/exec';
+const DRIVE_PROVISIONING_FILE = path.join(ALLOWED_DATA_DIR, 'FANUC-Provisioning.json');
+const DRIVE_PROVISIONING_STATE_FILE = path.join(ALLOWED_DATA_DIR, 'drive-provisioning-state.json');
+const DRIVE_MAX_RESPONSE_BYTES = 15 * 1024 * 1024;
 const KNOWLEDGE_PREFS_FILE = path.join(ALLOWED_DATA_DIR, 'knowledge-preferences.json');
 const sessions = new Map();
 const grantedPaths = new Set();
@@ -135,6 +140,84 @@ const telemetryRate = new Map();
 const SESSION_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 const LOGIN_LOCKOUT_MS = 5 * 60 * 1000;
 const MAX_LOGIN_ATTEMPTS = 5;
+
+function readEncryptedSecrets() {
+  if (!fs.existsSync(SECRETS_FILE)) return {};
+  try {
+    const value = JSON.parse(fs.readFileSync(SECRETS_FILE, 'utf8'));
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  } catch { return {}; }
+}
+
+function writeEncryptedSecret(name, value) {
+  if (!safeStorage.isEncryptionAvailable()) throw new Error('Windows güvenli depolama kullanılamıyor.');
+  const secrets = readEncryptedSecrets();
+  if (String(value || '')) secrets[name] = safeStorage.encryptString(String(value)).toString('base64');
+  else delete secrets[name];
+  fs.mkdirSync(ALLOWED_DATA_DIR, { recursive: true });
+  fs.writeFileSync(SECRETS_FILE, JSON.stringify(secrets), 'utf8');
+}
+
+function decryptSecret(name) {
+  if (!safeStorage.isEncryptionAvailable()) return '';
+  const encrypted = readEncryptedSecrets()[name];
+  if (!encrypted) return '';
+  return safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
+}
+
+function validateDriveProvisioning(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input) || input.schemaVersion !== 1) throw new Error('Desteklenmeyen cihaz yapılandırma dosyası.');
+  const company = String(input.company || '').trim();
+  const driveEndpoint = String(input.driveEndpoint || '').trim();
+  const driveFolderId = String(input.driveFolderId || '').trim();
+  const enrollmentKey = String(input.enrollmentKey || '').trim();
+  const deviceNameMode = String(input.deviceNameMode || 'windows-hostname');
+  const deviceName = String(input.deviceName || '').trim();
+  if (!company || company.length > 100) throw new Error('Şirket adı geçersiz.');
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(driveEndpoint)) throw new Error('Drive servis adresi geçersiz.');
+  if (!/^[A-Za-z0-9_-]{10,128}$/.test(driveFolderId)) throw new Error('Drive klasör kimliği geçersiz.');
+  if (enrollmentKey.length < 16 || enrollmentKey.length > 512 || /[\r\n]/.test(enrollmentKey)) throw new Error('Drive cihaz erişim anahtarı geçersiz.');
+  if (!['windows-hostname', 'fixed'].includes(deviceNameMode)) throw new Error('Cihaz adı yöntemi geçersiz.');
+  if (deviceNameMode === 'fixed' && (!deviceName || deviceName.length > 80)) throw new Error('Sabit cihaz adı geçersiz.');
+  return { company, driveEndpoint, driveFolderId, enrollmentKey, deviceName: deviceNameMode === 'fixed' ? deviceName : os.hostname().slice(0, 80) };
+}
+
+function readDriveProvisioningState() {
+  try {
+    if (!fs.existsSync(DRIVE_PROVISIONING_STATE_FILE)) return null;
+    const state = JSON.parse(fs.readFileSync(DRIVE_PROVISIONING_STATE_FILE, 'utf8'));
+    return state && typeof state === 'object' && !Array.isArray(state) ? state : null;
+  } catch { return null; }
+}
+
+function getDriveEndpoint() {
+  const endpoint = String(readDriveProvisioningState()?.driveEndpoint || '');
+  return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(endpoint) ? endpoint : DRIVE_WEB_APP_URL;
+}
+
+function importDriveProvisioning() {
+  const candidates = [process.env.FANUC_PROVISIONING_FILE, DRIVE_PROVISIONING_FILE, path.join(path.dirname(process.execPath), 'FANUC-Provisioning.json')]
+    .filter(Boolean).map(value => path.resolve(value));
+  const source = [...new Set(candidates)].find(file => fs.existsSync(file));
+  if (!source) return { imported: false, configured: Boolean(readEncryptedSecrets().driveAccessToken) };
+  const stat = fs.statSync(source);
+  if (!stat.isFile() || stat.size > 32768) throw new Error('Cihaz yapılandırma dosyası boyutu geçersiz.');
+  const validated = validateDriveProvisioning(JSON.parse(fs.readFileSync(source, 'utf8').replace(/^\uFEFF/, '')));
+  writeEncryptedSecret('driveAccessToken', validated.enrollmentKey);
+  const state = {
+    schemaVersion: 1,
+    company: validated.company,
+    driveEndpoint: validated.driveEndpoint,
+    driveFolderId: validated.driveFolderId,
+    deviceName: validated.deviceName,
+    provisionedAt: new Date().toISOString()
+  };
+  const temporary = `${DRIVE_PROVISIONING_STATE_FILE}.${process.pid}.tmp`;
+  fs.writeFileSync(temporary, JSON.stringify(state, null, 2), 'utf8');
+  fs.renameSync(temporary, DRIVE_PROVISIONING_STATE_FILE);
+  if (source === path.resolve(DRIVE_PROVISIONING_FILE)) fs.unlinkSync(source);
+  return { imported: true, configured: true, ...state };
+}
 
 function ensureWritableDataDirectory() {
   fs.mkdirSync(WRITABLE_DATA_DIR, { recursive: true });
@@ -380,8 +463,7 @@ function migrateLegacyAISecret() {
   if (!safeStorage.isEncryptionAvailable() || !fs.existsSync(settingsPath)) return;
   const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
   if (!settings.aiApiKey) return;
-  fs.mkdirSync(ALLOWED_DATA_DIR, { recursive: true });
-  fs.writeFileSync(SECRETS_FILE, JSON.stringify({ aiApiKey: safeStorage.encryptString(String(settings.aiApiKey)).toString('base64') }), 'utf8');
+  writeEncryptedSecret('aiApiKey', settings.aiApiKey);
   delete settings.aiApiKey;
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
   writeAudit('secret.migrated', null);
@@ -571,6 +653,12 @@ function stopAdapter() {
 app.whenReady().then(() => {
   logger = new StructuredLogger(path.join(ALLOWED_DATA_DIR, 'logs'));
   ensureWritableDataDirectory();
+  try {
+    const provisioning = importDriveProvisioning();
+    logger.write('sync', 'info', provisioning.imported ? 'Drive device provisioning imported' : 'Drive device provisioning checked', { imported: provisioning.imported, configured: provisioning.configured, company: provisioning.company || null });
+  } catch (err) {
+    logger.write('sync', 'error', 'Drive device provisioning failed', { error: err.message });
+  }
   try { recoverInterruptedRestore(); } catch (err) { logger.write('data', 'error', 'Interrupted restore recovery failed', { error: err.message }); }
   dataStore = new DataStore(path.join(ALLOWED_DATA_DIR, 'fanuc-pro-suite.db'), WRITABLE_DATA_DIR);
   dataStore.migrateJsonDirectory();
@@ -804,9 +892,7 @@ ipcMain.handle('auth-change-pin', (event, oldPin, newPin) => {
 ipcMain.handle('secret-get', event => {
   try {
     requireSession(event, ['admin']);
-    if (!safeStorage.isEncryptionAvailable() || !fs.existsSync(SECRETS_FILE)) return { ok: true, value: '' };
-    const stored = JSON.parse(fs.readFileSync(SECRETS_FILE, 'utf8'));
-    return { ok: true, value: safeStorage.decryptString(Buffer.from(stored.aiApiKey, 'base64')) };
+    return { ok: true, value: decryptSecret('aiApiKey') };
   } catch (err) { return { ok: false, error: err.message }; }
 });
 
@@ -814,9 +900,42 @@ ipcMain.handle('secret-set', (event, value) => {
   try {
     requireSession(event, ['admin']);
     if (!safeStorage.isEncryptionAvailable()) throw new Error('Windows güvenli depolama kullanılamıyor.');
-    fs.mkdirSync(ALLOWED_DATA_DIR, { recursive: true });
-    fs.writeFileSync(SECRETS_FILE, JSON.stringify({ aiApiKey: safeStorage.encryptString(String(value || '')).toString('base64') }), 'utf8');
+    writeEncryptedSecret('aiApiKey', value);
     return { ok: true };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('drive-secret-status', event => {
+  try {
+    requireSession(event, ['admin']);
+    return { ok: true, configured: Boolean(readEncryptedSecrets().driveAccessToken), secureStorageAvailable: safeStorage.isEncryptionAvailable() };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('drive-provisioning-status', event => {
+  try {
+    requireSession(event, ['admin']);
+    const state = readDriveProvisioningState();
+    return {
+      ok: true,
+      configured: Boolean(readEncryptedSecrets().driveAccessToken),
+      provisioned: Boolean(state),
+      company: state?.company || null,
+      driveFolderId: state?.driveFolderId || null,
+      deviceName: state?.deviceName || null,
+      provisionedAt: state?.provisionedAt || null
+    };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('drive-secret-set', (event, value) => {
+  try {
+    const session = requireSession(event, ['admin']);
+    const token = String(value || '').trim();
+    if (token && (token.length < 16 || token.length > 512 || /[\r\n]/.test(token))) throw new Error('Drive erişim anahtarı biçimi geçersiz.');
+    writeEncryptedSecret('driveAccessToken', token);
+    writeAudit('drive.secret_changed', session.user, { configured: Boolean(token) });
+    return { ok: true, configured: Boolean(token) };
   } catch (err) { return { ok: false, error: err.message }; }
 });
 
@@ -1701,10 +1820,53 @@ ipcMain.handle('restore-backup', async (event, backupFilePath) => {
   }
 });
 
+// Fixed-origin Google Drive sync transport. The optional device token is
+// decrypted and attached only in the main process; renderer code never sees it.
+ipcMain.handle('drive-sync-request', async (event, action, options = {}) => {
+  try {
+    requireSession(event, ['admin', 'technician']);
+    if (process.env.FANUC_E2E === '1') throw new Error('E2E testlerinde dış ağ yazımı devre dışıdır.');
+    if (!isInternetEnabled()) throw new Error('İnternet erişimi Ayarlar bölümünden kapatılmış.');
+    const allowedActions = new Set(['get', 'put', 'merge', 'capabilities']);
+    if (!allowedActions.has(action)) throw new Error('Geçersiz Drive senkronizasyon işlemi.');
+    const method = String(options.method || 'GET').toUpperCase();
+    if (!['GET', 'POST'].includes(method)) throw new Error('Geçersiz Drive HTTP yöntemi.');
+    const body = method === 'POST' ? String(options.body || '') : undefined;
+    if (body && Buffer.byteLength(body, 'utf8') > DRIVE_MAX_RESPONSE_BYTES) throw new Error('Drive gönderim paketi çok büyük.');
+    if (body) JSON.parse(body);
+    const endpoint = new URL(getDriveEndpoint());
+    // Preserve the legacy Apps Script contract: full writes are bare POSTs.
+    if (!(action === 'put' && method === 'POST')) endpoint.searchParams.set('action', action);
+    const token = decryptSecret('driveAccessToken');
+    if (!token) throw new Error('Drive cihaz erişim anahtarı yapılandırılmamış. Senkronizasyon Merkezi üzerinden kaydedin.');
+    // Apps Script web apps do not expose arbitrary request headers to doGet/
+    // doPost. Add the secret in main-process transport only; renderer code
+    // never receives it or constructs this URL.
+    endpoint.searchParams.set('deviceKey', token);
+    const headers = { Accept: 'application/json', 'X-Fanuc-Protocol': '3' };
+    if (body) headers['Content-Type'] = 'application/json';
+    headers.Authorization = `Bearer ${token}`;
+    headers['X-Device-Key'] = token;
+    const response = await net.fetch(endpoint.toString(), { method, headers, body, redirect: 'follow' });
+    const text = await response.text();
+    if (Buffer.byteLength(text, 'utf8') > DRIVE_MAX_RESPONSE_BYTES) throw new Error('Drive yanıtı izin verilen boyutu aşıyor.');
+    const capabilityHeader = String(response.headers.get('x-fanuc-capabilities') || '');
+    const capabilities = {
+      delta: capabilityHeader.split(',').map(v => v.trim()).includes('delta-v1'),
+      retention: capabilityHeader.split(',').map(v => v.trim()).includes('retention-v1'),
+      authenticated: response.headers.get('x-fanuc-authenticated') === 'true'
+    };
+    return { ok: response.ok, status: response.status, data: text, capabilities, tokenConfigured: Boolean(token) };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
 // IPC Handler for Secure Fetch Proxy (webSecurity: true compliance)
 ipcMain.handle('fetch-proxy', async (event, url, options = {}) => {
   try {
     requireSession(event, ['admin', 'technician']);
+    if (process.env.FANUC_E2E === '1') throw new Error('E2E testlerinde dış ağ yazımı devre dışıdır.');
     if (!isInternetEnabled()) throw new Error('İnternet erişimi Ayarlar bölümünden kapatılmış.');
     const parsed = new URL(url);
     const allowedHosts = new Set([

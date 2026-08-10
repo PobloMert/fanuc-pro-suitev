@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles/visual-system.css" />
   <link rel="stylesheet" href="styles/fanuc-center.css" />
   <link rel="stylesheet" href="styles/machine-workspace.css" />
+  <link rel="stylesheet" href="styles/sync-center.css" />
 </head>
 <body>
   <div id="recovery-overlay" hidden role="alertdialog" aria-modal="true" aria-labelledby="recovery-title" style="position:fixed;inset:0;z-index:20000;background:#0d0f1a;display:none;place-items:center">
@@ -320,8 +321,19 @@
       </div>
 
       <div class="sidebar-footer">
+        <button class="nav-item" data-page="sync_center" id="nav-sync_center">
+          <span class="nav-icon" aria-hidden="true">↻</span><span>Senkronizasyon Merkezi</span>
+        </button>
+        <button class="nav-item" data-page="diagnostic_history" id="nav-diagnostic_history">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-7"/><circle cx="7" cy="15" r="1"/></svg>
+          <span>Teşhis ve Geçmiş</span>
+          <span class="nav-badge">Yeni</span>
+        </button>
         <button class="nav-item" data-page="performance_diagnostics" id="nav-performance_diagnostics">
           <span class="nav-icon" aria-hidden="true">⏱</span><span>Performans Teşhisi</span>
+        </button>
+        <button class="nav-item" data-page="archive" id="nav-archive">
+          <span class="nav-icon" aria-hidden="true">▣</span><span>Silinen Kayıtlar</span>
         </button>
         <button class="nav-item" data-page="settings" id="nav-settings">
           <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
@@ -340,8 +352,13 @@
   <script src="js/intro.js"></script>
   <script src="js/recovery.js"></script>
   <script src="js/ux_feedback.js"></script>
+  <script src="js/page_manifest.js"></script>
   <script src="js/ui/modal.js"></script>
   <script src="js/inline_actions.js"></script>
+  <script src="js/services/record_repository.js"></script>
+  <script src="js/services/source_provenance.js"></script>
+  <script src="js/services/history_growth.js"></script>
+  <script src="js/features/archive.js"></script>
   <script src="js/features/lifecycle.js"></script>
   <script src="js/features/rs232.js"></script>
   <script src="js/features/keep_macro.js"></script>
@@ -355,12 +372,14 @@
   <script src="js/features/knowledge_screens.js"></script>
   <script src="js/features/ai_screen.js"></script>
   <script src="js/services/google_drive_sync.js"></script>
+  <script src="js/services/notification_lifecycle.js"></script>
   <script src="js/operations_dashboard.js"></script>
   <!-- Extracted renderer modules (loaded before renderer.js) -->
   <script src="js/features/cnc_calculators.js"></script>
   <script src="js/features/gcode_tools.js"></script>
   <script src="js/features/param_comparator.js"></script>
   <script src="js/features/troubleshooter.js"></script>
+  <script src="js/features/diagnostic_history.js"></script>
   <script src="js/features/dashboard_view.js"></script>
   <script src="js/features/settings_view.js"></script>
   <script src="js/features/backup_tracker.js"></script>
@@ -373,6 +392,7 @@
   <script src="js/features/report_exports.js"></script>
   <script src="js/performance_data.js"></script>
   <script src="js/features/performance_diagnostics.js"></script>
+  <script src="js/features/sync_center.js"></script>
   <script src="js/features/param_inspector.js"></script>
   <script src="js/fanuc_center.js"></script>
   <script src="js/machine_workspace.js"></script>

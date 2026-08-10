@@ -813,6 +813,20 @@ input:focus, textarea:focus, select:focus {
 .empty-state-guided p { max-width: 440px; margin: 0 0 8px; line-height: 1.55; color: var(--text-secondary); }
 .empty-state-action { margin-top: 4px; }
 
+.page-recovery {
+  min-height: 420px; margin: 24px; padding: 48px 32px; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); background: var(--bg-card); display: flex;
+  flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  color: var(--text-secondary); outline: none;
+}
+.page-recovery:focus-visible { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .35); }
+.page-recovery-icon { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35); color: #f87171; font-size: 28px; font-weight: 800; }
+.page-recovery h1 { margin: 16px 0 8px; color: var(--text-primary); font-size: 20px; }
+.page-recovery p { max-width: 540px; line-height: 1.6; }
+.page-recovery-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 16px 0; }
+.page-recovery details { max-width: 620px; font-size: 11px; }
+.page-recovery code { display: block; margin-top: 8px; overflow-wrap: anywhere; }
+
 .page-loading-state { width: 100%; padding: 34px; color: var(--text-secondary); }
 .loading-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; font-size: 12px; font-weight: 600; }
 .loading-skeleton-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
@@ -1192,3 +1206,4 @@ body.theme-retro .data-table tr:hover td { background: #0d200d; }
 .neon-bar-col:hover .neon-bar-value {
   color: var(--text-accent) !important;
 }
+.dh-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:18px;padding-bottom:4px}.dh-tabs button{border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);border-radius:8px;padding:9px 12px;white-space:nowrap;cursor:pointer}.dh-tabs button.active{background:var(--accent);border-color:var(--accent);color:#fff}.dh-tabs button:focus-visible,.dh-flow summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.dh-section-head{margin-bottom:14px}.dh-section-head h2{font-size:18px;margin:0 0 4px}.dh-section-head p,.dh-card p{color:var(--text-secondary);margin:0;line-height:1.5}.dh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.dh-card{border:1px solid var(--border);background:var(--bg-card);border-radius:12px;padding:16px;min-width:0}.dh-card>span{display:block;color:var(--text-muted);font-size:12px;margin-bottom:7px}.dh-card>strong{display:block;overflow-wrap:anywhere;margin-bottom:7px}.dh-card li{margin:7px 0;color:var(--text-secondary)}.dh-empty{display:flex;flex-direction:column;gap:5px;align-items:center;text-align:center;border:1px dashed var(--border);border-radius:12px;padding:24px;margin-top:14px;color:var(--text-secondary)}.dh-empty strong{color:var(--text-primary)}.dh-notice{margin-top:14px;border-left:3px solid var(--accent);background:var(--bg-card);padding:12px 14px;border-radius:8px;color:var(--text-secondary)}.dh-notice.good{border-left-color:var(--green)}.dh-form{display:grid;grid-template-columns:170px minmax(160px,1fr) minmax(220px,2fr) auto;gap:10px;align-items:end;margin-bottom:14px}.dh-form label{display:grid;gap:5px;font-size:12px;color:var(--text-secondary)}.dh-form input,.dh-form select{width:100%;min-height:38px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);border-radius:8px;padding:8px}.dh-table-wrap{overflow:auto;max-height:55vh}.dh-table{width:100%;border-collapse:collapse}.dh-table th,.dh-table td{text-align:left;border-bottom:1px solid var(--border);padding:10px;vertical-align:top}.dh-flow-list{display:grid;gap:10px}.dh-flow{border:1px solid var(--border);background:var(--bg-card);border-radius:10px;padding:12px}.dh-flow summary{font-weight:700;cursor:pointer}.dh-flow li{margin:9px 0;line-height:1.45;color:var(--text-secondary)}@media(max-width:900px){.dh-form{grid-template-columns:1fr}.dh-table{min-width:720px}}

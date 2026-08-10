@@ -64,10 +64,10 @@
         "Enkoder kablosunun çıkarılması veya enkoder/motor değişimi yapılması."
       ],
       "solutions": [
-        "Sürücü bataryasını CNC AÇIKKEN yeni 3.6V lityum pil ile değiştirin.",
-        "Parameter Write Enable (PWE)=1 yapın. Parameter 1815 Bit 5 (APC)=1 ve Bit 4 (APZ)=0 yapıp CNC yi kapatıp açın.",
-        "Ekseni el çarkı ile fiziksel sıfır (home) çizgi hizasına getirin.",
-        "Parameter 1815 Bit 4 (APZ)=1 yapıp tezgahı yeniden başlatın. PWE=0 yapın."
+        "Pil geçmişini, etkilenen ekseni ve güncel parametre yedeğini salt okunur doğrulayın.",
+        "Parameter 1815 APC/APZ durumunu kayıt altına alıp onaylı eski yedekle karşılaştırın.",
+        "Referans hizası ve mekanik konumu makine üreticisinin servis dokümanına göre kontrol edin.",
+        "PWE/parametre yazma ve referans yeniden kurma işlemini ilgili seri-revizyon prosedürüyle yetkili bakıma eskale edin."
       ]
     },
     {
@@ -125,7 +125,7 @@
       ],
       "solutions": [
         "Pili yeni 3.6V lityum pil ile değiştirin.",
-        "Parameter 1815 APZ bitini 0 yapıp tekrar 1 yaparak eksen sıfır noktasını yeniden tanımlayın."
+        "Parameter 1815 APC/APZ durumunu salt okunur kaydedin; referans yeniden kurma işlemini OEM/FANUC seri-revizyon prosedürüyle yetkili bakıma eskale edin."
       ]
     },
     {

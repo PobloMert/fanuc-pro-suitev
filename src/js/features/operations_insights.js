@@ -52,6 +52,7 @@ function renderProjectGrid(page) {
   const type = (page || document).querySelector('#proj-type-filter')?.value || '';
 
   let projs = State.projects.filter(p =>
+    !p.deletedAt &&
     (!q || p.name.toLowerCase().includes(q)) &&
     (!type || p.type === type)
   );
@@ -76,7 +77,7 @@ function renderProjectGrid(page) {
           <div class="project-name">${escapeHTML(p.name)}</div>
           <div class="project-type">${escapeHTML(typeLabel[p.type] || p.type)}</div>
         </div>
-        <span class="tag ${p.type==='mech'?'tag-blue':p.type==='elec'?'tag-amber':'tag-purple'}">${escapeHTML(p.status || 'Aktif')}</span>
+        <div class="flex gap-1"><span class="tag ${p.type==='mech'?'tag-blue':p.type==='elec'?'tag-amber':'tag-purple'}">${escapeHTML(p.status || 'Aktif')}</span>${canDelete() ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); archiveProject('${p.id}')" title="Projeyi arşivle">✕</button>` : ''}</div>
       </div>
       <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:10px">${escapeHTML(p.description || 'Açıklama yok')}</p>
       <div class="progress-bar"><div class="progress-fill" style="width:${p.progress||0}%"></div></div>
@@ -101,6 +102,19 @@ window.openProject = function(id) {
   const proj = State.projects.find(p => p.id === id);
   if (!proj) return;
   showToast(`"${proj.name}" projesi açıldı`, 'info');
+};
+
+window.archiveProject = async function(id) {
+  if (!canDelete()) return showToast('Proje arşivleme yetkiniz yok.', 'error');
+  if (!confirm('Bu proje tüm cihazlarda arşive taşınacak. Devam edilsin mi?')) return;
+  const index = State.projects.findIndex(project => String(project.id) === String(id));
+  if (index < 0) return;
+  State.projects[index] = window.MTBRecordRepository.archive(State.projects[index], State.currentUser);
+  const path = `${State.appDataDir}/projects/${id}/meta.json`;
+  const result = await window.electronAPI.writeFile(path, JSON.stringify(State.projects[index], null, 2));
+  if (!result?.ok) return showToast('Proje arşiv bilgisi kaydedilemedi.', 'error');
+  showToast('Proje arşive taşındı.', 'success');
+  navigate('projects');
 };
 
 function showNewProjectModal() {
@@ -161,7 +175,7 @@ async function createProject() {
   if (!name) { showToast('Proje adı zorunlu!', 'error'); return; }
 
   const id = 'proj_' + Date.now();
-  const proj = {
+  const proj = window.MTBRecordRepository.create(State.projects, {
     id,
     name,
     type: document.getElementById('np-type').value,
@@ -173,7 +187,7 @@ async function createProject() {
     status: 'Aktif',
     createdAt: new Date().toISOString(),
     files: []
-  };
+  }, State.currentUser);
 
   // Save to disk
   const projDir = State.appDataDir + '/projects/' + id;

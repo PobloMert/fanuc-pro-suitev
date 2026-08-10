@@ -69,7 +69,7 @@
       ],
       "solutions": [
         "Pano üstündeki deşarj (rejeneratif) direncinin omajını ölçün.",
-        "Servo yavaşlama parametrelerini (Deceleration time) uzatın."
+        "Yavaşlama parametrelerini ve onaylı yedeği salt okunur karşılaştırın; değişiklik gerekiyorsa OEM/FANUC seri-revizyon prosedürüyle yetkili bakıma eskale edin."
       ]
     },
     {

@@ -237,13 +237,11 @@ function renderCncScreenViewer() {
     <div class="page-header">
       <div class="flex items-center justify-between">
         <div>
-          <h1>🖥️ Canlı CNC Ekran İzleyici (Remote VNC / iHMI Display)</h1>
-          <p>FANUC CNC kontrolör ekranını uzaktan canlı izleyin, tuş takımı ile kumanda edin ve ekran görüntüsü kaydedin</p>
+          <h1>🖥️ CNC Ekran Bağlantı Kontrolü</h1>
+          <p>Yalnızca ağ erişilebilirliğini görüntüleyin. Uygulama ekran kumandası veya CNC tuş komutu göndermez.</p>
         </div>
         <div class="flex gap-2">
-          <button class="btn btn-primary" onclick="captureCncScreenSnapshot(document.getElementById('cnc-view-mach-sel').value)">
-            📸 Ekran Görüntüsü Al & Bakıma Ekle
-          </button>
+          <span class="tag tag-green">KALICI SALT OKUNUR</span>
         </div>
       </div>
     </div>
@@ -262,13 +260,13 @@ function renderCncScreenViewer() {
             <label style="font-weight:700; font-size:12px; color:var(--text-secondary)">IP Adresi:</label>
             <input type="text" id="cnc-view-ip-input" class="form-control" placeholder="192.168.1.50" style="width:140px" value="192.168.1.50" />
 
-            <label style="font-weight:700; font-size:12px; color:var(--text-secondary)">VNC Port:</label>
+            <label style="font-weight:700; font-size:12px; color:var(--text-secondary)">Görüntüleme Portu:</label>
             <input type="number" id="cnc-view-port-input" class="form-control" placeholder="5900" style="width:80px" value="5900" />
           </div>
 
           <div class="flex gap-2">
             <button class="btn btn-primary btn-sm" onclick="connectCncScreenStream(document.getElementById('cnc-view-ip-input').value, document.getElementById('cnc-view-port-input').value)">
-              ▶️ Canlı Bağlantıyı Başlat
+              ▶️ Erişilebilirliği Kontrol Et
             </button>
             <button class="btn btn-secondary btn-sm" onclick="disconnectCncScreenStream()">
               ⏹️ Bağlantıyı Kes
@@ -278,7 +276,7 @@ function renderCncScreenViewer() {
 
         <div class="flex items-center justify-between mt-3" style="font-size:11.5px; border-top:1px solid var(--border); padding-top:10px">
           <div id="cnc-screen-status-badge" class="tag tag-gray">⚪ Çevrimdışı</div>
-          <div id="cnc-screen-status-text" style="color:var(--text-muted)">Bağlantı Bekleniyor...</div>
+          <div id="cnc-screen-status-text" style="color:var(--text-muted)">Salt-okunur bağlantı kontrolü bekleniyor...</div>
         </div>
       </div>
 
@@ -286,34 +284,18 @@ function renderCncScreenViewer() {
       <div id="cnc-screen-frame-wrap" class="card mb-4" style="padding:10px; background:#0b0f19">
         <div style="width:100%; height:380px; background:var(--bg-card2); border:2px dashed var(--border); border-radius:var(--radius-md); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px">
           <div style="font-size:36px; margin-bottom:10px; opacity:0.6">🖥️</div>
-          <div style="font-weight:600; font-size:14px; margin-bottom:6px">CNC Canlı Ekran Akışı Bekleniyor</div>
+          <div style="font-weight:600; font-size:14px; margin-bottom:6px">CNC Görüntüleme Bağlantısı Bekleniyor</div>
           <div style="font-size:12px; color:var(--text-muted); max-width:400px">
-            Yukarıdaki tezgâhı seçip "Canlı Bağlantıyı Başlat" butonuna basarak uzaktan ekran izlemeyi başlatın.
+            Bu kontrol yalnızca hedef portun erişilebilirliğini sınar; görüntü veya komut aktarmaz.
           </div>
         </div>
       </div>
 
-      <!-- Virtual FANUC Keypad Control -->
+      <!-- Permanent read-only policy notice -->
       <div class="card" style="padding:16px">
-        <div class="card-title mb-3" style="display:flex; align-items:center; justify-content:between">
-          <span>⌨️ Sanal FANUC Tuş Takımı (Remote Keypad)</span>
-          <span style="font-size:11px; color:var(--text-muted)">Tıkladığınız tuş canlı CNC kontrolörüne iletilir</span>
-        </div>
-
-        <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:8px">
-          <button class="btn btn-danger btn-sm" onclick="sendCncKeypress('RESET')" style="font-weight:bold; font-size:11px">🔴 RESET</button>
-          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('POS')" style="font-weight:bold; font-size:11px">📍 POS</button>
-          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('PROG')" style="font-weight:bold; font-size:11px">📜 PROG</button>
-          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('OFS/SET')" style="font-weight:bold; font-size:11px">📐 OFS/SET</button>
-          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('SYSTEM')" style="font-weight:bold; font-size:11px">⚙️ SYSTEM</button>
-          <button class="btn btn-secondary btn-sm" onclick="sendCncKeypress('MESSAGE')" style="font-weight:bold; font-size:11px">⚠️ MESSAGE</button>
-
-          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F1')" style="font-size:11px">F1</button>
-          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F2')" style="font-size:11px">F2</button>
-          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F3')" style="font-size:11px">F3</button>
-          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F4')" style="font-size:11px">F4</button>
-          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('F5')" style="font-size:11px">F5</button>
-          <button class="btn btn-ghost btn-sm" onclick="sendCncKeypress('CHAPTER')" style="font-size:11px">◀ ▶ NEXT</button>
+        <div class="card-title mb-2">🔒 CNC kumandası devre dışı</div>
+        <div style="font-size:12px; color:var(--text-secondary); line-height:1.6">
+          Sanal tuş takımı bulunmaz. RESET, ekran tuşu, program veya parametre komutu CNC kontrolörüne hiçbir zaman iletilmez.
         </div>
       </div>
     </div>

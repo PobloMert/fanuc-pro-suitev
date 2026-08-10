@@ -24,6 +24,7 @@ export const State = (typeof window !== 'undefined' && window.State) || {
   custom_mcodes: [],
   custom_alarms: [],
   custom_alarm_notes: {},
+  diagnostic_history: [],
   users: [],
   notifications: [],
   onlineSearchEnabled: false,

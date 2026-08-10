@@ -1,6 +1,6 @@
 {
   "name": "fanuc-pro-suite",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Kalıcı salt-okunur FANUC CNC izleme ve teşhis uygulaması",
   "main": "main.js",
   "scripts": {
@@ -10,6 +10,7 @@
     "smoke": "powershell -ExecutionPolicy Bypass -File scripts/smoke.ps1",
     "test": "node --test",
     "test:e2e": "playwright test",
+    "test:release-lifecycle": "node scripts/validate-release-lifecycle.js",
     "check": "node scripts/check.js",
     "build:dir": "electron-builder --dir --win",
     "build:setup": "electron-builder --win nsis",
@@ -55,6 +56,7 @@
       ]
     },
     "nsis": {
+      "include": "build/installer.nsh",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": false,

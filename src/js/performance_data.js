@@ -31,10 +31,15 @@
     const totalPages = Math.max(1, Math.ceil(source.length / size)), current = Math.max(1, Math.min(totalPages, Number(page) || 1)), start = (current - 1) * size;
     return { items: source.slice(start, start + size), page: current, pageSize: size, total: source.length, totalPages };
   }
+  function pagerModel(items, page = 1, pageSize = 50) {
+    const result = paginate(items, page, pageSize);
+    const first = result.total ? ((result.page - 1) * result.pageSize) + 1 : 0;
+    return { ...result, first, last: Math.min(result.page * result.pageSize, result.total), hasPrevious: result.page > 1, hasNext: result.page < result.totalPages };
+  }
   const metrics = [];
   function measure(name, callback) { const start = performance.now(); try { return callback(); } finally { metrics.push({ name: String(name), duration: Math.round((performance.now() - start) * 10) / 10, at: new Date().toISOString() }); if (metrics.length > 100) metrics.splice(0, metrics.length - 100); } }
   function record(name, startedAt) { metrics.push({ name: String(name), duration: Math.round((performance.now() - startedAt) * 10) / 10, at: new Date().toISOString() }); if (metrics.length > 100) metrics.splice(0, metrics.length - 100); }
-  window.MTBPerformance = Object.freeze({ buildRecordIndex: build, debounce, paginate, measure, getMetrics: () => metrics.map(item => ({ ...item })) });
+  window.MTBPerformance = Object.freeze({ buildRecordIndex: build, debounce, paginate, pagerModel, measure, getMetrics: () => metrics.map(item => ({ ...item })) });
   if (typeof document !== 'undefined') document.addEventListener('click', event => {
     const navigation = event.target.closest?.('[data-page], [data-ops-nav], [data-machine-nav], [data-fanuc-nav]');
     if (!navigation) return;

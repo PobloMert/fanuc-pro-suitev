@@ -10,3 +10,5 @@ test-results/
 playwright-report/
 .DS_Store
 Thumbs.db
+FANUC-Provisioning.json
+*.provisioning.json

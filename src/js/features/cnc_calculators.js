@@ -62,19 +62,19 @@ window.selectTuningWizard = function(id) {
         </div>
         <div style="display:flex; gap:12px; align-items:start; padding:8px; background:var(--bg-card2); border-radius:var(--radius-sm)">
           <input type="checkbox" style="margin-top:3px" />
-          <div style="font-size:12px"><strong>Adım 2:</strong> PWE'yi (Parameter Write Enable) açın. MDI modunda <code>SETTING</code> sayfasında <code>PARAMETER WRITE = 1</code> yapın. (CNC alarm verecektir, normaldir).</div>
+          <div style="font-size:12px"><strong>Adım 2:</strong> Güncel parametre yedeğini ve kontrol serisi/yazılım revizyonunu doğrulayın. Uygulama PWE açma veya yazma adımı sağlamaz.</div>
         </div>
         <div style="display:flex; gap:12px; align-items:start; padding:8px; background:var(--bg-card2); border-radius:var(--radius-sm)">
           <input type="checkbox" style="margin-top:3px" />
-          <div style="font-size:12px"><strong>Adım 3:</strong> <code>SYSTEM > PARAM > 1815</code> parametresini bulun. Sıfırlanacak eksenin <code>APC (Bit 5)</code> değerini 1 yapın.</div>
+          <div style="font-size:12px"><strong>Adım 3:</strong> <code>1815</code> APC/APZ durumunu salt okunur kaydedin ve eski yedekle karşılaştırın.</div>
         </div>
         <div style="display:flex; gap:12px; align-items:start; padding:8px; background:var(--bg-card2); border-radius:var(--radius-sm)">
           <input type="checkbox" style="margin-top:3px" />
-          <div style="font-size:12px"><strong>Adım 4:</strong> Aynı parametrede <code>APZ (Bit 4)</code> değerini önce 0 yapın, ardından tekrar 1 yapın.</div>
+          <div style="font-size:12px"><strong>Adım 4:</strong> Referans kurma gerekiyorsa makine üreticisinin seri-revizyon prosedürüyle yetkili bakıma eskale edin.</div>
         </div>
         <div style="display:flex; gap:12px; align-items:start; padding:8px; background:var(--bg-card2); border-radius:var(--radius-sm)">
           <input type="checkbox" style="margin-top:3px" />
-          <div style="font-size:12px"><strong>Adım 5:</strong> PWE'yi kapatın (<code>PARAMETER WRITE = 0</code>). Tezgahın ana şalterini kapatıp 10 saniye bekleyin ve tekrar açın. Eksen sıfırlanmıştır.</div>
+          <div style="font-size:12px"><strong>Adım 5:</strong> Yetkili işlem sonrasında Machine Lock, Single Block ve düşük override içeren kontrollü test planını OEM prosedürüne göre uygulayın.</div>
         </div>
       </div>
 
@@ -141,7 +141,7 @@ window.selectTuningWizard = function(id) {
         </div>
         <div style="display:flex; gap:12px; align-items:start; padding:8px; background:var(--bg-card2); border-radius:var(--radius-sm)">
           <input type="checkbox" style="margin-top:3px" />
-          <div style="font-size:12px"><strong>Adım 4:</strong> <code>SYSTEM > PARAM > 1851</code> nolu parametreye gidin. Hesaplanan boşluğu mikron cinsinden girin (örn: 20 yazın).</div>
+          <div style="font-size:12px"><strong>Adım 4:</strong> Ölçüm ve mevcut <code>1851</code> değerini raporlayın; değişiklik önerisini seri/revizyon prosedürüyle yetkili bakıma eskale edin.</div>
         </div>
       </div>
 
@@ -169,7 +169,7 @@ window.selectTuningWizard = function(id) {
         </div>
         <div style="display:flex; gap:12px; align-items:start; padding:8px; background:var(--bg-card2); border-radius:var(--radius-sm)">
           <input type="checkbox" style="margin-top:3px" />
-          <div style="font-size:12px"><strong>Adım 3:</strong> <code>SYSTEM > PARAM > 1320</code> (Pozitif limitler) parametresine gidin ve X eksenine bu değeri yazın. Güvenlik için 5mm tolerans ekleyebilirsiniz (+445.000 girin).</div>
+          <div style="font-size:12px"><strong>Adım 3:</strong> Mevcut <code>1320/1321</code> değerlerini salt okunur karşılaştırın; uygulama limit değeri yazma talimatı vermez.</div>
         </div>
         <div style="display:flex; gap:12px; align-items:start; padding:8px; background:var(--bg-card2); border-radius:var(--radius-sm)">
           <input type="checkbox" style="margin-top:3px" />
@@ -477,7 +477,7 @@ window.calculateNewBacklash = function() {
     <strong>HESAPLAMA DETAYI:</strong><br>
     - Ölçülen Sapma: ${measured.toFixed(3)} mm (${measuredMicrons} Mikron)<br>
     - Mevcut Parametre 1851: ${current} Mikron<br>
-    - <strong>YENİ GİRİLMESİ GEREKEN DEĞER: ${newValue}</strong> (Parametre 1851 eksen satırına yazın).
+    - <strong>İNCELEME İÇİN HESAPLANAN ADAY DEĞER: ${newValue}</strong> (CNC'ye yazılmaz; OEM/FANUC seri-revizyon prosedürüyle doğrulanır).
   `;
 
   document.getElementById('bl-simulated-screen').style.display = 'block';

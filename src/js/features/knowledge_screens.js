@@ -76,7 +76,10 @@ function renderLibrary() {
           <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
             <div style="font-weight:700; font-size:12.5px; color:var(--text-accent); margin-bottom:6px;">1. SVM / PSM Kart Değişim Adımları</div>
             <ol style="font-size:11.5px; color:var(--text-primary); margin:0; padding-left:16px; display:flex; flex-direction:column; gap:4px; line-height:1.4;">
-              <li>Tezgah ana şalterini kapatın ve DC Link voltajının 0V'a düşmesini bekleyin (yaklaşık 5-10 dk).</li>
+              <li>Tezgâh ana şalterini ve bağlı tüm harici güç kaynaklarını kapatın; kilitleme/etiketleme prosedürünü uygulayın.</li>
+              <li>Enerjiyi kestikten sonra en az <b>20 dakika</b> bekleyin. Uygun ölçü aletiyle DC Link geriliminin güvenli seviyeye düştüğünü doğrulamadan baralara veya amplifikatöre dokunmayın.</li>
+              <li>Parçaların soğuduğunu doğrulayın ve karta temas etmeden önce ESD bilekliği/topraklama önlemi kullanın.</li>
+              <li>İşlem yalnız eğitimli ve yetkili teknisyen tarafından, tezgâh üreticisinin prosedürü de kontrol edilerek yapılmalıdır.</li>
               <li>Sürücü ön yüzündeki klemens kapağını söküp baraları ayırın.</li>
               <li>CXA2A / CXA2B haberleşme soket kilitlerini bastırarak çıkarın.</li>
               <li>Yeni sürücüyü takıp vidalarını tork doğruluğunda sıkın.</li>
@@ -92,6 +95,15 @@ function renderLibrary() {
               <li><b>COP10A Optik Fiber:</b> Büküm yarıçapı min. 30mm olmalıdır.</li>
             </ul>
           </div>
+        </div>
+      </div>
+
+      <div class="card glass-card mb-4" style="padding:20px; border-left:4px solid var(--amber)">
+        <div style="font-weight:750; font-size:15px; margin-bottom:8px">Elektrik kabini sıvı ve korozyon kontrolü</div>
+        <div style="font-size:12px; color:var(--text-secondary); line-height:1.55">
+          Periyodik bakımda kabin contalarını, kablo girişlerini, kart ve konnektörlerde nem/sıvı izi ile oksitlenmeyi kontrol edin.
+          Aktif kükürt veya klor içeriği yüksek sıvılar, elektriksel iletkenliği yüksek sentetik soğutucular ve kuvvetli alkali sıvılar
+          elektronik yüzeylerde korozyon ve yalıtım sorunlarına neden olabilir. Şüphede sıvı üreticisinin teknik verisini ve tezgâh üreticisinin uygunluk talimatını doğrulayın; enerjili kabinde temizlik veya ölçüm yapmayın.
         </div>
       </div>
 

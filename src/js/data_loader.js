@@ -87,7 +87,8 @@ export async function loadData() {
       loadJSONDatabase('backup_logs.json', 'backup_logs', []),
       loadJSONDatabase('custom_mcodes.json', 'mcodes', []),
       loadJSONDatabase('custom_alarms.json', 'alarms', []),
-      loadJSONDatabase('custom_alarm_notes.json', 'notes', {})
+      loadJSONDatabase('custom_alarm_notes.json', 'notes', {}),
+      loadJSONDatabase('diagnostic_history.json', 'diagnostic_history', [])
     ]);
 
     State.alarms = results[0];
@@ -107,6 +108,8 @@ export async function loadData() {
     State.custom_mcodes = results[14];
     State.custom_alarms = results[15];
     State.custom_alarm_notes = results[16];
+    State.diagnostic_history = results[17];
+    window.MTBSourceProvenance?.enrichState(State);
 
     if (StartupErrors.length > 0) {
       console.warn('Veri yükleme sırasında uyarılar oluştu:\n', StartupErrors.join('\n'));

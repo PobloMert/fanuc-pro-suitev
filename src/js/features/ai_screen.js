@@ -116,7 +116,7 @@ function renderAI() {
           <button class="btn btn-ghost btn-sm" onclick="askAIPreset('SV0401 Servo Hatası çözümü')" style="text-align:left; justify-content:flex-start; width:100%; border:1px solid var(--border)">
             🚗 SV0401 Servo Alarm Teşhisi
           </button>
-          <button class="btn btn-ghost btn-sm" onclick="askAIPreset('Parametre 1815 APZ/APC sıfırlama nasıl yapılır')" style="text-align:left; justify-content:flex-start; width:100%; border:1px solid var(--border)">
+          <button class="btn btn-ghost btn-sm" onclick="askAIPreset('Parametre 1815 absolute referans durumunu salt okunur nasıl inceleyebilirim')" style="text-align:left; justify-content:flex-start; width:100%; border:1px solid var(--border)">
             ⚙️ P1815 Referans Noktası Ayarı
           </button>
           <button class="btn btn-ghost btn-sm" onclick="askAIPreset('FSSB fiber optik hatası arıza giderme adımları')" style="text-align:left; justify-content:flex-start; width:100%; border:1px solid var(--border)">
@@ -485,7 +485,7 @@ function offlineAI(msg) {
   }
 
   if (q.includes('sıfır') || q.includes('1815') || q.includes('apz') || q.includes('apc')) {
-    return `## Eksen Absolute Referans Noktası Sıfırlama (P1815)\n\nAbsolute enkoderli eksenlerin referans noktasını sıfırlamak için **Parameter 1815** kullanılır:\n\n1. Ekseni hizalama çizgisine getirin.\n2. PWE=1 yapın.\n3. \`1815\` nolu parametrede sıfırlanacak eksenin \`APC (Bit 5)\` ve \`APZ (Bit 4)\` değerlerini güncelleyin (APZ'yi 1 -> 0 -> 1 yapın).\n4. CNC'yi kapatıp açın.\n\n*Sanal parametre tablosu ve interaktif kontrol listesi için sol menüden **Ayar Sihirbazı** sekmesini kullanabilirsiniz.*`;
+    return `## Eksen Absolute Referans İncelemesi (P1815)\n\nAPC/APZ bitlerini, pil geçmişini, etkilenen ekseni ve güncel parametre yedeğini salt okunur karşılaştırın. Bu uygulama PWE açma veya parametre yazma adımı vermez. Referans yeniden kurma işlemi kontrol serisi/yazılım revizyonuna özgüdür; makine üreticisinin onaylı prosedürüyle yetkili bakım personeline eskale edilmelidir.`;
   }
 
   if (q.includes('makro') || q.includes('çevrim') || q.includes('g81') || q.includes('g83') || q.includes('bhc') || q.includes('üret')) {
@@ -525,7 +525,7 @@ function offlineAI(msg) {
     const criticalFans = State.fans.filter(f => (20000 - f.calisma_saati) < 0);
     const warningFans = State.fans.filter(f => (20000 - f.calisma_saati) >= 0 && (20000 - f.calisma_saati) < 5000);
 
-    return `## Absolute Enkoder Pil & Sürücü Fan Durum Raporu\n\n**1. Enkoder Pil Durumları (Voltaj Seviyeleri):**\n- Sistemde **${State.batteries.length}** adet kayıtlı pil döngüsü var.\n- 🔴 Kritik Seviye (Değişimi Geciken / < 3.0V): **${criticals.length}** adet eksen (Pozisyon APZ kaybı riski!).\n- 🟡 Uyarı Seviyesi (3.0V - 3.2V): **${warnings.length}** adet eksen.\n- 🟢 Güvenli Seviye (> 3.2V): **${State.batteries.length - criticals.length - warnings.length}** adet eksen.\n\n**2. Sürücü Kabini Soğutma Fanları Durumu:**\n- Sistemde **${State.fans.length}** adet kayıtlı soğutma fanı takip edilmektedir.\n- 🔴 Limit Aşımı (> 20.000 Saat): **${criticalFans.length}** adet fan.\n- 🟡 Bakım Yakın (15.000 - 20.000 Saat): **${warningFans.length}** adet fan.\n\n**Saha Önerisi:** Enkoder pilleri bittiğinde kapatıp açma sonrası referans kaybı (P1815 APZ alarmı) oluşur. Sürücü kartı soğutma fanları durursa, sürücü 'Overheat' alarmı verip tezgahı korumaya alır. Sol menüden **Pil Takibi** sayfasına giderek her iki donanımın da ömür sayaçlarını sıfırlayabilirsiniz.`;
+    return `## Absolute Enkoder Pil & Sürücü Fan Durum Raporu\n\n**Pil kayıtları:** ${State.batteries.length}\n- Kritik: **${criticals.length}**\n- Uyarı: **${warnings.length}**\n\n**Fan kayıtları:** ${State.fans.length}\n- Limit aşımı: **${criticalFans.length}**\n- Bakım yakın: **${warningFans.length}**\n\nPil gerilimi düştüğünde absolute referans kaybı riski oluşabilir. Kayıtları salt okunur inceleyin; müdahaleyi kontrol serisi ve OEM prosedürüyle planlayın.`;
   }
 
   if (q.includes('e-stop') || q.includes('acil dur') || q.includes('emergency stop')) {
@@ -533,7 +533,7 @@ function offlineAI(msg) {
   }
 
   if (q.includes('yedekle') || q.includes('backup') || q.includes('parametre kaydet') || q.includes('restore') || q.includes('yükle') || q.includes('sram') || q.includes('boot') || q.includes('rom')) {
-    return `## FANUC Parametre & Program Yedekleme/Yükleme Sihirbazı\n\nFANUC kontrol ünitelerinde yedekleme yaparken doğru I/O kanallarını ve tuş kombinasyonlarını kullanmak kritiktir:\n\n**1. Standart Parametre & Program Yedekleme (I/O Kanalları):**\n- **I/O Channel = 4:** CF Card (Compact Flash)\n- **I/O Channel = 17:** USB Flash Sürücü\n- **I/O Channel = 0/1:** RS232 Seri Port\n- **PWE = 1:** Parametre yazma izni (Sadece veri geri yüklerken açılmalıdır).\n*Sihirbazı açmak için sol menüden **Yedekleme Sihirbazı** sekmesini kullanabilirsiniz.*\n\n**2. Boot ROM Ekranından SRAM Bit-Image Yedeği Alma:**\nCNC parametreleri, PMC programı, ofsetler ve parça programlarının tamamını tek bir dosya (\`SRAM.FDB\`) olarak yedeklemek için:\n1. CNC gücünü kapatın.\n2. Ekran altındaki **en sağdaki iki soft key (menü tuşu)** butonuna basılı tutarak CNC gücünü açın.\n3. Karşınıza gelen siyah-beyaz **BOOT SYSTEM** menüsünde yön tuşlarıyla **SRAM DATA UTILITY** satırına gelip SELECT deyin.\n4. **SRAM BACKUP (CNC -> MEMORY CARD)** seçerek CF karta tüm belleğin aynasını yedekleyin. Geri yüklemek için ise **RESTORE SRAM** seçeneğini kullanın.`;
+    return `## FANUC Yedek İnceleme ve Güvenli Eskalasyon\n\nUygulama mevcut yedeklerin kapsamını, tarihini ve bütünlüğünü incelemek için kullanılabilir; CNC'ye yükleme yapmaz. SRAM/parametre geri yükleme ve PWE işlemleri yanlış seri veya revizyonda makine yapılandırmasını bozabilir. Kontrol modeli, yazılım revizyonu, OEM opsiyonları ve doğrulanmış yedek eşleşmeden işlem yapılmamalı; geri yükleme yalnız ilgili OEM/FANUC prosedürüyle yetkili bakım personeline eskale edilmelidir.`;
   }
 
   if (q.includes('servo') && (q.includes('kazan') || q.includes('gain') || q.includes('ayar') || q.includes('tuning'))) {

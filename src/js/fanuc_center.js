@@ -48,7 +48,7 @@
     message: 'FANUC profilini ve modül envanterini değiştirmek için düzenleme yetkisine sahip bir kullanıcıyla giriş yapın.'
   });
   const selectedMachine = () => {
-    const machines = [...(state().machines || [])].sort((a, b) => {
+    const machines = (state().machines || []).filter(item => !item.deletedAt).sort((a, b) => {
       const nameA = String(a.numarasi || a.name || '');
       const nameB = String(b.numarasi || b.name || '');
       return nameA.localeCompare(nameB, 'tr', { numeric: true, sensitivity: 'base' });
@@ -62,8 +62,8 @@
     if (!machine) return { maint: [], batteries: [], fans: [], backups: [] };
     const match = item => Number(item.tezgah_id ?? item.machine_id) === Number(machine.id) || item.machine === machine.numarasi || item.machine_name === machine.numarasi;
     return {
-      maint: (app.maintenances || []).filter(match), batteries: (app.batteries || []).filter(match),
-      fans: (app.fans || []).filter(match), backups: (app.backup_logs || []).filter(match)
+      maint: (app.maintenances || []).filter(item => !item.deletedAt && match(item)), batteries: (app.batteries || []).filter(item => !item.deletedAt && match(item)),
+      fans: (app.fans || []).filter(item => !item.deletedAt && match(item)), backups: (app.backup_logs || []).filter(item => !item.deletedAt && match(item))
     };
   }
 

@@ -30,7 +30,8 @@
     saveBatteries: ['batteries.json', 'batteries', 'batteries'], saveFans: ['fans.json', 'fans', 'fans'],
     saveWiki: ['wiki.json', 'articles', 'wiki'], saveBackupLogs: ['backup_logs.json', 'backup_logs', 'backup_logs'],
     saveCustomMCodes: ['custom_mcodes.json', 'mcodes', 'custom_mcodes'], saveCustomAlarms: ['custom_alarms.json', 'alarms', 'custom_alarms'],
-    saveCustomAlarmNotes: ['custom_alarm_notes.json', 'notes', 'custom_alarm_notes']
+    saveCustomAlarmNotes: ['custom_alarm_notes.json', 'notes', 'custom_alarm_notes'],
+    saveDiagnosticHistory: ['diagnostic_history.json', 'diagnostic_history', 'diagnostic_history']
   };
   const api = { saveJSONDatabase };
   Object.entries(definitions).forEach(([name, [file, key, stateKey]]) => {

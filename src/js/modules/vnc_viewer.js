@@ -1,8 +1,8 @@
 /**
- * MTB Elektrik Bakım — Remote CNC Screen Viewer & Keypad Controller (VNC / Screen Stream)
+ * MTB Elektrik Bakım — read-only CNC display port reachability check.
+ * This module never opens a control channel and never sends a CNC command.
  */
 
-import { State } from '../state.js';
 import { showToast, escapeHTML } from '../utils.js';
 
 let _activeStreamIp = null;
@@ -26,12 +26,12 @@ export async function connectCncScreenStream(ipAddress, port = 5900) {
     statusBadge.innerHTML = '🟡 Bağlantı Sınanıyor...';
   }
   if (statusText) {
-    statusText.textContent = `${ip}:${numPort} adresine gerçek TCP soket bağlantısı deneniyor...`;
+    statusText.textContent = `${ip}:${numPort} salt-okunur erişilebilirlik kontrolü yapılıyor...`;
   }
 
   showToast(`${ip}:${numPort} adresine bağlantı deneniyor...`, 'info');
 
-  // Perform REAL TCP Socket Ping to physical machine
+  // A short-lived TCP reachability probe only. No VNC protocol or command payload is sent.
   let pingResult = { ok: false, error: 'Ping API mevcut değil' };
   if (window.electronAPI && typeof window.electronAPI.pingTcpPort === 'function') {
     pingResult = await window.electronAPI.pingTcpPort(ip, numPort, 3000);
@@ -72,49 +72,45 @@ export async function connectCncScreenStream(ipAddress, port = 5900) {
     return false;
   }
 
-  // REAL CONNECTION SUCCESSFUL!
+  // The port accepted a TCP connection. This does not imply a screen stream.
   _activeStreamIp = ip;
   _isStreaming = true;
 
   if (statusBadge) {
     statusBadge.className = 'tag tag-green';
-    statusBadge.innerHTML = '🟢 Gerçek Bağlantı Aktif';
+    statusBadge.innerHTML = '🟢 Port Erişilebilir';
   }
   if (statusText) {
-    statusText.textContent = `IP: ${ip}:${numPort} — Canlı Gerçek VNC Ekran Akışı`;
+    statusText.textContent = `IP: ${ip}:${numPort} — yalnızca bağlantı kontrolü başarılı`;
   }
 
   if (container) {
     container.innerHTML = `
       <div id="cnc-virtual-screen" style="width:100%; height:450px; background:#000; border-radius:var(--radius-md); display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; border:2px solid #10b981; box-shadow:0 0 20px rgba(16,185,129,0.3)">
         <div style="position:absolute; top:0; left:0; right:0; height:32px; background:#0f172a; border-bottom:1px solid #334155; display:flex; align-items:center; justify-content:space-between; padding:0 14px; font-family:var(--font-mono); font-size:12px; color:#38bdf8">
-          <span>FANUC REAL CONNECTED STREAM — ${escapeHTML(ip)}:${numPort}</span>
-          <span style="color:#4ade80">● REAL-TIME SOCKET ACTIVE</span>
+          <span>FANUC SALT-OKUNUR BAĞLANTI KONTROLÜ — ${escapeHTML(ip)}:${numPort}</span>
+          <span style="color:#4ade80">● PORT ERİŞİLEBİLİR</span>
         </div>
         <div id="crt-canvas-area" style="margin-top:32px; width:100%; height:calc(100% - 32px); background:#060d17; padding:20px; font-family:var(--font-mono); color:#4ade80; display:flex; flex-direction:column; justify-content:between">
           <div style="display:flex; justify-content:space-between; border-bottom:1px solid #1e293b; padding-bottom:10px; margin-bottom:10px">
             <div>
-              <div style="font-size:16px; font-weight:bold; color:#facc15">ACTUAL POSITION (LIVE CONNECTED)</div>
-              <div style="display:grid; grid-template-columns: 60px 140px; gap:8px; font-size:18px; margin-top:10px">
-                <span style="color:#94a3b8">X :</span><span style="color:#4ade80; text-align:right">+0.000 mm</span>
-                <span style="color:#94a3b8">Y :</span><span style="color:#4ade80; text-align:right">+0.000 mm</span>
-                <span style="color:#94a3b8">Z :</span><span style="color:#4ade80; text-align:right">+0.000 mm</span>
-              </div>
+              <div style="font-size:16px; font-weight:bold; color:#facc15">KUMANDA KANALI DEVRE DIŞI</div>
+              <div style="font-size:13px; color:#94a3b8; margin-top:10px">Ekran verisi okunmadı. CNC'ye tuş, program veya parametre komutu gönderilmedi.</div>
             </div>
             <div style="text-align:right; font-size:12px; color:#94a3b8">
-              <div>GERÇEK İLETİŞİM: <strong style="color:#4ade80">AKTİF (TCP OK)</strong></div>
+              <div>ERİŞİLEBİLİRLİK: <strong style="color:#4ade80">TCP OK</strong></div>
               <div>PORT: <strong style="color:#38bdf8">${numPort}</strong></div>
             </div>
           </div>
           <div style="font-size:11.5px; color:#64748b; margin-top:auto">
-            CANLI GERÇEK EKRAN YAYINI (${escapeHTML(ip)}) · Soket Yanıtı: OK
+            SALT-OKUNUR PORT KONTROLÜ (${escapeHTML(ip)}) · Komut aktarımı yok
           </div>
         </div>
       </div>
     `;
   }
 
-  showToast(`Gerçek Bağlantı Başarılı: ${ip}:${numPort}`, 'success');
+  showToast(`Salt-okunur port kontrolü başarılı: ${ip}:${numPort}`, 'success');
   return true;
 }
 
@@ -148,52 +144,7 @@ export function disconnectCncScreenStream() {
   }
 }
 
-export function sendCncKeypress(keyName) {
-  if (!_isStreaming) {
-    showToast('Lütfen önce canlı CNC ekran bağlantısını başlatın.', 'warning');
-    return;
-  }
-  showToast(`FANUC Tuş Komutu Gönderildi: [ ${keyName} ]`, 'info');
-}
-
-export async function captureCncScreenSnapshot(machineId) {
-  if (!_isStreaming) {
-    showToast('Ekran görüntüsü almak için önce canlı bağlantı kurmalısınız.', 'warning');
-    return false;
-  }
-
-  const container = document.getElementById('crt-canvas-area');
-  if (!container) return false;
-
-  const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const defaultName = `cnc_screen_${machineId || 'mach'}_${dateStr}.png`;
-
-  showToast(`📸 Ekran görüntüsü alındı ve kaydedildi: ${defaultName}`, 'success');
-
-  // Add to maintenance log automatically if machine selected
-  if (machineId && Array.isArray(State.maintenances)) {
-    const mach = State.machines.find(m => m.id == machineId || String(m.id) === String(machineId));
-    const machName = mach ? mach.numarasi : `Tezgah #${machineId}`;
-    const newMaint = {
-      id: State.maintenances.length ? Math.max(...State.maintenances.map(m => m.id)) + 1 : 1,
-      tezgah_id: parseInt(machineId) || 1,
-      tarih: new Date().toLocaleDateString('tr-TR'),
-      bakim_yapan: State.currentUser ? State.currentUser.name : 'Sistem',
-      aciklama: `[📸 CNC Ekran Görüntüsü Kaydedildi] ${machName} tezgâhı canlı ekran alıntısı arşive eklendi (${defaultName}).`,
-      durum: 'Tamamlandı'
-    };
-    State.maintenances.push(newMaint);
-    if (typeof window.saveMaintenances === 'function') {
-      await window.saveMaintenances();
-    }
-  }
-
-  return true;
-}
-
 if (typeof window !== 'undefined') {
   window.connectCncScreenStream = connectCncScreenStream;
   window.disconnectCncScreenStream = disconnectCncScreenStream;
-  window.sendCncKeypress = sendCncKeypress;
-  window.captureCncScreenSnapshot = captureCncScreenSnapshot;
 }

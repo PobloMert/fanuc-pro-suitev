@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "company": "İnan Makina",
+  "driveEndpoint": "https://script.google.com/macros/s/AKfycbxfGViF_BiGwFpbiS-pIsnhAit_eIBtGKx9GKKESlUxb9vncTEh3vsnoJDbHDd6v4Z4NA/exec",
+  "driveFolderId": "1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK",
+  "enrollmentKey": "REPLACE_WITH_THE_SAME_16_PLUS_CHARACTER_SCRIPT_TOKEN",
+  "deviceNameMode": "windows-hostname"
+}

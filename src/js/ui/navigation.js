@@ -42,13 +42,12 @@ export function organizeNavigation() {
   const items = new Map(
     [...sidebar.querySelectorAll('.nav-item[data-page]')].map(item => [item.dataset.page, item])
   );
-  const groups = [
-    { id: 'operations', label: 'Operasyon', pages: ['cnc_dashboard', 'cnc_screen_viewer', 'machines', 'fanuc_center', 'maintenance', 'battery', 'reports', 'predictive', 'reliability', 'projects'] },
-
-    { id: 'diagnostics', label: 'Teşhis ve Destek', pages: ['troubleshooter', 'io_link', 'drive_diagnostics', 'spindle_diagnostics', 'backup_wizard', 'backup_tracker', 'troubleshoot_wiki'] },
-    { id: 'engineering', label: 'Mühendislik Araçları', pages: ['tuning', 'generator', 'gcode_checker', 'param_comparator', 'param_inspector', 'gear_ratio', 'backlash_helper', 'axis_limits_helper', 'rs232', 'rs232_cables', 'fssb_topology'] },
-    { id: 'reference', label: 'Bilgi Merkezi', pages: ['library', 'alarms', 'parameters', 'keep_relays', 'macro', 'nc_codes', 'pmc_signals', 'custom_builder_library', 'cheat_sheets'] }
-  ];
+  const manifest = window.MTBPageManifest;
+  if (!manifest) return;
+  const groups = manifest.groups.map(group => ({
+    ...group,
+    pages: manifest.pages.filter(page => page.group === group.id).map(page => page.id)
+  }));
 
   const home = document.createElement('div');
   home.className = 'sidebar-home';
@@ -62,7 +61,7 @@ export function organizeNavigation() {
     const details = document.createElement('details');
     details.className = 'nav-group';
     details.dataset.group = group.id;
-    details.open = group.id === 'operations';
+    details.open = group.id === 'daily';
     const summary = document.createElement('summary');
     const title = document.createElement('span');
     title.className = 'nav-group-title';
@@ -78,6 +77,19 @@ export function organizeNavigation() {
   const shortcuts = document.createElement('div');
   shortcuts.className = 'sidebar-shortcuts';
   if (items.has('ai')) shortcuts.append(items.get('ai'));
+
+  // New manifest entries must never silently disappear from navigation.
+  const assigned = new Set(['dashboard', 'ai', 'settings', ...groups.flatMap(group => group.pages)]);
+  const unassigned = [...items.entries()].filter(([page]) => !assigned.has(page));
+  if (unassigned.length) {
+    const details = document.createElement('details');
+    details.className = 'nav-group';
+    details.dataset.group = 'other';
+    const summary = document.createElement('summary');
+    summary.innerHTML = `<span class="nav-group-title">Diğer Modüller</span><span class="nav-group-count">${unassigned.length}</span>`;
+    details.append(summary, ...unassigned.map(([, item]) => item));
+    host.append(details);
+  }
 
   sidebar.querySelectorAll('.sidebar-section').forEach(section => section.remove());
   if (footer) {
@@ -137,7 +149,7 @@ export function checkNotifications() {
     }
   });
 
-  State.notifications = notifications;
+  State.notifications = window.MTBNotificationLifecycle?.reconcile(notifications) || notifications;
   renderNotifPanel();
   updateNotifBadge();
 
@@ -168,6 +180,8 @@ export function renderNotifPanel() {
       <div class="notif-text">
         <div class="notif-title">${escapeHTML(n.title)}</div>
         <div class="notif-sub">${escapeHTML(n.sub)}</div>
+        <div class="notif-sub">İlk: ${escapeHTML(new Date(n.firstSeen || Date.now()).toLocaleString('tr-TR'))} · Son: ${escapeHTML(new Date(n.lastSeen || Date.now()).toLocaleString('tr-TR'))} · Tekrar: ${Number(n.repeatCount || 1)}${n.reopened ? ` · Yeniden açıldı: ${Number(n.reopened)}` : ''}</div>
+        <div class="flex gap-2 mt-1"><button class="btn btn-ghost btn-sm" data-notification-action="ack" data-notification-key="${escapeHTML(n.key || '')}">${n.acknowledged ? 'Görüldü' : 'Gördüm'}</button><button class="btn btn-ghost btn-sm" data-notification-action="resolve" data-notification-key="${escapeHTML(n.key || '')}">Çözüldü</button></div>
       </div>
     </div>
   `).join('');

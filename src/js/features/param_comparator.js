@@ -26,6 +26,16 @@ function renderParamComparator() {
     </div>
 
     <div class="page-body">
+      <div class="card" style="padding:16px;margin-bottom:16px;border-left:4px solid var(--amber)">
+        <strong>Salt okunur değişiklik incelemesi</strong>
+        <p style="font-size:12px;color:var(--text-secondary)">Bu araç CNC'ye veri yazmaz. Sonuçlar yalnız teknik inceleme içindir; uygulanabilir seri ve kılavuz revizyonu makine üreticisi/FANUC prosedürüyle doğrulanmalıdır.</p>
+        <div class="grid-2" style="gap:10px;margin-top:10px">
+          <label class="form-label">Değişiklik nedeni / iş emri<input id="param-change-reason" class="form-control" placeholder="Arıza incelemesi, kart değişimi..." /></label>
+          <label class="form-label">Değişikliğin kaynağı<input id="param-change-source" class="form-control" placeholder="Onaylı yedek, OEM prosedürü..." /></label>
+        </div>
+        <label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:12px"><input type="checkbox" id="param-backup-confirmed" /> Güncel ve geri okunabilir yedek doğrulandı</label>
+        <p style="font-size:11px;color:var(--amber);margin-top:8px">Yetkili bakım değerlendirmesi sonrasında kontrollü test planında Machine Lock, Single Block ve düşük feed override kullanımı OEM prosedürüne göre doğrulanmalıdır.</p>
+      </div>
 
       <!-- Hidden file inputs -->
       <input type="file" id="param-file-a-input" style="display:none" onchange="uploadParamFile('a')" accept=".txt,.cnm,.dat,.nc,.par,.all,.prm" />
@@ -270,6 +280,12 @@ window.compareParameterFiles = function() {
       // Lookup description in State.parameters
       const dbParam = State.parameters.find(p => p.no === no);
       const desc = dbParam ? `${dbParam.name} - ${dbParam.description}` : 'Bilinmeyen Sistem Parametresi';
+      const sourceMeta = dbParam ? {
+        applicableSeries: dbParam.applicableSeries || ['Seri doğrulanmadı'],
+        manualNumber: dbParam.manualNumber || 'Kaynak kılavuz belirtilmemiş',
+        manualRevision: dbParam.manualRevision || 'Revizyon belirtilmemiş',
+        applicabilityNote: dbParam.applicabilityNote || 'Makine üreticisi dokümanı ve kontrol yazılım revizyonuyla doğrulayın.'
+      } : null;
 
       diffs.push({
         no,
@@ -278,7 +294,8 @@ window.compareParameterFiles = function() {
         valB: valB !== undefined ? valB : '—',
         status,
         colorClass,
-        isCritical
+        isCritical,
+        sourceMeta
       });
     }
   });
@@ -338,6 +355,7 @@ function renderDiffTableRows(diffsList) {
         </td>
         <td>
           <div style="font-size:12px; color:var(--text-primary); font-weight:600">${escapeHTML(d.desc)}</div>
+          ${d.sourceMeta ? `<div style="font-size:10px;color:var(--text-muted);margin-top:4px">Seri: ${escapeHTML(Array.isArray(d.sourceMeta.applicableSeries) ? d.sourceMeta.applicableSeries.join(', ') : d.sourceMeta.applicableSeries)} · Kılavuz: ${escapeHTML(d.sourceMeta.manualNumber)} · Revizyon: ${escapeHTML(d.sourceMeta.manualRevision)}<br>${escapeHTML(d.sourceMeta.applicabilityNote)}</div>` : ''}
           ${bitDiffsHtml}
         </td>
         <td style="background:rgba(16,185,129,0.04)"><span class="font-mono" style="color:#34d399; font-size:12px">${escapeHTML(d.valA)}</span></td>

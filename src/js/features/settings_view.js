@@ -209,29 +209,28 @@ function renderSettings() {
       <div class="card mb-4" style="padding:20px; background:var(--bg-card);">
         <div class="flex items-center justify-between mb-3" style="flex-wrap:wrap; gap:8px;">
           <div class="card-title" style="display:flex; align-items:center; gap:10px;">
-            <span>☁️ Google Drive Bulut Veri Senkronizasyonu</span>
-            <span id="cloud-sync-status-badge" class="tag tag-green" style="font-size:11px;">🟢 Webhook Bulut Yükleme Aktif</span>
+            <span>☁️ Google Drive Yedekleme ve Çoklu Bilgisayar Birleştirme</span>
+            <span id="cloud-sync-status-badge" class="tag tag-green" style="font-size:11px;">OTOMATİK — AKTİF</span>
           </div>
           <div class="flex gap-2" style="flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm" onclick="triggerCloudSyncNow()">⚡ Drive'a Yükle (Gönder)</button>
-            <button class="btn btn-secondary btn-sm" onclick="pullDirectFromGoogleDrive()">☁️ Drive'dan İndir & Güncelle (Çek)</button>
+            <button class="btn btn-primary btn-sm" onclick="triggerCloudSyncNow()">⚡ Şimdi Birleştir ve Yedekle</button>
+            <button class="btn btn-secondary btn-sm" onclick="pullDirectFromGoogleDrive()">☁️ Drive'dan Çek ve Birleştir</button>
             <button class="btn btn-ghost btn-sm" onclick="exportFullCloudBundle()">📥 Bilgisayara İndir</button>
             <button class="btn btn-ghost btn-sm" onclick="importFullCloudBundle()">📤 Bilgisayardan Yükle</button>
           </div>
         </div>
         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px; line-height:1.4;">
-          Fabrikadaki tüm bilgisayarlardaki FANUC Pro Suite uygulamaları arka planda otomatik olarak doğrudan Google Drive Webhook endpoint'ine (Google Apps Script) bağlanır. Bilgisayarlara hiçbir Google Drive programı kurulmasına gerek kalmadan tüm veriler canlı senkronize edilir.
+          İş kayıtları açılışta ve her 5 dakikada Drive'dan çekilir, yerel kayıtlarla silmeden birleştirilir ve güncel paket tekrar Drive'a yedeklenir. Kullanıcı/PIN bilgileri, API anahtarları ve yerel ayarlar gönderilmez.
         </div>
         <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-md); font-size:11.5px; display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">Google Drive Depo Klasörü & Webhook:</div>
+            <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">Google Drive klasörü:</div>
             <div class="font-mono text-xs" style="color:var(--text-accent);">
-              1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK (Aktif Webhook Entegre)
-              <a href="https://drive.google.com/drive/folders/1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK" target="_blank" style="color:var(--accent); margin-left:6px; text-decoration:underline;">🔗 Google Drive'da Aç</a>
+              1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK
             </div>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:11px; color:var(--text-muted);" id="sync-last-time">Son Senkronizasyon: ${escapeHTML(State.settings.lastSync || 'Henüz Eşitlenmedi')}</div>
+            <div id="sync-last-time" style="font-size:11px; color:var(--text-muted);">Son senkronizasyon: ${escapeHTML(State.settings.lastSync || 'Henüz yapılmadı')}</div>
           </div>
         </div>
       </div>
@@ -311,15 +310,14 @@ function renderSettings() {
         </div>
       </div>
 
-      <!-- Database Sync -->
+      <!-- Database update placeholder -->
       <div class="card mb-4" style="border:1px solid rgba(16,185,129,0.15); background:rgba(16,185,129,0.02)">
-        <div class="card-title mb-2" style="font-size:14px; color:var(--green)">🔄 Bulut Veri Senkronizasyonu</div>
+        <div class="card-title mb-2" style="font-size:14px">🔄 Çevrimiçi Veritabanı Güncellemesi</div>
         <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:12px">
-          İnternete bağlanarak en güncel FANUC G-Kodlarını, alarm hata çözümlerini ve parametre veritabanlarını resmi sunuculardan çeker ve uygulamayı günceller.
+          Bu özellik şimdilik devre dışıdır. Uygulama arka planda veri indirmez ve yerel kayıtları değiştirmez.
         </p>
         <div class="flex items-center justify-between">
-          <span style="font-size:11px; color:var(--text-muted)" id="sync-last-time">Son Senkronizasyon: ${State.settings.lastSync || 'Hiç yapılmadı'}</span>
-          <button class="btn btn-primary btn-sm" onclick="startDatabaseSync()">Buluttan Güncelle</button>
+          <span class="tag tag-gray">ERTELENDİ</span>
         </div>
       </div>
         </div>

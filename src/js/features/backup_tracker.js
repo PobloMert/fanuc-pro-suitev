@@ -35,7 +35,7 @@ const BackupGuides = {
     "Dosya adını belirleyin: FILE NAME kısmına PMC_DATA.LAD yazıp alt menüdeki <strong>[EXEC]</strong> (Yürüt) tuşuna basın. İşlem bitince kartı çıkarabilirsiniz."
   ],
   cf_restore_pmc: [
-    "MDI modunu kontrol edin: Mod anahtarını <span class='tag tag-gray'>MDI</span> konumuna getirin ve PWE=1 yapın.",
+    "PMC geri yükleme işlemini bu uygulamadan yürütmeyin; kontrol serisini, yazılım revizyonunu ve OEM prosedürünü doğrulayın.",
     "PMC Ekranına erişin: <kbd class='kbd'>SYSTEM</kbd> -> <strong>[PMC]</strong> -> <strong>[PMC CONFIG]</strong> -> <strong>[I/O]</strong> sayfasına girin.",
     "Girdi ayarlarını yapın: <strong>DEVICE</strong> = F-CARD, <strong>FUNCTION</strong> = READ, <strong>DATA KIND</strong> = PARAMETER seçin.",
     "Dosya ismini seçin: F-CARD üzerindeki yedek dosya adını (örn: PMC_DATA.LAD) yazıp <strong>[EXEC]</strong> tuşuna basın. Yükleme bitince PWE=0 yapıp CNC'yi yeniden başlatın."
@@ -59,7 +59,7 @@ const BackupGuides = {
     "Dosya adını yazıp <strong>[EXEC]</strong> tuşuna basarak aktarımı tamamlayın."
   ],
   usb_restore_pmc: [
-    "MDI modunu açın ve PWE=1 yapın. Acil stop basın.",
+    "PMC geri yükleme gereksinimini ilgili OEM/FANUC seri-revizyon prosedürüyle yetkili bakıma eskale edin.",
     "PMC I/O Sayfasına girin: <kbd class='kbd'>SYSTEM</kbd> -> <strong>[PMC]</strong> -> <strong>[PMC CONFIG]</strong> -> <strong>[I/O]</strong> seçin.",
     "Ayarlar: <strong>DEVICE</strong> = USB-MEM, <strong>FUNCTION</strong> = READ, <strong>DATA KIND</strong> = PARAMETER yapın.",
     "Dosya adını seçip <strong>[EXEC]</strong> tuşuna basarak yüklemeyi başlatın. Bitince PWE=0 yapıp CNC'yi kapatıp açın."
@@ -71,7 +71,7 @@ const BackupGuides = {
     "Parametreleri gönderin: <kbd class='kbd'>SYSTEM</kbd> butonuna basın, <strong>[ALL IO]</strong> sekmesine girin. Menüden <strong>[PARAM]</strong> -> <strong>[PUNCH]</strong> seçip <strong>[EXEC]</strong> tuşuna basarak aktarımı başlatın."
   ],
   rs232_restore_param: [
-    "I/O Kanalını seçin: MDI modunda <kbd class='kbd'>OFFSET/SETTING</kbd> tuşuna basıp <strong>I/O CHANNEL</strong> değerini <strong>0</strong> yapın. PWE=1 yapın ve Acil Stop butonuna basın.",
+    "Parametre geri yükleme işlemini bu uygulamadan yürütmeyin; ortam, dosya bütünlüğü ve kontrol uyumluluğunu salt okunur doğrulayın.",
     "Mod anahtarını <span class='tag tag-gray'>EDIT</span> konumuna getirin.",
     "Yüklemeyi başlatın: <kbd class='kbd'>SYSTEM</kbd> butonuna basın, <strong>[ALL IO]</strong> sekmesine girin. Menüden <strong>[PARAM]</strong> -> <strong>[READ]</strong> seçip <strong>[EXEC]</strong> tuşuna basın. CNC ekranında INPUT ibaresi yanıp sönecektir.",
     "PC'den programı gönderin: PC tarafındaki haberleşme yazılımından parametre dosyasını gönder (Send) deyin. Aktarım bitince PWE=0 yapıp CNC'yi yeniden başlatın."
@@ -84,12 +84,21 @@ const BackupGuides = {
     "Alt menüden <strong>[EXEC]</strong> tuşuna basarak PMC parametrelerini seri porttan dışarı aktarın."
   ],
   rs232_restore_pmc: [
-    "MDI modunu açın ve PWE=1 yapın. Acil stop basın. I/O Channel = 0 yapın.",
+    "PMC geri yükleme gereksinimini ilgili OEM/FANUC seri-revizyon prosedürüyle yetkili bakıma eskale edin.",
     "PMC I/O Sayfasına girin: <kbd class='kbd'>SYSTEM</kbd> -> <strong>[PMC]</strong> -> <strong>[PMC CONFIG]</strong> -> <strong>[I/O]</strong> seçin.",
     "Ayarlar: <strong>DEVICE</strong> = OTHERS, <strong>FUNCTION</strong> = READ, <strong>DATA KIND</strong> = PARAMETER yapın.",
     "Ekran altından <strong>[EXEC]</strong> tuşuna basın (Ekran INPUT durumuna geçer). PC'den PMC dosyasını gönderin. İşlem bitince PWE=0 yapıp CNC'yi kapatıp açın."
   ]
 };
+
+// Kalıcı salt-okunur politika: geri yükleme/PWE tuş sıraları kullanıcıya sunulmaz.
+Object.keys(BackupGuides).filter(key => key.includes('_restore_')).forEach(key => {
+  BackupGuides[key] = [
+    'Bu uygulama CNC\'ye geri yükleme yapmaz ve PWE/READ/EXEC tuş sırası sağlamaz.',
+    'Kontrol serisi, yazılım revizyonu, makine üreticisi opsiyonları ve yedek bütünlüğünü doğrulayın.',
+    'Geri yükleme gereksinimini ilgili OEM/FANUC prosedürüyle yetkili bakım personeline eskale edin.'
+  ];
+});
 
 // Fallback guides for programs / offsets (standard methods)
 const StandardBackupMethods = {
@@ -440,9 +449,9 @@ function filterBackupTracker(page) {
   const statusFilter = page.querySelector('#bk-status-filter').value;
   const contextMachineId = Number(page.dataset.contextMachineId || 0);
 
-  const list = State.machines.map(m => {
+  const list = State.machines.filter(m => !m.deletedAt).map(m => {
     // Find logs for this machine
-    const logs = State.backup_logs.filter(l => l.tezgah_id === m.id);
+    const logs = State.backup_logs.filter(l => !l.deletedAt && l.tezgah_id === m.id);
     // Sort logs by date desc to find the latest
     // Date format is DD.MM.YYYY
     const sortedLogs = [...logs].sort((a, b) => {
@@ -580,15 +589,13 @@ window.createNewBackupLog = async function() {
     return;
   }
 
-  const id = State.backup_logs.length ? Math.max(...State.backup_logs.map(l => l.id)) + 1 : 1;
-  const newLog = {
-    id,
+  const newLog = window.MTBRecordRepository.create(State.backup_logs, {
     tezgah_id,
     son_yedek_tarihi,
     yedekleyen: yedekleyen.toUpperCase(),
     dosya_konumu,
     aciklama
-  };
+  }, State.currentUser);
 
   State.backup_logs.push(newLog);
   await saveBackupLogs();
@@ -601,7 +608,7 @@ window.showBackupHistoryModal = function(mId) {
   const m = State.machines.find(x => x.id === mId);
   if (!m) return;
 
-  const logs = State.backup_logs.filter(l => l.tezgah_id === mId).sort((a,b) => b.id - a.id);
+  const logs = State.backup_logs.filter(l => !l.deletedAt && l.tezgah_id === mId).sort((a,b) => b.id - a.id);
 
   showModal('backup-history', `
     <div class="modal-header">
@@ -613,7 +620,7 @@ window.showBackupHistoryModal = function(mId) {
         <div class="card mb-3" style="padding:12px">
           <div class="flex justify-between items-center mb-1">
             <span class="font-mono" style="font-weight:700; color:var(--text-accent)">${l.son_yedek_tarihi}</span>
-            <span style="font-size:11px; color:var(--text-muted)">Yapan: ${l.yedekleyen}</span>
+            <div class="flex gap-1 items-center"><span style="font-size:11px; color:var(--text-muted)">Yapan: ${l.yedekleyen}</span>${canDelete() ? `<button class="btn btn-ghost btn-sm" onclick="deleteBackupLog(${l.id}, ${mId})" title="Yedek kaydını arşivle">✕</button>` : ''}</div>
           </div>
           <div style="font-size:11.5px; font-family:monospace; color:var(--text-secondary); background:var(--bg-card2); padding:6px; border-radius:4px; border:1px solid var(--border); word-break:break-all" class="mb-2">${l.dosya_konumu}</div>
           <p style="font-size:12px; color:var(--text-secondary); margin:0">${l.aciklama || 'Açıklama belirtilmemiş.'}</p>
@@ -621,6 +628,16 @@ window.showBackupHistoryModal = function(mId) {
       `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:20px">Bu tezgaha ait yedek kaydı bulunamadı</div>'}
     </div>
   `);
+};
+
+window.deleteBackupLog = async function(id, machineId) {
+  if (!canDelete()) return showToast('Yedek kaydı arşivleme yetkiniz yok.', 'error');
+  if (!confirm('Bu yedek takip kaydı tüm cihazlarda arşive taşınacak. Devam edilsin mi?')) return;
+  State.backup_logs = window.MTBRecordRepository.archiveById(State.backup_logs, id, State.currentUser).records;
+  await saveBackupLogs();
+  closeModal('backup-history');
+  showToast('Yedek takip kaydı arşive taşındı.', 'success');
+  showBackupHistoryModal(machineId);
 };
 
 window.handleBackupFileDrop = function(e) {

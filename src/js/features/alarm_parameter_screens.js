@@ -53,6 +53,7 @@ function renderAlarms() {
           </thead>
           <tbody id="alarm-tbody"></tbody>
         </table>
+        <div id="alarm-pager" class="flex justify-between items-center" style="padding:10px 16px;border-top:1px solid var(--border)"></div>
       </div>
     </div>
   `;
@@ -124,9 +125,14 @@ function renderAlarmTable(alarms, page) {
   if (!tbody) return;
   if (!alarms.length) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-muted)">Alarm bulunamadı</td></tr>`;
+    const pager = (page || document).querySelector('#alarm-pager');
+    if (pager) pager.innerHTML = '';
     return;
   }
-  tbody.innerHTML = alarms.map(a => `
+  const root = page || document;
+  const requestedPage = Number(root.querySelector('#alarm-pager')?.dataset.page || 1);
+  const pager = window.MTBPerformance?.pagerModel?.(alarms, requestedPage, 75) || { items: alarms, page: 1, total: alarms.length, totalPages: 1, first: alarms.length ? 1 : 0, last: alarms.length, hasPrevious: false, hasNext: false };
+  tbody.innerHTML = pager.items.map(a => `
     <tr class="alarm-tr" data-code="${a.code}" style="cursor:pointer">
       <td><span class="font-mono text-sm" style="color:var(--text-accent); font-weight:600">${a.code}</span></td>
       <td><span class="tag ${alarmCategoryTag(a.category)}">${a.category}</span></td>
@@ -143,6 +149,15 @@ function renderAlarmTable(alarms, page) {
   tbody.querySelectorAll('.alarm-tr').forEach(tr => {
     tr.addEventListener('click', () => showAlarmDetail(tr.dataset.code));
   });
+  renderTablePager(root.querySelector('#alarm-pager'), pager, next => { root.querySelector('#alarm-pager').dataset.page = String(next); renderAlarmTable(alarms, root); });
+}
+
+function renderTablePager(container, pager, onPage) {
+  if (!container) return;
+  container.dataset.page = String(pager.page);
+  container.innerHTML = `<span style="font-size:11px;color:var(--text-muted)">${pager.first}-${pager.last} / ${pager.total}</span><div class="flex gap-1"><button class="btn btn-ghost btn-sm" data-page-prev ${pager.hasPrevious ? '' : 'disabled'}>Ã–nceki</button><span style="font-size:11px;padding:6px">${pager.page} / ${pager.totalPages}</span><button class="btn btn-ghost btn-sm" data-page-next ${pager.hasNext ? '' : 'disabled'}>Sonraki</button></div>`;
+  container.querySelector('[data-page-prev]')?.addEventListener('click', () => onPage(pager.page - 1));
+  container.querySelector('[data-page-next]')?.addEventListener('click', () => onPage(pager.page + 1));
 }
 
 window.showAlarmDetail = function(code) {
@@ -345,8 +360,8 @@ function renderParameters() {
   const page = createPage('parameters');
   page.innerHTML = `
     <div class="page-header">
-      <h1>⚙️ FANUC Parametre Yönetimi</h1>
-      <p>Parametreleri arayın, inceleyin ve PWE yazma korumalı kilitleri açma rehberini kullanın</p>
+      <h1>⚙️ FANUC Parametre İnceleme</h1>
+      <p>Parametreleri salt okunur inceleyin; uygulama CNC'ye yazmaz veya koruma kilidi aşma talimatı vermez.</p>
       
       <!-- Tabs -->
       <div class="tabs mt-3" style="border-bottom:1px solid var(--border); display:flex; gap:16px; padding-bottom:8px">
@@ -354,7 +369,7 @@ function renderParameters() {
           🔎 Parametre Veritabanı
         </button>
         <button class="tab-btn" id="tab-par-pwe" onclick="switchParamTab('pwe')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer">
-          🔒 PWE Kilitlenme & Kurtarma Kılavuzu
+          🔒 Yazma Koruması ve Eskalasyon
         </button>
       </div>
     </div>
@@ -424,6 +439,7 @@ window.switchParamTab = function(tab, page = document) {
           </thead>
           <tbody id="param-tbody"></tbody>
         </table>
+        <div id="param-pager" class="flex justify-between items-center" style="padding:10px 16px;border-top:1px solid var(--border)"></div>
       </div>
     `;
 
@@ -435,22 +451,19 @@ window.switchParamTab = function(tab, page = document) {
     content.innerHTML = `
       <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap:16px; padding:0 20px">
         
-        <!-- Left: PWE write enable and bypass -->
+        <!-- Read-only policy -->
         <div class="card" style="padding:20px; display:flex; flex-direction:column; gap:12px">
-          <div class="card-title" style="color:var(--text-accent)">🔒 Parameter Write Enable (PWE) Bypass Adımları</div>
+          <div class="card-title" style="color:var(--text-accent)">🔒 Parameter Write Enable (PWE) güvenlik politikası</div>
           <p style="font-size:12px; color:var(--text-secondary); line-height:1.5">
-            FANUC sistemlerinde parametre yazmayı aktif etmek için standart prosedürler ve koruma kilitlerini aşma yöntemleri:
+            Bu uygulama PWE açma, kilit aşma, parametre yazma veya PMC sinyali zorlama adımları sağlamaz.
           </p>
 
           <div style="font-size:12.5px; display:flex; flex-direction:column; gap:8px">
-            <strong>🔑 1. Standart PWE Açma (MDI Modu Zorunluluğu):</strong>
-            <div>• Tezgahı mutlaka <strong>MDI Moduna</strong> alın. (Diğer modlarda parametre yazma yetkisi açılmaz).</div>
-            <div>• <strong>OFFSET/SETTING</strong> tuşuna basın. Ekranda <code>PARAMETER WRITE = 0</code> satırını bulun.</div>
-            <div>• Buraya <code>1</code> yazıp INPUT deyin. Sistem <code>SW0100 PARAMETER WRITE ENABLE</code> uyarısı verecektir (Bu normaldir, alarm basılıyken parametreler yazılabilir).</div>
-            
-            <strong style="margin-top:6px; color:var(--amber)">🔑 2. PWE Kilit Koruma Parametresi (KEY1 - KEY4):</strong>
-            <div>• Eğer PWE açılmasına rağmen bazı parametreler yazılmıyorsa, yazma anahtarı (Memory Protect) devrededir.</div>
-            <div>• <code>SYSTEM > DIAGNOSTIC</code> ekranında <strong>KEY1, KEY2, KEY3, KEY4</strong> (genellikle DGN 3200+ serisi) durum lojiklerini kontrol edin. Değerlerin <code>1</code> olması ilgili bellek alanlarını kilitler. Kilidi açmak için ilgili PMC sinyalini veya anahtar switch'ini pasife alın.</div>
+            <strong>Güvenli inceleme sırası</strong>
+            <div>• Kontrol serisini, yazılım revizyonunu ve makine üreticisini kaydedin.</div>
+            <div>• Güncel yedeği alın ve geri okunabilirliğini doğrulayın.</div>
+            <div>• Eski/yeni değerleri ve değişiklik gerekçesini karşılaştırma raporunda belgeleyin.</div>
+            <div>• Yazma gerektiren işlemi yalnız yetkili bakım personeline, ilgili OEM/FANUC seri-revizyon prosedürüyle eskale edin.</div>
           </div>
         </div>
 
@@ -528,11 +541,16 @@ function renderParamTable(params, page) {
   if (!tbody) return;
   if (!params.length) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted)">Parametre bulunamadı</td></tr>`;
+    const pager = (page || document).querySelector('#param-pager');
+    if (pager) pager.innerHTML = '';
     return;
   }
   const catLabels = { axis:'Eksen', spindle:'Spindle', feed:'Besleme', io:'I/O', pmc:'PMC', display:'Ekran' };
   const catTags   = { axis:'tag-blue', spindle:'tag-cyan', feed:'tag-green', io:'tag-amber', pmc:'tag-purple', display:'tag-gray' };
-  tbody.innerHTML = params.map(p => `
+  const root = page || document;
+  const requestedPage = Number(root.querySelector('#param-pager')?.dataset.page || 1);
+  const pager = window.MTBPerformance?.pagerModel?.(params, requestedPage, 75) || { items: params, page: 1, total: params.length, totalPages: 1, first: params.length ? 1 : 0, last: params.length, hasPrevious: false, hasNext: false };
+  tbody.innerHTML = pager.items.map(p => `
     <tr style="cursor:pointer" onclick="showParamDetail('${p.no}')">
       <td><span class="font-mono" style="color:var(--text-accent); font-weight:600; font-size:13px">${p.no}</span></td>
       <td><span style="font-weight:500; font-size:12px">${p.name}</span></td>
@@ -540,9 +558,10 @@ function renderParamTable(params, page) {
       <td><span class="font-mono text-sm" style="color:var(--text-muted)">${p.dataType}</span></td>
       <td><span class="font-mono text-sm">${p.range}</span></td>
       <td><span class="font-mono text-sm" style="color:var(--green)">${p.default}</span></td>
-      <td><span style="font-size:11.5px; color:var(--text-secondary)">${p.description}</span></td>
+      <td><span style="font-size:11.5px; color:var(--text-secondary)">${p.description}</span><div style="font-size:9.5px;color:var(--text-muted);margin-top:3px">${escapeHTML((p.applicableSeries || ['Seri doğrulanmadı']).join ? (p.applicableSeries || ['Seri doğrulanmadı']).join(', ') : p.applicableSeries)} · ${escapeHTML(p.manualNumber || 'Kılavuz belirtilmemiş')} · ${escapeHTML(p.manualRevision || 'Revizyon belirtilmemiş')}</div></td>
     </tr>
   `).join('');
+  renderTablePager(root.querySelector('#param-pager'), pager, next => { root.querySelector('#param-pager').dataset.page = String(next); renderParamTable(params, root); });
 }
 
 window.showParamDetail = function(no) {
@@ -601,11 +620,16 @@ window.showParamDetail = function(no) {
       <p style="font-size:12.5px; line-height:1.6; color:var(--text-secondary)">${escapeHTML(param.description)}</p>
       ${param.note ? `<div style="margin-top:8px; padding:8px; background:var(--accent-glow); border-radius:var(--radius-sm); font-size:11.5px; color:var(--text-accent)">💡 ${escapeHTML(param.note)}</div>` : ''}
     </div>
+    <div class="card mt-3" style="border-left:3px solid var(--amber)">
+      <div class="card-title mb-2">Kaynak ve uygulanabilirlik</div>
+      <p style="font-size:11.5px;color:var(--text-secondary)"><strong>Seri:</strong> ${escapeHTML(Array.isArray(param.applicableSeries) ? param.applicableSeries.join(', ') : (param.applicableSeries || 'Seri doğrulanmadı'))}<br><strong>Kılavuz:</strong> ${escapeHTML(param.manualNumber || 'Belirtilmemiş')} · <strong>Revizyon:</strong> ${escapeHTML(param.manualRevision || 'Belirtilmemiş')}<br>${escapeHTML(param.applicabilityNote || 'Makine üreticisi dokümanı ve kontrol yazılım revizyonuyla doğrulayın.')}</p>
+      <p style="font-size:11px;color:var(--amber);margin-top:6px">Salt okunur referans: uygulama CNC'ye parametre yazmaz.</p>
+    </div>
 
     ${isBit ? `
       <div class="card mt-3" style="border: 1px solid rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.02)">
         <div class="card-title mb-1" style="font-size:12.5px; color:var(--text-accent)">🖥️ İnteraktif 8-Bit Değer Simülatörü</div>
-        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px">CNC ekranındaki her bir bit hanesinin (7-0) üzerine tıklayarak durumunu değiştirebilirsiniz.</p>
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px">Yerel simülasyonda bitlerin anlamını inceleyebilirsiniz; değişiklik CNC'ye gönderilmez.</p>
         
         <div class="flex gap-2 justify-center mb-3" style="flex-wrap:wrap">
           ${[7, 6, 5, 4, 3, 2, 1, 0].map(bit => {
@@ -675,7 +699,7 @@ window.askAIAboutParam = function(no) {
   setTimeout(() => {
     const input = document.getElementById('ai-input');
     if (input) {
-      input.value = `FANUC parametre No.${no} hakkında detaylı açıklama yap. Bu parametre ne işe yarar, nasıl ayarlanır?`;
+      input.value = `FANUC parametre No.${no} hakkında salt okunur teknik açıklama yap. Seri/revizyon uygulanabilirliğini ve güvenli inceleme yöntemini belirt; yazma adımı verme.`;
       sendAIMessage();
     }
   }, 300);

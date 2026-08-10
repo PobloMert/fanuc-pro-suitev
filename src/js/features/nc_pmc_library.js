@@ -159,6 +159,7 @@ function renderPmcSignals() {
         </thead>
         <tbody id="pmc-tbody"></tbody>
       </table>
+      <div id="pmc-pager" class="flex justify-between items-center" style="padding:10px 16px;border-top:1px solid var(--border)"></div>
     </div>
   `;
 
@@ -184,10 +185,15 @@ function renderPmcTable(signals, page) {
   if (!tbody) return;
   if (!signals.length) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-muted)">PMC sinyali bulunamadı</td></tr>`;
+    const pager = (page || document).querySelector('#pmc-pager');
+    if (pager) pager.innerHTML = '';
     return;
   }
   const dirTags = { 'NC->PMC': 'tag-blue', 'PMC->NC': 'tag-purple', 'I/O': 'tag-amber' };
-  tbody.innerHTML = signals.map(p => `
+  const root = page || document;
+  const requestedPage = Number(root.querySelector('#pmc-pager')?.dataset.page || 1);
+  const pager = window.MTBPerformance?.pagerModel?.(signals, requestedPage, 75) || { items: signals, page: 1, total: signals.length, totalPages: 1, first: signals.length ? 1 : 0, last: signals.length, hasPrevious: false, hasNext: false };
+  tbody.innerHTML = pager.items.map(p => `
     <tr style="cursor:pointer" onclick="showPmcDetail('${p.address}')">
       <td><span class="font-mono" style="color:var(--text-accent); font-weight:600; font-size:13px">${p.address}</span></td>
       <td><span class="tag ${dirTags[p.direction]||'tag-gray'}">${p.direction}</span></td>
@@ -196,6 +202,13 @@ function renderPmcTable(signals, page) {
       <td><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); showPmcDetail('${p.address}')">Detay</button></td>
     </tr>
   `).join('');
+  const pagerEl = root.querySelector('#pmc-pager');
+  if (pagerEl) {
+    pagerEl.dataset.page = String(pager.page);
+    pagerEl.innerHTML = `<span style="font-size:11px;color:var(--text-muted)">${pager.first}-${pager.last} / ${pager.total}</span><div class="flex gap-1"><button class="btn btn-ghost btn-sm" data-page-prev ${pager.hasPrevious ? '' : 'disabled'}>Önceki</button><span style="font-size:11px;padding:6px">${pager.page} / ${pager.totalPages}</span><button class="btn btn-ghost btn-sm" data-page-next ${pager.hasNext ? '' : 'disabled'}>Sonraki</button></div>`;
+    pagerEl.querySelector('[data-page-prev]')?.addEventListener('click', () => { pagerEl.dataset.page = String(pager.page - 1); renderPmcTable(signals, root); });
+    pagerEl.querySelector('[data-page-next]')?.addEventListener('click', () => { pagerEl.dataset.page = String(pager.page + 1); renderPmcTable(signals, root); });
+  }
 }
 
 window.showPmcDetail = function(address) {
@@ -350,7 +363,7 @@ function filterBuilderList(page) {
 
   if (window.CurrentBuilderTab === 'mcodes') {
     const filtered = State.custom_mcodes.filter(m =>
-      !q || m.code.toLowerCase().includes(q) || m.name.toLowerCase().includes(q) || m.description.toLowerCase().includes(q)
+      !m.deletedAt && (!q || m.code.toLowerCase().includes(q) || m.name.toLowerCase().includes(q) || m.description.toLowerCase().includes(q))
     );
 
     if (!filtered.length) {
@@ -371,7 +384,7 @@ function filterBuilderList(page) {
     `).join('');
   } else {
     const filtered = State.custom_alarms.filter(a =>
-      !q || a.address.toLowerCase().includes(q) || a.code.toLowerCase().includes(q) || a.title.toLowerCase().includes(q) || a.description.toLowerCase().includes(q)
+      !a.deletedAt && (!q || a.address.toLowerCase().includes(q) || a.code.toLowerCase().includes(q) || a.title.toLowerCase().includes(q) || a.description.toLowerCase().includes(q))
     );
 
     if (!filtered.length) {
@@ -467,8 +480,7 @@ window.createNewCustomMcode = async function() {
     return;
   }
 
-  const id = State.custom_mcodes.length ? Math.max(...State.custom_mcodes.map(m => m.id)) + 1 : 1;
-  State.custom_mcodes.push({ id, code, signal, name, description });
+  State.custom_mcodes.push(window.MTBRecordRepository.create(State.custom_mcodes, { code, signal, name, description }, State.currentUser));
   await saveCustomMCodes();
   closeModal('new-builder-mcode');
   showToast('Özel M-Kodu eklendi.', 'success');
@@ -487,8 +499,7 @@ window.createNewCustomAlarm = async function() {
     return;
   }
 
-  const id = State.custom_alarms.length ? Math.max(...State.custom_alarms.map(a => a.id)) + 1 : 1;
-  State.custom_alarms.push({ id, address, code, title, description, causes: [], solutions: [] });
+  State.custom_alarms.push(window.MTBRecordRepository.create(State.custom_alarms, { address, code, title, description, causes: [], solutions: [] }, State.currentUser));
   await saveCustomAlarms();
   closeModal('new-builder-alarm');
   showToast('Üretici alarmı eklendi.', 'success');
@@ -498,7 +509,7 @@ window.createNewCustomAlarm = async function() {
 window.deleteCustomMcode = async function(id) {
   if (!canDelete()) { showToast('M-Kodu silme yetkiniz yok', 'error'); return; }
   if (!confirm('Bu M-kodunu silmek istediğinize emin misiniz?')) return;
-  State.custom_mcodes = State.custom_mcodes.filter(m => m.id !== id);
+  State.custom_mcodes = window.MTBRecordRepository.archiveById(State.custom_mcodes, id, State.currentUser).records;
   await saveCustomMCodes();
   showToast('M-kodu silindi.', 'success');
   navigate('custom_builder_library');
@@ -507,7 +518,7 @@ window.deleteCustomMcode = async function(id) {
 window.deleteCustomAlarm = async function(id) {
   if (!canDelete()) { showToast('Özel alarm silme yetkiniz yok', 'error'); return; }
   if (!confirm('Bu alarmı silmek istediğinize emin misiniz?')) return;
-  State.custom_alarms = State.custom_alarms.filter(a => a.id !== id);
+  State.custom_alarms = window.MTBRecordRepository.archiveById(State.custom_alarms, id, State.currentUser).records;
   await saveCustomAlarms();
   showToast('Alarm silindi.', 'success');
   navigate('custom_builder_library');

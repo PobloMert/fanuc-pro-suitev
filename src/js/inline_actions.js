@@ -2,15 +2,15 @@
   'use strict';
 
   const allowedActions = new Set(`
-    closeModal sendCncKeypress setWizardConfig navigate switchParamRangeFilter drawFssbTopology
+    closeModal setWizardConfig navigate switchParamRangeFilter drawFssbTopology
     selectTuningWizard selectCheatSheetTab askAIPreset switchDriveTab spotlightGo checkNotifications
     toggleNotifPanel downloadOfflinePack openAlarmFromKnowledge toggleKnowledgeFavorite openBook openChapters
-    openBookPDF openKnowledgeNote openBookPDFPage changeBookPDF openProject showAlarmDetail
+    openBookPDF openKnowledgeNote openBookPDFPage changeBookPDF openProject archiveProject showAlarmDetail
     goToParameterFromAlarm saveCustomAlarmNote editCustomAlarmNote cancelEditCustomAlarmNote askAIAboutAlarm
     showParamDetail toggleParamDetailBit askAIAboutParam setThemeOption checkForAppUpdates deleteUser
     addNewUser changeMyPin chooseBackupDirectory exportSafeConfiguration importSafeConfiguration resetSafeSettings
     saveConnectionProfile applyConnectionProfile deleteConnectionProfile openDataDir exportAlarmsCSV
-    exportMaintenanceCSV startDatabaseSync saveKnowledgeNote exportAIConversationReport quickAsk sendAIMessage
+    exportMaintenanceCSV saveKnowledgeNote exportAIConversationReport quickAsk sendAIMessage
     showNewMachineModal showMachineDetailsModal printMachineCard deleteMachine createNewMachine openFanucCenter editMachineDetails saveMachineDetails
     printMaintenanceReport showNewMaintModal deleteMaint createNewMaint showNewBattModal showNewFanModal
     resetBatteryLife deleteBattery resetFanHours deleteFan createNewBattery createNewFan showNcDetail
@@ -19,10 +19,10 @@
     startDncTransmission stopDncTransmission updateDiagLedDisplay runDriveDiagnosis calculateFlexibleGearRatio
     runGcodeCheck loadDefaultGcodeBug compareParameterFiles loadDefaultParamDiff filterDiffRows exportDiffPDF exportDiffCSV loadPresetBackupForDiff
     showIoSlotMapping checkWizardStepsCompletion showNewWikiArticleModal deleteWikiArticle createNewWikiArticle
-    showNewBackupLogModal handleBackupFileSelect showBackupHistoryModal createNewBackupLog
+    showNewBackupLogModal handleBackupFileSelect showBackupHistoryModal createNewBackupLog deleteBackupLog
     generateBacklashGcode copyBacklashGcode calculateNewBacklash showSpindleAlarmDetail calculateSpindleGearRatio
     showNewBuilderItemModal deleteCustomMcode deleteCustomAlarm createNewCustomMcode createNewCustomAlarm
-    showRsNSchematic showRs232Schematic calculateNewLimits captureCncScreenSnapshot onCncScreenMachineChange
+    showRsNSchematic showRs232Schematic calculateNewLimits onCncScreenMachineChange
     connectCncScreenStream disconnectCncScreenStream switchBatteryTab uploadParamFile clearParamInput
     filterDiffMode navigateTroubleshootNode switchIOTab switchBackupTab switchBuilderTab switchLimitTab
     switchParamTab switchSpindleTab switchMachine viewProgramCode setFssbSimulationMode onFlowchartNodeClick onFssbNodeClick clearActiveDiagnostic loginSelectUser loginSubmitPin loginBack closeSpotlight closeNotifPanel
@@ -30,6 +30,7 @@
     runOfflineRootCauseAnalysis selectOfflinePreset printOfflineDiagnosticPDF
     runKeepRelayDiffComparison loadDefaultKeepRelayDiff exportKeepRelayDiffPDF exportKeepRelayDiffCSV filterKeepRelayDiffRows filterKeepRelayDiffMode uploadKeepRelayFile clearKeepRelayInput
     triggerCloudSyncNow exportFullCloudBundle importFullCloudBundle pullDirectFromGoogleDrive
+    restoreArchivedRecord compactExpiredArchive
     triggerParamFileUpload onParamFileSelected handleParamDragOver handleParamDragLeave handleParamFileDrop loadSamplePrmBackup filterParamInspectorRows inspectParamBitDetail closeParamBitDetail exportParamInspectorCSV exportParamInspectorPDF
     generateAIActionPlan generateAIPredictiveReport toggleAIChecklistItem exportAIChecklistPDF aiAutoFixGcode
   `.trim().split(/\s+/));

@@ -175,7 +175,7 @@ function renderTroubleshooter() {
           <span style="font-weight:600;">Hızlı Seçim:</span>
           <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('SV0401 VRDY OFF')" style="font-size:10.5px; padding:2px 8px;">SV0401 VRDY OFF</button>
           <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('SP9011 Spindle SSM')" style="font-size:10.5px; padding:2px 8px;">SP9011 Spindle SSM</button>
-          <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('1815 APZ')" style="font-size:10.5px; padding:2px 8px;">1815 Sıfır Kaybı</button>
+          <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('1815 absolute referans')" style="font-size:10.5px; padding:2px 8px;">1815 Sıfır Kaybı</button>
           <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('AL-12 Overvoltage')" style="font-size:10.5px; padding:2px 8px;">AL-12 Aşırı Voltaj</button>
           <button class="btn btn-ghost btn-sm" onclick="selectOfflinePreset('Eksen Titremesi')" style="font-size:10.5px; padding:2px 8px;">Eksen Titremesi</button>
         </div>
@@ -516,6 +516,7 @@ function filterWikiArticles(page) {
   const typeFilter = page.querySelector('#wiki-mach-filter').value;
 
   const filtered = State.wiki.filter(a =>
+    !a.deletedAt &&
     (!q || a.title.toLowerCase().includes(q) || a.error_code.toLowerCase().includes(q) || a.solution.toLowerCase().includes(q)) &&
     (!typeFilter || a.machine_type === typeFilter)
   );
@@ -604,9 +605,7 @@ window.createNewWikiArticle = async function() {
     return;
   }
 
-  const id = State.wiki.length ? Math.max(...State.wiki.map(a => a.id)) + 1 : 1;
-  const newArticle = {
-    id,
+  const newArticle = window.MTBRecordRepository.create(State.wiki, {
     title,
     machine_type,
     error_code,
@@ -614,7 +613,7 @@ window.createNewWikiArticle = async function() {
     author: author.toUpperCase(),
     date: getTodayFormat(),
     verified: true
-  };
+  }, State.currentUser);
 
   State.wiki.push(newArticle);
   await saveWiki();
@@ -626,7 +625,7 @@ window.createNewWikiArticle = async function() {
 window.deleteWikiArticle = async function(id) {
   if (!canDelete()) { showToast('Makale silme yetkiniz yok', 'error'); return; }
   if (!confirm('Bu makaleyi silmek istediğinize emin misiniz?')) return;
-  State.wiki = State.wiki.filter(a => a.id !== id);
+  State.wiki = window.MTBRecordRepository.archiveById(State.wiki, id, State.currentUser).records;
   await saveWiki();
   showToast('Makale başarıyla silindi.', 'success');
   navigate('troubleshoot_wiki');

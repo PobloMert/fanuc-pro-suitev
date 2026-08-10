@@ -31,6 +31,13 @@ window.initializeAuthenticatedApp = async function initializeAuthenticatedApp() 
   await loadData();
   await loadSettings();
   applyTheme(State.settings.theme || 'dark');
+  try {
+    const provisioning = await window.electronAPI?.getDriveProvisioningStatus?.();
+    if (provisioning?.ok && provisioning.deviceName && !localStorage.getItem('mtb-sync-device-name')) {
+      localStorage.setItem('mtb-sync-device-name', provisioning.deviceName);
+    }
+  } catch (_) {}
+  window.MTBCloudSync?.initCloudSync({ State, showToast: window.showToast })?.startAutoPolling();
   authenticatedDataLoaded = true;
 };
 

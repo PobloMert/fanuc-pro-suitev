@@ -311,67 +311,65 @@ window.navigate = function navigate(page, extraData = null) {
   const content = document.getElementById('main-content');
   content.innerHTML = window.MTBUX?.loadingState('Ekran hazırlanıyor…') || '<div class="spinner"></div>';
 
-  const pages = {
-    dashboard:   renderDashboard,
-    cnc_dashboard: renderCncDashboard,
-    cnc_screen_viewer: renderCncScreenViewer,
-    library:     renderLibrary,
-
-    projects:    renderProjects,
-    machines:    renderMachines,
-    maintenance: () => renderMaintenance(extraData),
-    battery:     renderBattery,
-    reports:     renderReports,
-    predictive:  renderPredictive,
-    tuning:      renderTuning,
-    generator:   renderGenerator,
-    rs232:       renderRS232,
-    cheat_sheets: renderCheatSheets,
-    alarms:      renderAlarms,
-    parameters:  renderParameters,
-    keep_relays: renderKeepRelays,
-    macro:       renderMacroVariables,
-    drive_diagnostics: renderDriveDiagnostics,
-    gear_ratio:  renderGearRatio,
-    reliability: renderReliability,
-    gcode_checker: renderGcodeChecker,
-    param_comparator: renderParamComparator,
-    param_inspector: () => window.ParamInspectorFeature ? window.ParamInspectorFeature.renderParamInspector() : createPage('param_inspector'),
-    troubleshooter: renderTroubleshooter,
-    io_link:     renderIOLink,
-    backup_wizard: renderBackupWizard,
-    troubleshoot_wiki: renderTroubleshootWiki,
-    backup_tracker: () => renderBackupTracker(extraData),
-    backlash_helper: renderBacklashHelper,
-    axis_limits_helper: renderAxisLimitsHelper,
-    spindle_diagnostics: renderSpindleDiagnostics,
-    custom_builder_library: renderCustomBuilderLibrary,
-    rs232_cables: renderRs232Cables,
-    nc_codes:    renderNcCodes,
-    pmc_signals: renderPmcSignals,
-    fssb_topology: renderFssbTopology,
-    fanuc_center: () => window.renderFanucCenter ? window.renderFanucCenter(extraData) : createPage('fanuc_center'),
-    ai:          renderAI,
-    settings:    renderSettings,
-    performance_diagnostics: () => window.MTBPerformanceDiagnostics.render(),
-    pdf_viewer:  () => renderPdfViewer(extraData),
+  const entry = window.MTBPageManifest?.byId?.[page];
+  const resolveRenderer = path => path?.split('.').reduce((value, key) => value?.[key], window);
+  const renderer = resolveRenderer(entry?.renderer);
+  const renderFailure = error => {
+    const title = entry?.title || 'Bu ekran';
+    content.innerHTML = `<section class="page-recovery" role="alert" aria-labelledby="page-recovery-title" tabindex="-1">
+      <div class="page-recovery-icon" aria-hidden="true">!</div>
+      <h1 id="page-recovery-title">${escapeHTML(title)} açılamadı</h1>
+      <p>Bu modül beklenmeyen bir sorun nedeniyle görüntülenemedi. Kayıtlı verileriniz etkilenmedi.</p>
+      <div class="page-recovery-actions">
+        <button type="button" class="btn btn-primary" data-page-recovery="retry">Yeniden dene</button>
+        <button type="button" class="btn btn-secondary" data-page-recovery="dashboard">Güvenli özete dön</button>
+        ${window.electronAPI?.exportDiagnostics ? '<button type="button" class="btn btn-ghost" data-page-recovery="diagnostics">Tanı raporu oluştur</button>' : ''}
+      </div>
+      <details><summary>Teknik ayrıntı</summary><code>${escapeHTML(error?.message || 'Sayfa oluşturucu bulunamadı.')}</code></details>
+    </section>`;
+    const surface = content.querySelector('.page-recovery');
+    surface?.focus();
+    surface?.addEventListener('click', async event => {
+      const action = event.target.closest('[data-page-recovery]')?.dataset.pageRecovery;
+      if (action === 'retry') window.navigate(page, extraData);
+      if (action === 'dashboard') window.navigate('dashboard');
+      if (action === 'diagnostics') {
+        const result = await window.electronAPI.exportDiagnostics();
+        window.MTBUX?.notify(result?.ok
+          ? { type:'success', title:'Tanı raporu oluşturuldu', message:'Rapor seçtiğiniz konuma kaydedildi.' }
+          : { type:'error', title:'Tanı raporu oluşturulamadı', message:result?.error || 'İşlem tamamlanamadı.' });
+      }
+    });
+    window.MTBUX?.notify({ type: 'error', title: 'Ekran yüklenemedi', message: error?.message || 'Beklenmeyen bir uygulama hatası oluştu.', actionLabel: 'Tekrar dene', onAction: () => window.navigate(page, extraData) });
   };
 
-  const fn = pages[page];
-  if (fn) {
+  if (entry && typeof renderer === 'function') {
     requestAnimationFrame(() => {
       if (window.__activeNavigationToken !== navigationToken) return;
       try {
-        const el = fn();
-        if (window.__activeNavigationToken !== navigationToken) return;
-        content.replaceChildren(el);
-        el.classList.add('animate-in');
+        const result = entry.argument ? renderer(extraData) : renderer();
+        Promise.resolve(result).then(el => {
+          if (window.__activeNavigationToken !== navigationToken) return;
+          if (!(el instanceof Element)) throw new Error('Ekran geçerli bir görünüm oluşturmadı.');
+          content.replaceChildren(el);
+          // Feature modules may construct their own `.page` element instead of
+          // using the legacy createPage helper. Always activate the resolved
+          // page here so module-local implementations cannot remain hidden.
+          el.classList.add('page', 'active', 'animate-in');
+          el.setAttribute('role', el.getAttribute('role') || 'region');
+          const heading = el.querySelector('h1, h2, .page-title');
+          if (heading) {
+            if (!heading.id) heading.id = `page-title-${page}`;
+            el.setAttribute('aria-labelledby', heading.id);
+          } else {
+            el.setAttribute('aria-label', entry.title);
+          }
+        }).catch(renderFailure);
       } catch (error) {
-        content.innerHTML = window.MTBUX?.emptyState({ icon: '!', title: 'Ekran açılamadı', description: 'Beklenmeyen bir hata oluştu. Sayfayı yeniden açmayı deneyin.' }) || '';
-        window.MTBUX?.notify({ type: 'error', title: 'Ekran yüklenemedi', message: error?.message || 'Beklenmeyen bir uygulama hatası oluştu.', actionLabel: 'Tekrar dene', onAction: () => window.navigate(page, extraData) });
+        renderFailure(error);
       }
     });
-  }
+  } else renderFailure(new Error(entry ? 'Bu modülün ekran bileşeni yüklenemedi.' : 'Bilinmeyen ekran istendi.'));
 };
 
 
@@ -1003,7 +1001,7 @@ function renderMachines() {
     </div>
   `;
 
-  renderMachineTable(State.machines, page);
+  renderMachineTable(window.MTBRecordRepository.active(State.machines), page);
 
   page.querySelector('#mach-search').addEventListener('input', () => filterMachines(page));
   page.querySelector('#mach-dept-filter').addEventListener('change', () => filterMachines(page));
@@ -1018,6 +1016,7 @@ function filterMachines(page) {
   const type = page.querySelector('#mach-type-filter').value;
 
   const filtered = State.machines.filter(m =>
+    !m.deletedAt &&
     (!q || m.numarasi.toLowerCase().includes(q)) &&
     (!dept || m.bolum === dept) &&
     (!type || m.tip === type)
@@ -1041,7 +1040,7 @@ function renderMachineTable(list, page) {
   );
   tbody.innerHTML = sortedList.map(m => {
     // find last maintenance
-    const machMaint = State.maintenances.filter(ma => ma.tezgah_id === m.id);
+    const machMaint = State.maintenances.filter(ma => !ma.deletedAt && ma.tezgah_id === m.id);
     let lastMaintDate = '—';
     if (machMaint.length) {
       machMaint.sort((a, b) => b.id - a.id);
@@ -1100,8 +1099,7 @@ window.createNewMachine = async function() {
     return;
   }
 
-  const id = State.machines.length ? Math.max(...State.machines.map(m => m.id)) + 1 : 1;
-  const newMach = { id, numarasi, bolum, tip };
+  const newMach = window.MTBRecordRepository.create(State.machines, { numarasi, bolum, tip }, State.currentUser);
   State.machines.push(newMach);
   await saveMachines();
   closeModal('new-machine');
@@ -1112,11 +1110,15 @@ window.createNewMachine = async function() {
 window.deleteMachine = async function(id) {
   if (!canDelete()) { showToast('Tezgah silme yetkiniz yok', 'error'); return; }
   if (!confirm('Bu tezgahı silmek istediğinize emin misiniz? Tezgahla ilişkili tüm bakım ve pil geçmişi silinecektir.')) return;
-  State.machines = State.machines.filter(m => m.id !== id);
-  State.maintenances = State.maintenances.filter(m => m.tezgah_id !== id);
-  State.batteries = State.batteries.filter(b => b.tezgah_id !== id);
-  await Promise.all([saveMachines(), saveMaintenances(), saveBatteries()]);
-  showToast('Tezgah ve ilişkili verileri silindi.', 'success');
+  const now = new Date().toISOString();
+  State.machines = window.MTBRecordRepository.archiveById(State.machines, id, State.currentUser, now).records;
+  const archiveRelated = list => list.map(item => Number(item.tezgah_id ?? item.machineId) === Number(id) ? window.MTBRecordRepository.archive(item, State.currentUser, now) : item);
+  State.maintenances = archiveRelated(State.maintenances);
+  State.batteries = archiveRelated(State.batteries);
+  State.fans = archiveRelated(State.fans);
+  State.backup_logs = archiveRelated(State.backup_logs);
+  await Promise.all([saveMachines(), saveMaintenances(), saveBatteries(), saveFans(), saveBackupLogs()]);
+  showToast('Tezgah ve ilişkili kayıtları arşive taşındı.', 'success');
   navigate('machines');
 };
 
@@ -1415,7 +1417,7 @@ window.selectCheatSheetTab = function(tab) {
           <ol style="font-size:11.5px; padding-left:16px; display:flex; flex-direction:column; gap:6px">
             <li>Yedek dosyasını içeren kartı takıp, aynı tuşlarla <strong>SYSTEM MONITOR</strong> ekranını açın.</li>
             <li><strong>7. SRAM DATA UTILITY</strong> menüsüne girin.</li>
-            <li><strong>RESTORE SRAM (MEMORY CARD -> CNC)</strong> seçeneğini seçin.</li>
+            <li>SRAM geri yükleme işlemini bu uygulamadan yürütmeyin. Kontrol serisi, yazılım revizyonu ve OEM opsiyonları doğrulandıktan sonra yetkili bakım personeline yönlendirin.</li>
             <li>Ajanın yedeklediği dosyayı doğrulamak için **YES** butonuna tıklayın.</li>
             <li>"SRAM RESTORE COMPLETE" yazısı çıktıktan sonra geri çıkın ve **9. START (NORMAL)** seçerek sistemi normal modda başlatın.</li>
           </ol>
@@ -1617,7 +1619,7 @@ window.triggerCloudSyncNow = async function() {
 window.exportFullCloudBundle = async function() {
   showToast('💡 İPUCU: Açılan kaydetme penceresinde sol menüden Google Drive klasörünüzü seçin.', 'info');
   const bundle = {
-    schemaVersion: "1.4.1",
+    schemaVersion: "1.4.2",
     exportDate: new Date().toISOString(),
     googleDriveFolderId: "1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK",
     machines: State.machines || [],
@@ -1628,9 +1630,7 @@ window.exportFullCloudBundle = async function() {
     custom_notes: State.custom_notes || [],
     custom_alarms: State.custom_alarms || [],
     custom_mcodes: State.custom_mcodes || [],
-    keep_relays: State.keep_relays || [],
-    settings: State.settings || {},
-    users: State.users || []
+    keep_relays: State.keep_relays || []
   };
 
   const defaultName = `FANUC_DATABASE_SYNC_${new Date().toISOString().slice(0,10)}.json`;
@@ -1770,7 +1770,7 @@ function showTableSkeleton(tbody, rows = 5, cols = 5) {
 }
 
 function getSortedMachines() {
-  return [...State.machines].sort((a, b) => String(a.numarasi || '').localeCompare(String(b.numarasi || ''), 'tr', { numeric: true, sensitivity: 'base' }));
+  return State.machines.filter(item => !item.deletedAt).sort((a, b) => String(a.numarasi || '').localeCompare(String(b.numarasi || ''), 'tr', { numeric: true, sensitivity: 'base' }));
 }
 
 function getTodayFormat() {

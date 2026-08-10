@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 test('primary screens remain visible and usable at desktop size', async () => {
+  test.setTimeout(120000);
   const projectRoot = path.resolve(__dirname, '..');
   const dataDir = path.join(projectRoot, '.e2e-visual-data');
   const captureDir = path.join(projectRoot, 'test-results', 'visual-audit');
@@ -27,7 +28,12 @@ test('primary screens remain visible and usable at desktop size', async () => {
     await page.waitForTimeout(1000);
     await page.screenshot({ path: path.join(captureDir, '01-dashboard.png') });
 
-    await page.locator('#nav-machines').click();
+    const machinesNav = page.locator('#nav-machines');
+    const machinesGroup = machinesNav.locator('xpath=ancestor::details[1]');
+    if (await machinesGroup.count() && !(await machinesGroup.evaluate(element => element.open))) {
+      await machinesGroup.locator('summary').click();
+    }
+    await machinesNav.click();
     await expect(page.locator('#page-machines')).toBeVisible();
     await page.screenshot({ path: path.join(captureDir, '02-machines.png') });
     await page.locator('#page-machines [data-machine-action="details"]').first().click();
@@ -41,11 +47,21 @@ test('primary screens remain visible and usable at desktop size', async () => {
     await page.keyboard.press('Escape');
     await expect(page.locator('#modal-machine-workspace-detail')).not.toHaveClass(/open/);
 
-    await page.locator('#nav-fanuc_center').click();
+    const fanucNav = page.locator('#nav-fanuc_center');
+    const fanucGroup = fanucNav.locator('xpath=ancestor::details[1]');
+    if (await fanucGroup.count() && !(await fanucGroup.evaluate(element => element.open))) {
+      await fanucGroup.locator('summary').click();
+    }
+    await fanucNav.click();
     await expect(page.locator('#page-fanuc_center')).toBeVisible();
     await page.screenshot({ path: path.join(captureDir, '04-fanuc-center.png') });
 
-    await page.locator('#nav-settings').click();
+    const settingsNav = page.locator('#nav-settings');
+    const settingsGroup = settingsNav.locator('xpath=ancestor::details[1]');
+    if (await settingsGroup.count() && !(await settingsGroup.evaluate(element => element.open))) {
+      await settingsGroup.locator('summary').click();
+    }
+    await settingsNav.click();
     await expect(page.locator('#page-settings')).toBeVisible();
     await page.screenshot({ path: path.join(captureDir, '05-settings.png') });
     expect(runtimeErrors).toEqual([]);

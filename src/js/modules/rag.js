@@ -112,7 +112,7 @@ export function buildRAGContext(query) {
 
   // 7. Official FANUC PDF Manuals Knowledge & Citation Mapping
   const pdfManualCitations = [
-    { keywords: ['1815', '1850', 'grid shift', 'apc', 'apz', '3202', 'ne9', '1320', 'stroke', '3111', '1851', 'backlash', 'parametre', '6000', 'thermal'], title: 'FANUC Series 0i-MF / 31i-B Parametre El Kitabı', manualNo: 'B-64310EN', section: 'Bölüm 4 — Sistem, Eksen & Termal Kompanzasyon Parametreleri' },
+    { keywords: ['1815', '1850', 'grid shift', 'apc', 'absolute referans', '3202', 'ne9', '1320', 'stroke', '3111', '1851', 'backlash', 'parametre', '6000', 'thermal'], title: 'FANUC Series 0i-MF / 31i-B Parametre El Kitabı', manualNo: 'B-64310EN', section: 'Bölüm 4 — Sistem, Eksen & Termal Kompanzasyon Parametreleri' },
     { keywords: ['sv0401', 'sv0438', 'sv0449', 'vrdy', 'servo', 'overcurrent', 'hcam', 'a06b-6114', 'a06b-6124', 'encoder', 'pil', 'batarya'], title: 'FANUC Servo Sürücü Alpha i / Beta i Bakım Kılavuzu', manualNo: 'B-65270EN', section: 'Bölüm 7 — Servo Alarm & LED Teşhis Adımları' },
     { keywords: ['sp9011', 'sp9012', 'ssm', 'spindle', 'a06b-6117', 'a06b-6127', 'motor', 'overheat'], title: 'FANUC Spindle Sürücü & Amplifikatör Arıza Kılavuzu', manualNo: 'B-65282EN', section: 'Bölüm 5 — Spindle LED & Yük Teşhisi' },
     { keywords: ['pmc', 'ladder', 'k00', 'keep relay', 'g8.4', 'f1.0', 'x4.2', 'y2.1', 'x0004.2', 'g0008.4', 'rs232', 'sr0085', 'sr0086', 'ps0085', 'p0101', 'p0103'], title: 'FANUC PMC Ladder & Sinyal Adres Spesifikasyonu', manualNo: 'B-64303EN', section: 'Bölüm 3 — PMC X/Y/G/F Sinyal Tablosu & Haberleşme' }

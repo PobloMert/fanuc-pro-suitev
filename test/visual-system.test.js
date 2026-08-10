@@ -130,7 +130,8 @@ test('FANUC center page is visible when opened from dashboard actions', () => {
 });
 
 test('FANUC center remains in navigation and enforces edit permissions at UI and bridge layers', () => {
-  assert.match(navigation, /pages:\s*\[[^\]]*'fanuc_center'/);
+  const pageManifest = fs.readFileSync(path.join(root, 'src', 'js', 'page_manifest.js'), 'utf8');
+  assert.match(pageManifest, /\['fanuc_center',\s*'FANUC Merkezi',\s*'diagnostics'/);
   assert.match(renderer, /FanucCenterBridge[\s\S]*canEdit/);
   assert.match(renderer, /if \(!canEdit\(\)\) return \{ ok: false, error: 'FANUC profilini düzenleme yetkiniz yok\.'/);
   assert.match(fanucCenter, /const canEdit/);
