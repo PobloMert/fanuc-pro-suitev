@@ -110,6 +110,24 @@ export function buildRAGContext(query) {
     });
   }
 
+  // 8. Maintenance Logs Match (Gerçek Atölye Bakım Defteri Kayıtları)
+  const machMap = new Map((State.machines || []).map(m => [m.id, m.numarasi || m.name || `Tezgâh #${m.id}`]));
+  const maintMatches = (State.maintenances || []).filter(m => {
+    const machName = (machMap.get(m.tezgah_id) || '').toLowerCase();
+    const desc = (m.aciklama || m.description || '').toLowerCase();
+    return (machName && q.includes(machName)) ||
+           (desc && q.split(/\s+/).some(word => word.length >= 4 && desc.includes(word))) ||
+           (q.includes('bakım') && machName && q.includes(machName));
+  }).slice(-4).reverse();
+
+  if (maintMatches.length > 0) {
+    contextParts.push("### 📋 Atölye Bakım Defteri Kayıtları (Gerçek Saha Geçmişi):");
+    maintMatches.forEach(m => {
+      const machName = machMap.get(m.tezgah_id) || `Tezgâh #${m.tezgah_id}`;
+      contextParts.push(`- **Tarih:** ${m.tarih} | **Tezgâh:** ${machName} | **Teknisyen:** ${m.bakim_yapan || '—'}\n  *Yapılan İşlem / Arıza:* ${m.aciklama || m.description || '—'}\n  *Durum:* ${m.durum || m.status || 'Tamamlandı'}\n`);
+    });
+  }
+
   // 7. Official FANUC PDF Manuals Knowledge & Citation Mapping
   const pdfManualCitations = [
     { keywords: ['1815', '1850', 'grid shift', 'apc', 'absolute referans', '3202', 'ne9', '1320', 'stroke', '3111', '1851', 'backlash', 'parametre', '6000', 'thermal'], title: 'FANUC Series 0i-MF / 31i-B Parametre El Kitabı', manualNo: 'B-64310EN', section: 'Bölüm 4 — Sistem, Eksen & Termal Kompanzasyon Parametreleri' },
@@ -130,7 +148,7 @@ export function buildRAGContext(query) {
     return '';
   }
 
-  return `\n[YEREL VERİTABANI VE RESMİ FANUC PDF KILAVUZ KONTROLÜ — RAG BAĞLAMI]:\nAşağıdaki teknik veriler ve resmi FANUC PDF el kitapçığı sayfa referansları fabrika yerel veritabanınızdan çekilmiştir. Yanıtınızı sunarken mutlaka ilgili PDF Kılavuz Kodunu ([B-64310EN], [B-65270EN] vb.) kaynak gösterin:\n\n${contextParts.join('\n')}\n🔗 **Canlı PDF Kütüphanesi:** https://drive.google.com/drive/folders/1UEJP5MTj6cAkYvGmHI8DDMfEiKnQFIAx\n`;
+  return `\n[YEREL VERİTABANI VE RESMİ FANUC PDF KILAVUZ KONTROLÜ — RAG BAĞLAMI]:\nAşağıdaki teknik veriler, bakım geçmişi ve resmi FANUC PDF el kitapçığı sayfa referansları fabrika yerel veritabanınızdan çekilmiştir. Yanıtınızı sunarken mutlaka ilgili kaynakları referans gösterin:\n\n${contextParts.join('\n')}\n🔗 **Canlı PDF Kütüphanesi:** https://drive.google.com/drive/folders/1UEJP5MTj6cAkYvGmHI8DDMfEiKnQFIAx\n`;
 }
 
 export function buildRAGResult(query) {
@@ -149,6 +167,17 @@ export function buildRAGResult(query) {
     .forEach(n => sources.push({ type: 'NC kod kataloğu', id: n.code, title: n.name }));
   State.keep_relays.filter(k => q.includes(String(k.id || '').toLowerCase())).slice(0, 2)
     .forEach(k => sources.push({ type: 'Keep relay kataloğu', id: k.id, title: k.name }));
+
+  const machMap = new Map((State.machines || []).map(m => [m.id, m.numarasi || m.name || `Tezgâh #${m.id}`]));
+  (State.maintenances || []).filter(m => {
+    const machName = (machMap.get(m.tezgah_id) || '').toLowerCase();
+    const desc = (m.aciklama || m.description || '').toLowerCase();
+    return (machName && q.includes(machName)) || (desc && q.split(/\s+/).some(w => w.length >= 4 && desc.includes(w)));
+  }).slice(-3).reverse().forEach(m => {
+    const machName = machMap.get(m.tezgah_id) || `Tezgâh #${m.tezgah_id}`;
+    sources.push({ type: 'Bakım Defteri', id: `${machName} (${m.tarih})`, title: (m.aciklama || '').slice(0, 45) + '...' });
+  });
+
   return { context, sources };
 }
 
@@ -156,3 +185,4 @@ if (typeof window !== 'undefined') {
   window.buildRAGContext = buildRAGContext;
   window.buildRAGResult = buildRAGResult;
 }
+

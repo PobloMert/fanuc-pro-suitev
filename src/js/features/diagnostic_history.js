@@ -13,9 +13,10 @@
   const create = input => global.MTBRecordRepository.create(global.State?.diagnostic_history || [], { ...input, machineId: selectedMachineId || null, deviceId: localStorage.getItem('mtb-drive-device-id') || 'local-device' }, global.State?.currentUser);
   const header = (title, detail) => `<div class="dh-section-head"><div><h2>${esc(title)}</h2><p>${esc(detail)}</p></div></div>`;
   const empty = (title, detail) => `<div class="dh-empty" role="status"><strong>${esc(title)}</strong><span>${esc(detail)}</span></div>`;
-  function selector() { return `<label class="form-label" for="dh-machine">Tezgâh bağlamı</label><select id="dh-machine" class="form-control"><option value="">Tüm tezgâhlar</option>${(global.State?.machines || []).map(machine => `<option value="${esc(machine.id)}" ${String(machine.id) === String(selectedMachineId) ? 'selected' : ''}>${esc(machine.numarasi || machine.name)}</option>`).join('')}</select>`; }
+  const getSorted = () => (global.getSortedMachines ? global.getSortedMachines() : [...(global.State?.machines || [])].filter(m => !m.deletedAt).sort((a, b) => String(a.numarasi || a.name || '').localeCompare(String(b.numarasi || b.name || ''), 'tr', { numeric: true, sensitivity: 'base' })));
+  function selector() { return `<label class="form-label" for="dh-machine">Tezgâh bağlamı</label><select id="dh-machine" class="form-control"><option value="">Tüm tezgâhlar</option>${getSorted().map(machine => `<option value="${esc(machine.id)}" ${String(machine.id) === String(selectedMachineId) ? 'selected' : ''}>${esc(machine.numarasi || machine.name)}</option>`).join('')}</select>`; }
   function overview() {
-    const machine = machineFor(selectedMachineId) || (global.State?.machines || [])[0], profile = machine?.fanucProfile || {};
+    const machine = machineFor(selectedMachineId) || getSorted()[0], profile = machine?.fanucProfile || {};
     return `${header('System Configuration özeti','Kayıtlar seçilen tezgâha bağlanır; uygulama CNC’ye veri yazmaz.')}<div class="dh-grid">${[['Tezgâh',machine?.numarasi||machine?.name],['Kontrol serisi',profile.series],['CNC yazılımı',profile.software],['FSSB current / I/O',profile.topology]].map(([key,value]) => `<article class="dh-card"><span>${esc(key)}</span><strong>${esc(value || 'Canlı veri yok')}</strong></article>`).join('')}</div><div class="dh-notice">Fan Monitor, Leakage Detection Monitor ve Waveform Diagnosis değerleri yalnız bağlı salt-okunur adaptörden alınabilir. Kapsam: FANUC B-64605EN/01; seri ve OEM dokümanıyla doğrulayın.</div>`;
   }
   function history() {

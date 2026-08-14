@@ -93,16 +93,95 @@ function renderRs232Cables() {
               CNC tarafındaki DB25 konektöründe 6, 8 ve 20 numaralı pinlerin kendi arasında tam kısa devre (köprü) yapılıp lehimlendiğini teyit edin.
             </div>
           </div>
-        </div>
+
+          <!-- Interactive Continuity Tester -->
+          <div style="margin-top:8px; padding:12px; background:#0b0f19; border:1px solid var(--border); border-radius:var(--radius-md);">
+            <div style="font-size:12px; font-weight:800; color:var(--text-accent); display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+              <span>🎛️</span> İnteraktif Multimetre Buzzer Test Simülatörü
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+              <div>
+                <label style="font-size:10.5px; color:var(--text-secondary); display:block; margin-bottom:2px;">PC Tarafı (DB9 Pin):</label>
+                <select id="rs-test-db9" class="form-control" style="font-size:11px; padding:3px 6px;" onchange="runRsContinuityTest()">
+                  <option value="2">Pin 2 (RxD - Veri Alış)</option>
+                  <option value="3">Pin 3 (TxD - Veri Gönderim)</option>
+                  <option value="5">Pin 5 (GND - Şase Sinyali)</option>
+                  <option value="7">Pin 7 (RTS)</option>
+                  <option value="8">Pin 8 (CTS)</option>
+                  <option value="1">Pin 1 (CD)</option>
+                  <option value="4">Pin 4 (DTR)</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:10.5px; color:var(--text-secondary); display:block; margin-bottom:2px;">CNC Tarafı (DB25 Pin):</label>
+                <select id="rs-test-db25" class="form-control" style="font-size:11px; padding:3px 6px;" onchange="runRsContinuityTest()">
+                  <option value="2">Pin 2 (TxD)</option>
+                  <option value="3">Pin 3 (RxD)</option>
+                  <option value="7">Pin 7 (Signal GND)</option>
+                  <option value="4">Pin 4 (RTS)</option>
+                  <option value="5">Pin 5 (CTS)</option>
+                  <option value="6">Pin 6 (DSR)</option>
+                  <option value="8">Pin 8 (CD)</option>
+                  <option value="20">Pin 20 (DTR)</option>
+                  <option value="1">Pin 1 (Frame Ground / Şase)</option>
+                </select>
+              </div>
+            </div>
+            <div id="rs-test-result" style="padding:8px 10px; border-radius:4px; font-size:11.5px; background:var(--bg-card2); border:1px solid var(--border);">
+              Seçilen pin kombinasyonunun ölçüm sonucu burada görünür.
+            </div>
+          </div>
 
       </div>
     </div>
   `;
 
-  setTimeout(() => showRs232Schematic(page), 10);
+  setTimeout(() => {
+    showRs232Schematic(page);
+    runRsContinuityTest(page);
+  }, 10);
 
   return page;
 }
+
+window.runRsContinuityTest = function(page = document) {
+  const db9 = String(page.querySelector('#rs-test-db9')?.value || '2');
+  const db25 = String(page.querySelector('#rs-test-db25')?.value || '2');
+  const resEl = page.querySelector('#rs-test-result');
+  if (!resEl) return;
+
+  // Expected connections for software handshake
+  const validPairs = [
+    { db9: '2', db25: '2', label: 'DB9 Pin 2 (RxD) ➔ DB25 Pin 2 (TxD)', desc: 'Ana Veri Hattı: PC Alış hattı CNC Gönderim hattına bağlı.' },
+    { db9: '3', db25: '3', label: 'DB9 Pin 3 (TxD) ➔ DB25 Pin 3 (RxD)', desc: 'Ana Veri Hattı: PC Gönderim hattı CNC Alış hattına bağlı.' },
+    { db9: '5', db25: '7', label: 'DB9 Pin 5 (GND) ➔ DB25 Pin 7 (SG)', desc: 'Sinyal Şasesi: Ortak referans topraklama hattı.' }
+  ];
+
+  const match = validPairs.find(p => p.db9 === db9 && p.db25 === db25);
+  if (match) {
+    resEl.innerHTML = `
+      <div style="color:#34d399; font-weight:800; display:flex; align-items:center; gap:6px;">
+        <span>🔊</span> BUZZER ÖTMELİ (0.1 - 0.5 Ω) — BAĞLANTI DOĞRU
+      </div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:3px;">
+        ${match.desc}
+      </div>
+    `;
+    resEl.style.borderColor = 'rgba(52, 211, 153, 0.4)';
+    resEl.style.background = 'rgba(52, 211, 153, 0.08)';
+  } else {
+    resEl.innerHTML = `
+      <div style="color:#f87171; font-weight:800; display:flex; align-items:center; gap:6px;">
+        <span>🔇</span> BUZZER ÖTMEMELİ (AÇIK DEVRE / ∞ Ω)
+      </div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:3px;">
+        DB9 Pin ${db9} ile DB25 Pin ${db25} arasında hiçbir elektriksel temas olmamalıdır. Eğer multimetre ötüyorsa lehimde <strong>kısa devre çapağı</strong> vardır!
+      </div>
+    `;
+    resEl.style.borderColor = 'rgba(248, 113, 113, 0.3)';
+    resEl.style.background = 'rgba(248, 113, 113, 0.06)';
+  }
+};
 
 window.showRs232Schematic = function(page = document) {
   const select = page.querySelector('#r2-scheme-select');
@@ -128,10 +207,12 @@ window.showRs232Schematic = function(page = document) {
 
   const MTBRs232Cables = {
     renderRs232Cables: typeof renderRs232Cables !== 'undefined' ? renderRs232Cables : undefined,
-    showRs232Schematic: typeof showRs232Schematic !== 'undefined' ? showRs232Schematic : undefined
+    showRs232Schematic: typeof showRs232Schematic !== 'undefined' ? showRs232Schematic : undefined,
+    runRsContinuityTest: typeof runRsContinuityTest !== 'undefined' ? runRsContinuityTest : undefined
   };
 
   global.MTBRs232Cables = MTBRs232Cables;
   if (typeof renderRs232Cables !== 'undefined') global.renderRs232Cables = renderRs232Cables;
   if (typeof showRs232Schematic !== 'undefined') global.showRs232Schematic = showRs232Schematic;
+  if (typeof runRsContinuityTest !== 'undefined') global.runRsContinuityTest = runRsContinuityTest;
 })(window);

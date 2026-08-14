@@ -13,6 +13,14 @@ function renderAlarms() {
           <span class="tag tag-gray" style="font-size:10.5px">PMC (${State.alarms.filter(a => a.category === 'PMC').length})</span>
         </div>
       </div>
+      <div class="flex gap-1 mt-2" style="flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="setAlarmCategoryFilter('')" style="font-size:11px; padding:3px 8px; font-weight:600;">Tümü (${State.alarms.length})</button>
+        <button class="btn btn-ghost btn-sm" onclick="setAlarmCategoryFilter('Servo')" style="font-size:11px; padding:3px 8px; font-weight:600; color:var(--red);">🔴 Servo (400+)</button>
+        <button class="btn btn-ghost btn-sm" onclick="setAlarmCategoryFilter('Spindle')" style="font-size:11px; padding:3px 8px; font-weight:600; color:var(--amber);">🌀 Spindle (700+)</button>
+        <button class="btn btn-ghost btn-sm" onclick="setAlarmCategoryFilter('Overtravel')" style="font-size:11px; padding:3px 8px; font-weight:600; color:var(--orange);">🚧 Limit / Overtravel (500+)</button>
+        <button class="btn btn-ghost btn-sm" onclick="setAlarmCategoryFilter('PMC')" style="font-size:11px; padding:3px 8px; font-weight:600; color:var(--text-secondary);">📋 PMC / Operatör (1000+)</button>
+        <button class="btn btn-ghost btn-sm" onclick="setAlarmCategoryFilter('Program')" style="font-size:11px; padding:3px 8px; font-weight:600; color:var(--blue);">💻 Program / G-Kodu</button>
+      </div>
       <div class="flex gap-2 mt-3" style="flex-wrap:wrap">
         <div class="search-bar" style="flex:1; max-width:340px">
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -175,6 +183,10 @@ window.showAlarmDetail = function(code) {
     }
   });
 
+  const matchedDriveAlarm = (State.drive_alarms || []).find(d => {
+    return textToScan.includes(d.code) || textToScan.includes(d.title.toLowerCase()) || (alarm.category === 'Servo' && d.type.includes('Servo'));
+  });
+
   showModal('alarm-detail', `
     <div class="modal-header">
       <span class="modal-title">
@@ -187,6 +199,22 @@ window.showAlarmDetail = function(code) {
       <span class="tag ${alarmCategoryTag(alarm.category)}">${escapeHTML(alarm.category)}</span>
       ${alarm.series.map(s => `<span class="tag tag-gray">${escapeHTML(s)}</span>`).join('')}
     </div>
+
+    ${matchedDriveAlarm ? `
+      <div style="background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(245,158,11,0.08)); border: 1px solid rgba(239,68,68,0.35); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px;">
+        <div style="font-size: 10.5px; font-weight: 800; color: #ef4444; letter-spacing: 0.5px; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+          <span>⚡</span> Sürücü Üzerindeki 7-Segment LED / Teşhis Kodu (${escapeHTML(matchedDriveAlarm.type)})
+        </div>
+        <div style="font-size: 13px; font-weight: 750; color: var(--text-primary); margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+          <span style="background: #ef4444; color: #fff; font-family: monospace; font-size: 13px; padding: 2px 8px; border-radius: 4px; font-weight: 900;">LED: ${escapeHTML(matchedDriveAlarm.code)}</span>
+          <span>${escapeHTML(matchedDriveAlarm.title)}</span>
+        </div>
+        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">
+          ${escapeHTML(matchedDriveAlarm.description)}
+        </div>
+      </div>
+    ` : ''}
+
     <div class="card" style="margin-bottom:12px">
       <div class="card-title mb-2">📋 Açıklama</div>
       <p style="font-size:12.5px; line-height:1.6; color:var(--text-secondary)">${escapeHTML(alarm.description)}</p>
@@ -204,12 +232,15 @@ window.showAlarmDetail = function(code) {
         </ul>
       </div>
       <div class="card">
-        <div class="card-title mb-2" style="color:var(--green)">✅ Çözüm Adımları</div>
+        <div class="card-title mb-2" style="color:var(--green); display:flex; justify-content:space-between; align-items:center;">
+          <span>✅ Çözüm Adımları (Pano Kontrol Listesi)</span>
+          <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">Adımları tıkladıkça işaretleyin</span>
+        </div>
         <ol style="list-style:none; display:flex; flex-direction:column; gap:6px">
           ${alarm.solutions.map((s, i) => `
-            <li style="display:flex; gap:8px; font-size:12px">
-              <span class="font-mono" style="color:var(--green); flex-shrink:0; min-width:16px">${i+1}.</span>
-              <span style="color:var(--text-secondary)">${escapeHTML(s)}</span>
+            <li class="alarm-checklist-item" onclick="toggleAlarmChecklist(this)" style="display:flex; gap:8px; font-size:12px; cursor:pointer; padding:4px 6px; border-radius:4px; transition:all 0.15s ease; border:1px solid transparent;">
+              <span class="chk-box" style="font-family:monospace; font-weight:700; color:var(--green); min-width:32px; flex-shrink:0;">[ ] ${i+1}.</span>
+              <span class="chk-text" style="color:var(--text-secondary); line-height:1.4;">${escapeHTML(s)}</span>
             </li>
           `).join('')}
         </ol>
@@ -269,6 +300,36 @@ window.showAlarmDetail = function(code) {
       </button>
     </div>
   `, 'lg');
+};
+
+window.toggleAlarmChecklist = function(el) {
+  if (!el) return;
+  const isChecked = el.classList.toggle('checked');
+  const box = el.querySelector('.chk-box');
+  const text = el.querySelector('.chk-text');
+  if (isChecked) {
+    el.style.background = 'rgba(16, 185, 129, 0.12)';
+    el.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+    if (box) {
+      box.textContent = box.textContent.replace('[ ]', '[✓]');
+      box.style.color = '#34d399';
+    }
+    if (text) {
+      text.style.textDecoration = 'line-through';
+      text.style.color = 'var(--text-muted)';
+    }
+  } else {
+    el.style.background = 'transparent';
+    el.style.borderColor = 'transparent';
+    if (box) {
+      box.textContent = box.textContent.replace('[✓]', '[ ]');
+      box.style.color = 'var(--green)';
+    }
+    if (text) {
+      text.style.textDecoration = 'none';
+      text.style.color = 'var(--text-secondary)';
+    }
+  }
 };
 
 window.editCustomAlarmNote = function() {
@@ -708,5 +769,13 @@ window.askAIAboutParam = function(no) {
 // ════════════════════════════════════════════════════════════════
 //  SETTINGS
 // ════════════════════════════════════════════════════════════════
+
+window.setAlarmCategoryFilter = function(cat) {
+  const sel = document.getElementById('alarm-cat-filter');
+  if (sel) {
+    sel.value = cat;
+    sel.dispatchEvent(new Event('change'));
+  }
+};
 
 api={renderAlarms,renderParameters};return api;}global.MTBAlarmParameterScreens=Object.freeze({initialize});})(window);

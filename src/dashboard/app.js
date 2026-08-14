@@ -48,6 +48,7 @@ const telemetryHealth = document.getElementById('telemetry-health');
 const telemetryMode = document.getElementById('telemetry-mode');
 const telemetryAge = document.getElementById('telemetry-age');
 let lastSuccessfulTelemetry = 0;
+let lastXmlDoc = null;
 let isSimulationTelemetry = false;
 const observedAlarmKeys = new Set();
 const stateBadge = document.getElementById('machine-state-badge');
@@ -297,9 +298,27 @@ function init() {
     loadOperationHistory();
     loadAxisAndDiagnostics();
 
-    // Start Polling
+    // Dynamic background CPU saver throttling
+    let pollIntervalId = null;
+    let diagIntervalId = null;
+    let feedIntervalId = null;
+
+    function startActivePolling(isFast = true) {
+        if (pollIntervalId) clearInterval(pollIntervalId);
+        if (diagIntervalId) clearInterval(diagIntervalId);
+        if (feedIntervalId) clearInterval(feedIntervalId);
+
+        const pollMs = isFast ? 1000 : 4000;
+        const diagMs = isFast ? 1500 : 5000;
+        const feedMs = isFast ? 1000 : 4000;
+
+        pollIntervalId = setInterval(pollAgent, pollMs);
+        diagIntervalId = setInterval(() => loadAxisAndDiagnostics(false), diagMs);
+        feedIntervalId = setInterval(pollActFeedrate, feedMs);
+    }
+
+    startActivePolling(true);
     pollAgent();
-    setInterval(pollAgent, 1000);
     setInterval(updateTelemetryHealth, 1000);
 
     // Refresh daily power-on display every 60 seconds in case data arrives late
@@ -307,13 +326,27 @@ function init() {
         machinesConfig.forEach(m => updateDailyPowerOnDisplay(m.id, machineState[m.id]._lastPowerOnMin || 0));
     }, 60000);
 
-    // Start second-by-second high-frequency automatic diagnostic polling
-    setInterval(() => loadAxisAndDiagnostics(false), 1500);
-
     // Load extra hardware features
     loadHardwareProfile();
     pollActFeedrate();
-    setInterval(pollActFeedrate, 1000);
+
+    // Listen for tab/window visibility and focus to throttle CPU
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            startActivePolling(false);
+        } else {
+            startActivePolling(true);
+            pollAgent();
+            loadAxisAndDiagnostics(false);
+        }
+    });
+    window.addEventListener('focus', () => {
+        startActivePolling(true);
+        pollAgent();
+    });
+    window.addEventListener('blur', () => {
+        if (document.hidden) startActivePolling(false);
+    });
 
     // Event Listeners
     if (clearHistoryBtn) {
@@ -409,6 +442,10 @@ window.switchMachine = function(machineId) {
     
     renderHistory();
     renderAlarms();
+
+    if (lastXmlDoc) {
+        updateDetailsPanel(lastXmlDoc);
+    }
 
     if (elProgramsTbody) {
         elProgramsTbody.innerHTML = '<tr><td colspan="3" class="empty-table-msg">Programları yüklemek için Yenile butonuna basın.</td></tr>';
@@ -554,6 +591,7 @@ async function pollAgent() {
         if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
             throw new Error('XML parsing error');
         }
+        lastXmlDoc = xmlDoc;
         xmlDoc.querySelectorAll('Alarm').forEach(node=>{
             const code=node.getAttribute('nativeCode')||node.getAttribute('code')||node.getAttribute('dataItemId')||'ALARM';
             const key=`${currentMachine}:${code}:${node.textContent}`;
@@ -2983,6 +3021,7 @@ async function querySniffedAddress() {
 
 // Canlı Akım Teşhis Oscillo-Grafiği
 function drawCurrentOscilloChart(frame = 0) {
+    if (document.hidden) return;
     const canvas = document.getElementById('current-oscillo-chart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');

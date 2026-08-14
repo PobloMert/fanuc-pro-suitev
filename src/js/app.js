@@ -8,7 +8,7 @@ import { applyTheme } from './ui/theme.js';
 import { loadData, loadSettings, loadUsers } from './data_loader.js';
 import { showLoginScreen } from './ui/auth.js';
 import { openSpotlight, closeSpotlight, spotlightSearch } from './ui/spotlight.js';
-import { toggleNotifPanel, closeNotifPanel, organizeNavigation, initRippleEffect } from './ui/navigation.js';
+import { toggleNotifPanel, closeNotifPanel, organizeNavigation, initRippleEffect, initAccessibleTabs } from './ui/navigation.js';
 
 // Global error handler
 window.onerror = function(message, source, lineno, colno, error) {
@@ -144,8 +144,9 @@ async function init() {
   const userAvatarBtn = document.getElementById('user-avatar-btn');
   if (userAvatarBtn) userAvatarBtn.addEventListener('click', showLoginScreen);
 
-  // Initialize ripple click animations
+  // Initialize ripple click animations and accessible tabs
   initRippleEffect();
+  initAccessibleTabs();
   organizeNavigation();
 
   // Sidebar Navigation Click Handlers

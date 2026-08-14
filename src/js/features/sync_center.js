@@ -78,6 +78,7 @@
           <section class="card sync-section"><h2>Bu cihaz</h2><label class="field-label" for="sync-device-name">Görünen cihaz adı</label><div class="sync-inline"><input id="sync-device-name" maxlength="80" value="${esc(deviceName)}"><button class="btn btn-secondary" data-device-save>Kaydet</button></div><p class="text-muted">Son görülme: ${esc(date(status.lastPull || status.lastPush))}</p>${deviceSupported ? '' : protocolNotice('Ad yerel olarak kaydedilir. Diğer cihazlarda görünmesi için servis cihaz kimliği desteği sağlamalı.')}</section>
           <section class="card sync-section"><h2>Senkronizasyon kapsamı</h2><div class="sync-scope-list">${scopes.map(([key, label]) => `<label><input type="checkbox" data-sync-scope="${key}" ${selectedScopes[key] !== false ? 'checked' : ''}><span>${esc(label)}</span></label>`).join('')}</div><button class="btn btn-secondary" data-scope-save>Kapsamı kaydet</button>${scopeSupported ? '' : protocolNotice('Seçimler yerel tercih olarak saklanır; servis kapsam filtrelemeyi destekleyene kadar tüm iş kayıtları senkronize edilir.')}</section>
         </div>
+        <section class="card sync-section" id="sync-offline-queue-section"><div class="sync-section-heading"><div><h2>Çevrimdışı Kuyruk & Delta Durumu</h2><p>İnternet kesintilerinde yerel SQLite'a kaydedilen ve Drive'a aktarılmayı bekleyen işlemler.</p></div><span class="tag tag-blue" id="sync-queue-count-badge">Kontrol ediliyor…</span></div><div style="display:flex;align-items:center;gap:10px;margin-top:8px"><button class="btn btn-secondary btn-sm" id="btn-flush-offline-queue">Kuyruğu Şimdi Gönder (Delta)</button><span class="text-muted" style="font-size:11.5px" id="sync-queue-desc">Bağlantı kurulduğunda otomatik aktarılır.</span></div></section>
         <section class="card sync-section sync-secret-card"><div class="sync-section-heading"><div><h2>Drive cihaz erişim anahtarı</h2><p>Anahtar Windows güvenli depolamasında saklanır ve kaydedildikten sonra hiçbir zaman geri okunmaz.</p></div><span class="sync-secret-status" data-secret-status role="status">Durum denetleniyor…</span></div>
           <label class="field-label" for="sync-drive-secret">Yeni erişim anahtarı</label><div class="sync-inline"><input id="sync-drive-secret" type="password" minlength="16" maxlength="512" autocomplete="new-password" spellcheck="false" placeholder="En az 16 karakter"><button class="btn btn-primary" data-secret-save>Güvenli kaydet</button><button class="btn btn-ghost" data-secret-clear>Temizle</button></div>
           <small class="text-muted">Mevcut anahtar gösterilmez veya bu alana doldurulmaz. Yeni bir değer kaydetmek mevcut anahtarı değiştirir.</small>
@@ -140,6 +141,50 @@
       notify(result?.ok ? 'Drive erişim anahtarı temizlendi.' : result?.error || 'Anahtar temizlenemedi.', result?.ok ? 'success' : 'error');
       await refreshSecretStatus();
     });
+    const queueBadge = page.querySelector('#sync-queue-count-badge');
+    const queueDesc = page.querySelector('#sync-queue-desc');
+    const flushQueueBtn = page.querySelector('#btn-flush-offline-queue');
+
+    const updateOfflineQueueDisplay = async () => {
+      if (!global.electronAPI?.listSyncQueue) return;
+      const res = await global.electronAPI.listSyncQueue();
+      const count = res?.ok && Array.isArray(res.items) ? res.items.length : 0;
+      if (queueBadge) {
+        queueBadge.textContent = count > 0 ? `${count} İşlem Bekliyor` : 'Kuyruk Temiz (0)';
+        queueBadge.className = count > 0 ? 'tag tag-orange' : 'tag tag-green';
+      }
+      if (queueDesc) {
+        queueDesc.textContent = count > 0 
+          ? `${count} adet yerel kayıt/güncelleme çevrimdışı kuyruğunda bekliyor.` 
+          : 'Tüm yerel kayıtlar güncel ve senkronize.';
+      }
+      if (flushQueueBtn) flushQueueBtn.disabled = count === 0;
+    };
+
+    flushQueueBtn?.addEventListener('click', async event => {
+      event.currentTarget.disabled = true;
+      event.currentTarget.textContent = 'Aktarılıyor…';
+      try {
+        if (engine?.syncNow) {
+          const res = await engine.syncNow(false);
+          if (res?.ok) {
+            notify('Çevrimdışı kuyruk ve delta kayıtları başarıyla aktarıldı.', 'success');
+          } else {
+            notify('Aktarım uyarısı: ' + (res?.error || 'Tamamlanamadı'), 'warning');
+          }
+        }
+      } catch (err) {
+        notify('Kuyruk aktarım hatası: ' + err.message, 'error');
+      } finally {
+        await updateOfflineQueueDisplay();
+        if (flushQueueBtn) {
+          flushQueueBtn.disabled = false;
+          flushQueueBtn.textContent = 'Kuyruğu Şimdi Gönder (Delta)';
+        }
+      }
+    });
+
+    updateOfflineQueueDisplay();
     refreshSecretStatus();
     page.querySelector('[data-scope-save]')?.addEventListener('click', async () => {
       const value = Object.fromEntries([...page.querySelectorAll('[data-sync-scope]')].map(input => [input.dataset.syncScope, input.checked]));

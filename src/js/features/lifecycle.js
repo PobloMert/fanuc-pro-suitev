@@ -172,6 +172,16 @@ window.showNewMaintModal = function() {
       </div>
     </div>
     <div class="form-group">
+      <div style="margin-bottom:6px">
+        <span style="font-size:11px; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:4px">⚡ Hızlı Bakım Şablonları (Tek Tık Doldur):</span>
+        <div style="display:flex; gap:6px; flex-wrap:wrap">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="applyMaintTemplate('kizak')" style="font-size:11px; padding:3px 8px">🛢️ Kızak Yağı İkmali</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="applyMaintTemplate('pil')" style="font-size:11px; padding:3px 8px">🔋 Absolute Pil Değişimi</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="applyMaintTemplate('fan')" style="font-size:11px; padding:3px 8px">🧹 Pano Fan & Filtre Temizliği</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="applyMaintTemplate('bosluk')" style="font-size:11px; padding:3px 8px">📐 Eksen Boşluk / Cetvel Kontrolü</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="applyMaintTemplate('kayis')" style="font-size:11px; padding:3px 8px">🌀 Spindle Kayış Gerginliği</button>
+        </div>
+      </div>
       <label class="form-label">Yapılan Bakım / Açıklama *</label>
       <textarea class="form-control" id="nm-maint-desc" rows="4" placeholder="Gerçekleştirilen işlemleri detaylandırın..."></textarea>
     </div>
@@ -225,6 +235,30 @@ window.createNewMaint = async function() {
   closeModal('new-maint');
   showToast('Bakım kaydı başarıyla oluşturuldu!', 'success');
   navigate('maintenance');
+};
+
+window.applyMaintTemplate = function(type) {
+  const descEl = document.getElementById('nm-maint-desc');
+  const safeEl = document.getElementById('nm-maint-safe');
+  const resEl = document.getElementById('nm-maint-result');
+  const obsEl = document.getElementById('nm-maint-observed');
+  const statEl = document.getElementById('nm-maint-status');
+  if (!descEl) return;
+
+  const templates = {
+    kizak: '[KIZAK YAĞLAMA] Kızak yağlama tankı seviyesi kontrol edildi, ISO VG 68 kızak yağı ikmali yapıldı. Otomatik yağlama basıncı ve dağıtıcı manifold test edildi.',
+    pil: '[PİL DEĞİŞİMİ] CNC açık konumdayken servo absolute enkoder pili değiştirildi. Voltaj 3.6V olarak ölçüldü, referans pozisyonları ve APZ bitleri korundu.',
+    fan: '[PANO & FAN TEMİZLİĞİ] Elektrik panosu soğutma filtreleri sökülüp temizlendi. Sürücü ve kabin emiş fanlarının dönüş hızı ve hava debisi kontrol edildi.',
+    bosluk: '[BOŞLUK AYARI] Eksen vidalı mil ve rulman boşluğu komparatör ile ölçüldü. Parametre 1851 backlash değeri mikron sapmasına göre güncellendi.',
+    kayis: '[SPINDLE BAKIMI] Fener mili tahrik kayışının gerginliği ve aşınma durumu kontrol edildi. Sentil ile enkoder hava aralığı (0.15mm) doğrulandı.'
+  };
+
+  descEl.value = templates[type] || '';
+  if (safeEl) safeEl.checked = true;
+  if (resEl) resEl.checked = true;
+  if (obsEl) obsEl.checked = true;
+  if (statEl) statEl.value = 'Tamamlandı';
+  showToast('Hazır şablon açıklamaya aktarıldı ✓', 'info');
 };
 
 window.deleteMaint = async function(id) {

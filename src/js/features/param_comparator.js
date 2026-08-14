@@ -346,6 +346,8 @@ function renderDiffTableRows(diffsList) {
 
     // Binary bit differential analysis helper
     const bitDiffsHtml = getBitDifferenceDetails(d.no, d.valA, d.valB);
+    // Engineering field impact interpretation helper
+    const paramImpactHtml = getParamImpactAnalysis(d.no, d.valA, d.valB);
 
     return `
       <tr class="${d.isCritical ? 'diff-critical' : ''}" style="${cellStyle}">
@@ -357,6 +359,7 @@ function renderDiffTableRows(diffsList) {
           <div style="font-size:12px; color:var(--text-primary); font-weight:600">${escapeHTML(d.desc)}</div>
           ${d.sourceMeta ? `<div style="font-size:10px;color:var(--text-muted);margin-top:4px">Seri: ${escapeHTML(Array.isArray(d.sourceMeta.applicableSeries) ? d.sourceMeta.applicableSeries.join(', ') : d.sourceMeta.applicableSeries)} · Kılavuz: ${escapeHTML(d.sourceMeta.manualNumber)} · Revizyon: ${escapeHTML(d.sourceMeta.manualRevision)}<br>${escapeHTML(d.sourceMeta.applicabilityNote)}</div>` : ''}
           ${bitDiffsHtml}
+          ${paramImpactHtml}
         </td>
         <td style="background:rgba(16,185,129,0.04)"><span class="font-mono" style="color:#34d399; font-size:12px">${escapeHTML(d.valA)}</span></td>
         <td style="background:rgba(245,158,11,0.04)"><span class="font-mono" style="color:#fbbf24; font-size:12px; font-weight:bold">${escapeHTML(d.valB)}</span></td>
@@ -364,6 +367,75 @@ function renderDiffTableRows(diffsList) {
       </tr>
     `;
   }).join('');
+}
+
+function getParamImpactAnalysis(no, valA, valB) {
+  if (valA === '—' || valB === '—' || valA === valB) return '';
+
+  switch (Number(no)) {
+    case 1815:
+      if (valA.length === 8 && valB.length === 8) {
+        const apzA = valA[3];
+        const apzB = valB[3];
+        const apcA = valA[2];
+        const apcB = valB[2];
+        if (apzA !== apzB) {
+          return `<div style="margin-top:6px; padding:6px 10px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); border-radius:4px; font-size:11px; color:#ef4444; font-weight:700;">
+            ⚠️ APZ (Sıfır Noktası) Değişimi: Bu eksende tezgâh referans noktası (Home) sıfırlanmış veya mutlak enkoder pil değişimi sonrası referanslama yapılmıştır. Eksen mekanik sıfır pozisyonunu kontrol edin.
+          </div>`;
+        }
+        if (apcA !== apcB) {
+          return `<div style="margin-top:6px; padding:6px 10px; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); border-radius:4px; font-size:11px; color:#f59e0b; font-weight:700;">
+            ⚠️ APC (Mutlak Enkoder Tipi) Değişimi: Eksen enkoder tipi (Mutlak / Artımsal) değiştirilmiştir.
+          </div>`;
+        }
+      }
+      return '';
+
+    case 1320:
+      return `<div style="margin-top:6px; padding:6px 10px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:4px; font-size:11px; color:var(--text-accent);">
+        🚧 Pozitif Strok Limiti (+ Limit): Eksenin pozitif yöndeki yazılımsal hareket sınırı (${escapeHTML(valA)} ➔ ${escapeHTML(valB)}) değiştirilmiştir. Takım ve fikstür çarpma mesafesini kontrol edin.
+      </div>`;
+
+    case 1321:
+      return `<div style="margin-top:6px; padding:6px 10px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:4px; font-size:11px; color:var(--text-accent);">
+        🚧 Negatif Strok Limiti (- Limit): Eksenin negatif yöndeki yazılımsal hareket sınırı (${escapeHTML(valA)} ➔ ${escapeHTML(valB)}) değiştirilmiştir.
+      </div>`;
+
+    case 1851:
+      return `<div style="margin-top:6px; padding:6px 10px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:4px; font-size:11px; color:#10b981; font-weight:600;">
+        ⚙️ Boşluk (Backlash) Kompanzasyonu: Eksen yön değişimindeki mekanik boşluk telafisi (${escapeHTML(valA)} ➔ ${escapeHTML(valB)} mikron) güncellenmiştir. Dairesel enterpolasyonda ovallik ve ters yön sıçramasını kontrol edin.
+      </div>`;
+
+    case 2004:
+    case 2005:
+      return `<div style="margin-top:6px; padding:6px 10px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:4px; font-size:11px; color:#f59e0b;">
+        ⚡ Servo Döngü / Hız Kazancı: Servo motor pozisyonlama kazancı değiştirilmiştir (${escapeHTML(valA)} ➔ ${escapeHTML(valB)}). Yüksek hızda titreşim veya takip hatası (414) olup olmadığını izleyin.
+      </div>`;
+
+    case 3111:
+      return `<div style="margin-top:6px; padding:6px 10px; background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); border-radius:4px; font-size:11px; color:#a855f7;">
+        🖥️ Ekran Gösterim Parametreleri: Servo/Spindle tuning veya operatör geçmişi ekranlarının görünürlüğü değiştirilmiştir.
+      </div>`;
+
+    case 3202:
+      return `<div style="margin-top:6px; padding:6px 10px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:4px; font-size:11px; color:#ef4444; font-weight:700;">
+        🔒 Program Kilit Parametresi (O8000 / O9000): Takım değiştirme (ATC) veya parça proplama makrolarının düzenleme kilidi (NE8/NE9) değiştirilmiştir.
+      </div>`;
+
+    case 3401:
+      return `<div style="margin-top:6px; padding:6px 10px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:4px; font-size:11px; color:var(--text-accent);">
+        📐 Ondalık Nokta Formatı: G-kodunda nokta kullanılmadığında değerin milimetre mi mikro adım mı okunacağı ayarı değiştirilmiştir.
+      </div>`;
+
+    case 1420:
+      return `<div style="margin-top:6px; padding:6px 10px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:4px; font-size:11px; color:#f59e0b;">
+        ⚡ Hızlı İlerleme Hızı (G00 Rapid): Eksenin boşta hareket hızı (${escapeHTML(valA)} ➔ ${escapeHTML(valB)} mm/dk) değiştirilmiştir.
+      </div>`;
+
+    default:
+      return '';
+  }
 }
 
 window.filterDiffRows = function() {
@@ -513,6 +585,7 @@ function getBitDifferenceDetails(no, valA, valB) {
     renderParamComparator: typeof renderParamComparator !== 'undefined' ? renderParamComparator : undefined,
     renderDiffTableRows: typeof renderDiffTableRows !== 'undefined' ? renderDiffTableRows : undefined,
     getBitDifferenceDetails: typeof getBitDifferenceDetails !== 'undefined' ? getBitDifferenceDetails : undefined,
+    getParamImpactAnalysis: typeof getParamImpactAnalysis !== 'undefined' ? getParamImpactAnalysis : undefined,
     handleParamDragOver: typeof handleParamDragOver !== 'undefined' ? handleParamDragOver : undefined,
     handleParamDragLeave: typeof handleParamDragLeave !== 'undefined' ? handleParamDragLeave : undefined,
     handleParamDrop: typeof handleParamDrop !== 'undefined' ? handleParamDrop : undefined,

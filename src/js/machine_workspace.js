@@ -72,9 +72,11 @@
     const statuses = machines.map(machineStatus);
     const critical = statuses.filter(item => item.issues.some(issue => issue.level === 'danger')).length;
     const attention = statuses.filter(item => !item.issues.some(issue => issue.level === 'danger') && item.issues.some(issue => issue.level === 'warn')).length;
+    const okCount = statuses.filter(item => !item.issues.some(issue => ['danger', 'warn'].includes(issue.level))).length;
     const backup = statuses.filter(item => item.issues.some(issue => issue.key === 'backup')).length;
     return `<div class="machine-summary">
-      <button data-machine-filter="all"><span>TOPLAM TEZGÂH</span><strong>${machines.length}</strong><small>Tüm kayıtlar</small></button>
+      <button class="is-active" data-machine-filter="all"><span>TOPLAM TEZGÂH</span><strong>${machines.length}</strong><small>Tüm kayıtlar</small></button>
+      <button class="ok" data-machine-filter="ok"><span>NORMAL / SAĞLIKLI</span><strong>${okCount}</strong><small>Aktif sorun yok</small></button>
       <button class="danger" data-machine-filter="danger"><span>KRİTİK DURUM</span><strong>${critical}</strong><small>Pil veya fan müdahalesi</small></button>
       <button class="warn" data-machine-filter="warn"><span>KONTROL EDİLMELİ</span><strong>${attention}</strong><small>Açık bakım veya yaklaşan işlem</small></button>
       <button class="info" data-machine-filter="backup"><span>GÜNCEL YEDEK YOK</span><strong>${backup}</strong><small>Yok veya 180 günden eski</small></button>
@@ -162,7 +164,7 @@
     const tabs=[['overview','Genel Bakış'],['maintenance','Bakım'],['battery','Pil & Fan'],['fanuc','FANUC Profili'],['modules','Modüller'],['backup','Yedekleme'],['timeline','Zaman Çizelgesi']];
     const panes={overview:detailOverview(machine,info),maintenance:maintenanceTab(machine,info),battery:batteryFanTab(machine,info),fanuc:fanucTab(machine),modules:modulesTab(machine),backup:backupTab(machine,info),timeline:timelineTab(machine,info)};
     const activeTab=tabs.some(([key])=>key===tab)?tab:'overview';
-    window.showModal('machine-workspace-detail',`<div class="modal-header machine-detail-header"><div><span class="modal-title">${esc(machine.numarasi || machine.name)}</span><small>${esc(machine.bolum || 'Bölüm yok')} · ${esc(machine.tip || 'Tip yok')} · ${esc(machine.fanucProfile?.series || 'FANUC serisi yok')}</small></div><div class="machine-detail-header-actions">${bridge()?.canEdit?.()?`<button class="btn btn-secondary btn-sm" data-machine-action="edit" data-machine-id="${machine.id}">Düzenle</button>`:''}<button class="modal-close" aria-label="Tezgâh detayını kapat" data-machine-action="close-detail">×</button></div></div><div class="machine-detail-tabs" role="tablist" aria-label="Tezgâh detay bölümleri">${tabs.map(([key,label])=>`<button id="machine-tab-${key}" role="tab" aria-selected="${key===activeTab}" aria-controls="machine-panel-${key}" tabindex="${key===activeTab?'0':'-1'}" class="${key===activeTab?'active':''}" data-machine-detail-tab="${key}" data-machine-id="${machine.id}">${label}</button>`).join('')}</div><div class="machine-detail-context" aria-label="Aktif tezgâh bağlamı"><span><small>TEZGÂH</small><strong>${esc(machine.numarasi || machine.name)}</strong></span><span><small>ÇALIŞMA DURUMU</small><strong>${esc(machine.operationalStatus || 'Üretimde')}</strong></span><span><small>ANA BİLDİRİM</small><strong class="${info.primary.level}">${esc(info.primary.text)}</strong></span><span><small>SORUMLU EKİP</small><strong>${esc(machine.responsibleTeam || 'Belirtilmedi')}</strong></span></div><div id="machine-panel-${activeTab}" class="machine-detail-content" role="tabpanel" tabindex="0" aria-labelledby="machine-tab-${activeTab}">${panes[activeTab] || panes.overview}</div><div class="modal-footer"><button class="btn btn-secondary" data-machine-action="pdf" data-machine-id="${machine.id}">PDF Kartı</button><button class="btn btn-ghost" data-machine-action="close-detail">Kapat</button><button class="btn btn-secondary" data-machine-action="fanuc" data-machine-id="${machine.id}">FANUC Merkezi</button><button class="btn btn-primary" data-machine-nav="maintenance" data-machine-id="${machine.id}">Bakım Defteri</button></div>`,'xl');
+    window.showModal('machine-workspace-detail',`<div class="modal-header machine-detail-header"><div><span class="modal-title">${esc(machine.numarasi || machine.name)}</span><small>${esc(machine.bolum || 'Bölüm yok')} · ${esc(machine.tip || 'Tip yok')} · ${esc(machine.fanucProfile?.series || 'FANUC serisi yok')}</small></div><div class="machine-detail-header-actions">${bridge()?.canEdit?.()?`<button class="btn btn-secondary btn-sm" data-machine-action="edit" data-machine-id="${machine.id}">Düzenle</button>`:''}<button class="modal-close" aria-label="Tezgâh detayını kapat" data-machine-action="close-detail">×</button></div></div><div class="machine-detail-tabs" role="tablist" aria-label="Tezgâh detay bölümleri">${tabs.map(([key,label])=>`<button id="machine-tab-${key}" role="tab" aria-selected="${key===activeTab}" aria-controls="machine-panel-${key}" tabindex="${key===activeTab?'0':'-1'}" class="${key===activeTab?'active':''}" data-machine-detail-tab="${key}" data-machine-id="${machine.id}">${label}</button>`).join('')}</div><div class="machine-detail-context" aria-label="Aktif tezgâh bağlamı"><span><small>TEZGÂH</small><strong>${esc(machine.numarasi || machine.name)}</strong></span><span><small>ÇALIŞMA DURUMU</small><strong>${esc(machine.operationalStatus || 'Üretimde')}</strong></span><span><small>ANA BİLDİRİM</small><strong class="${info.primary.level}">${esc(info.primary.text)}</strong></span><span><small>SORUMLU EKİP</small><strong>${esc(machine.responsibleTeam || 'Belirtilmedi')}</strong></span></div><div id="machine-panel-${activeTab}" class="machine-detail-content" role="tabpanel" tabindex="0" aria-labelledby="machine-tab-${activeTab}">${panes[activeTab] || panes.overview}</div><div class="modal-footer"><button class="btn btn-secondary" data-machine-action="ai-analysis" data-machine-id="${machine.id}">🤖 AI Analizi</button><button class="btn btn-secondary" data-machine-action="pdf" data-machine-id="${machine.id}">PDF Kartı</button><button class="btn btn-ghost" data-machine-action="close-detail">Kapat</button><button class="btn btn-secondary" data-machine-action="fanuc" data-machine-id="${machine.id}">FANUC Merkezi</button><button class="btn btn-primary" data-machine-nav="maintenance" data-machine-id="${machine.id}">Bakım Defteri</button></div>`,'xl');
     const footer=document.querySelector('#modal-machine-workspace-detail .modal-footer');
     if(footer&&!footer.querySelector('[data-machine-nav="diagnostic_history"]')){const button=document.createElement('button');button.className='btn btn-secondary';button.dataset.machineNav='diagnostic_history';button.dataset.machineId=String(machine.id);button.textContent='Teşhis Geçmişi';footer.insertBefore(button,footer.lastElementChild);}
   }
@@ -188,14 +190,37 @@
   }
 
   function applyFilters() {
-    const root=document.getElementById('page-machines'); if(!root) return;
-    const q=(root.querySelector('#machine-workspace-search')?.value || '').toLocaleLowerCase('tr-TR');
-    const dept=root.querySelector('#machine-workspace-dept')?.value || '';
-    const status=root.querySelector('#machine-workspace-status')?.value || '';
-    let visible=0;
-    root.querySelectorAll('tbody tr[data-machine-id]').forEach(row=>{const machine=(state().machines||[]).find(item=>Number(item.id)===Number(row.dataset.machineId));const haystack=`${machine?.numarasi||''} ${machine?.bolum||''} ${machine?.tip||''} ${machine?.manufacturer||''} ${machine?.model||''} ${machine?.serial||''} ${machine?.fanucProfile?.series||''} ${(machine?.moduleInventory||[]).map(item=>`${item.name} ${item.model} ${item.serial}`).join(' ')}`.toLocaleLowerCase('tr-TR');const statusMatch=!status || row.dataset.machineLevel===status || row.dataset.machineIssues.includes(status);row.hidden=!(haystack.includes(q)&&(!dept||machine?.bolum===dept)&&statusMatch);if(!row.hidden)visible+=1;});
-    const tbody=root.querySelector('tbody'); let emptyRow=root.querySelector('#machine-filter-empty');
-    if(!visible && (state().machines||[]).length){if(!emptyRow){emptyRow=document.createElement('tr');emptyRow.id='machine-filter-empty';emptyRow.innerHTML='<td colspan="7"><div class="machine-empty"><strong>Eşleşen tezgâh bulunamadı</strong><span>Arama metnini veya bölüm ve durum filtrelerini değiştirin.</span><button class="btn btn-secondary btn-sm" data-machine-action="clear-filters">Filtreleri temizle</button></div></td>';tbody?.appendChild(emptyRow);}emptyRow.hidden=false;}else if(emptyRow)emptyRow.hidden=true;const resultStatus=root.querySelector('#machine-workspace-results');if(resultStatus)resultStatus.textContent=`${visible} tezgâh gösteriliyor`;
+    const root = document.getElementById('page-machines'); if (!root) return;
+    const q = (root.querySelector('#machine-workspace-search')?.value || '').toLocaleLowerCase('tr-TR');
+    const dept = root.querySelector('#machine-workspace-dept')?.value || '';
+    const status = root.querySelector('#machine-workspace-status')?.value || '';
+    let visible = 0;
+    root.querySelectorAll('tbody tr[data-machine-id]').forEach(row => {
+      const machine = (state().machines || []).find(item => Number(item.id) === Number(row.dataset.machineId));
+      const haystack = `${machine?.numarasi || ''} ${machine?.bolum || ''} ${machine?.tip || ''} ${machine?.manufacturer || ''} ${machine?.model || ''} ${machine?.serial || ''} ${machine?.fanucProfile?.series || ''} ${(machine?.moduleInventory || []).map(item => `${item.name} ${item.model} ${item.serial}`).join(' ')}`.toLocaleLowerCase('tr-TR');
+      const statusMatch = !status || row.dataset.machineLevel === status || row.dataset.machineIssues.includes(status);
+      row.hidden = !(haystack.includes(q) && (!dept || machine?.bolum === dept) && statusMatch);
+      if (!row.hidden) visible += 1;
+    });
+    const activeKey = status || 'all';
+    root.querySelectorAll('[data-machine-filter]').forEach(btn => {
+      btn.classList.toggle('is-active', btn.dataset.machineFilter === activeKey);
+    });
+    const tbody = root.querySelector('tbody');
+    let emptyRow = root.querySelector('#machine-filter-empty');
+    if (!visible && (state().machines || []).length) {
+      if (!emptyRow) {
+        emptyRow = document.createElement('tr');
+        emptyRow.id = 'machine-filter-empty';
+        emptyRow.innerHTML = '<td colspan="7"><div class="machine-empty"><strong>Eşleşen tezgâh bulunamadı</strong><span>Arama metnini veya bölüm ve durum filtrelerini değiştirin.</span><button class="btn btn-secondary btn-sm" data-machine-action="clear-filters">Filtreleri temizle</button></div></td>';
+        tbody?.appendChild(emptyRow);
+      }
+      emptyRow.hidden = false;
+    } else if (emptyRow) {
+      emptyRow.hidden = true;
+    }
+    const resultStatus = root.querySelector('#machine-workspace-results');
+    if (resultStatus) resultStatus.textContent = `${visible} tezgâh gösteriliyor`;
   }
 
   const applySearchFilters = window.MTBPerformance?.debounce?.(applyFilters, 180) || applyFilters;
@@ -208,6 +233,7 @@
     const actionEl=event.target.closest('[data-machine-action]'); if(!actionEl)return;
     const id=Number(actionEl.dataset.machineId); const action=actionEl.dataset.machineAction;
     if(action==='toggle-density'){compactTable=!compactTable;localStorage.setItem('machine-table-density',compactTable?'compact':'comfortable');window.navigate?.('machines');return;}
+    if(action==='ai-analysis'){window.closeModal?.('machine-workspace-detail');window.askAIAboutContext?.({type:'machine',id});return;}
     if(action==='details')showDetails(id); if(action==='new')window.showNewMachineModal?.(); if(action==='fanuc'){window.closeModal?.('machine-workspace-detail');window.openFanucCenter?.(id);} if(action==='pdf')window.printMachineCard?.(id); if(action==='edit')editDetails(id); if(action==='save-edit')await saveDetails(); if(action==='close-detail')window.closeModal?.('machine-workspace-detail'); if(action==='close-edit')window.closeModal?.('machine-workspace-edit'); if(action==='clear-filters'){const root=document.getElementById('page-machines');if(root){root.querySelector('#machine-workspace-search').value='';root.querySelector('#machine-workspace-dept').value='';root.querySelector('#machine-workspace-status').value='';applyFilters();}}
   });
   document.addEventListener('keydown',event=>{const tab=event.target.closest?.('[role="tab"][data-machine-detail-tab]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;const tabs=[...tab.closest('[role="tablist"]').querySelectorAll('[role="tab"]')];const index=tabs.indexOf(tab);const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;event.preventDefault();tabs[next].focus();tabs[next].click();});

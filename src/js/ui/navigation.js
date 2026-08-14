@@ -53,6 +53,24 @@ export function organizeNavigation() {
   home.className = 'sidebar-home';
   if (items.has('dashboard')) home.append(items.get('dashboard'));
 
+  // Quick Access Favorites Bar
+  const favContainer = document.createElement('div');
+  favContainer.className = 'sidebar-favorites';
+  favContainer.style.cssText = 'padding:8px 10px; margin:6px 0 10px 0; background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md);';
+  favContainer.innerHTML = `
+    <div style="font-size:10px; font-weight:800; color:var(--text-accent); letter-spacing:0.5px; text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
+      <span>⭐</span> Hızlı Erişim
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:4px;">
+      <button class="btn btn-ghost btn-sm" onclick="navigate('cnc_dashboard')" style="font-size:10.5px; padding:3px 6px; font-weight:600;">📺 Canlı İzleme</button>
+      <button class="btn btn-ghost btn-sm" onclick="navigate('machines')" style="font-size:10.5px; padding:3px 6px; font-weight:600;">📋 Tezgâhlar</button>
+      <button class="btn btn-ghost btn-sm" onclick="navigate('alarms')" style="font-size:10.5px; padding:3px 6px; font-weight:600;">🚨 Alarmlar</button>
+      <button class="btn btn-ghost btn-sm" onclick="navigate('maintenance')" style="font-size:10.5px; padding:3px 6px; font-weight:600;">🔧 Bakım</button>
+      <button class="btn btn-ghost btn-sm" onclick="navigate('battery')" style="font-size:10.5px; padding:3px 6px; font-weight:600;">🔋 Piller</button>
+    </div>
+  `;
+  home.append(favContainer);
+
   const host = document.createElement('div');
   host.className = 'nav-groups';
   groups.forEach(group => {
@@ -197,8 +215,45 @@ export function closeNotifPanel() {
   if (panel) panel.classList.remove('open');
 }
 
+export function initAccessibleTabs() {
+  if (typeof document === 'undefined') return;
+  document.addEventListener('keydown', (e) => {
+    const activeTab = document.activeElement;
+    if (!activeTab || !activeTab.classList.contains('tab-btn')) return;
+    const tabContainer = activeTab.closest('.tabs');
+    if (!tabContainer) return;
+
+    const tabs = Array.from(tabContainer.querySelectorAll('.tab-btn:not([disabled])'));
+    const index = tabs.indexOf(activeTab);
+    if (index === -1) return;
+
+    let nextIndex = -1;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      nextIndex = (index + 1) % tabs.length;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      nextIndex = (index - 1 + tabs.length) % tabs.length;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      nextIndex = tabs.length - 1;
+    }
+
+    if (nextIndex !== -1) {
+      tabs[nextIndex].focus();
+      tabs[nextIndex].click();
+      tabs[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }
+  });
+}
+
 if (typeof window !== 'undefined') {
   window.checkNotifications = checkNotifications;
   window.toggleNotifPanel = toggleNotifPanel;
   window.closeNotifPanel = closeNotifPanel;
+  window.initAccessibleTabs = initAccessibleTabs;
 }
+

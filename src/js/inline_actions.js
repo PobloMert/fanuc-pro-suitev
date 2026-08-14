@@ -27,12 +27,15 @@
     filterDiffMode navigateTroubleshootNode switchIOTab switchBackupTab switchBuilderTab switchLimitTab
     switchParamTab switchSpindleTab switchMachine viewProgramCode setFssbSimulationMode onFlowchartNodeClick onFssbNodeClick clearActiveDiagnostic loginSelectUser loginSubmitPin loginBack closeSpotlight closeNotifPanel
     showFocasScannerModal runFocasScanner saveDiscoveredMachine exportScannerResultsCSV autoCreateMachineFromScan
+    showSignalSnifferModal applyPresetSignals toggleSnifferCapture saveDetectedSnifferSignal showPowerDiagnosticsModal
+    switchCncLiveMode filterFleetGrid selectFleetMachineCard toggleFleetAndonFullscreen
+    showChronicFailureModal changeChronicDaysFilter toggleDiagnosticsMenu closeDiagnosticsMenu showFocasDriverHealthModal setAlarmCategoryFilter
     runOfflineRootCauseAnalysis selectOfflinePreset printOfflineDiagnosticPDF
     runKeepRelayDiffComparison loadDefaultKeepRelayDiff exportKeepRelayDiffPDF exportKeepRelayDiffCSV filterKeepRelayDiffRows filterKeepRelayDiffMode uploadKeepRelayFile clearKeepRelayInput
     triggerCloudSyncNow exportFullCloudBundle importFullCloudBundle pullDirectFromGoogleDrive
     restoreArchivedRecord compactExpiredArchive
     triggerParamFileUpload onParamFileSelected handleParamDragOver handleParamDragLeave handleParamFileDrop loadSamplePrmBackup filterParamInspectorRows inspectParamBitDetail closeParamBitDetail exportParamInspectorCSV exportParamInspectorPDF
-    generateAIActionPlan generateAIPredictiveReport toggleAIChecklistItem exportAIChecklistPDF aiAutoFixGcode
+    generateAIActionPlan generateAIPredictiveReport toggleAIChecklistItem exportAIChecklistPDF aiAutoFixGcode copyAIMessageText askAIAboutContext applyMaintTemplate toggleAlarmChecklist runRsContinuityTest
   `.trim().split(/\s+/));
 
   function splitTopLevel(source, separator) {

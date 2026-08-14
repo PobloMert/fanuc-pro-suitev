@@ -19,6 +19,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getKnowledgePreferences: () => ipcRenderer.invoke('knowledge-preferences-get'),
   setKnowledgePreferences: (input) => ipcRenderer.invoke('knowledge-preferences-set', input),
   getDataStoreStatus: () => ipcRenderer.invoke('data-store-status'),
+  listSyncQueue: () => ipcRenderer.invoke('sync-queue-list'),
+  clearSyncQueue: (ids) => ipcRenderer.invoke('sync-queue-clear', ids),
+  querySyncDelta: (since) => ipcRenderer.invoke('sync-delta-query', since),
   listRecords: (collection) => ipcRenderer.invoke('records-list', collection),
   upsertRecord: (collection, id, record) => ipcRenderer.invoke('records-upsert', collection, id, record),
   deleteRecord: (collection, id) => ipcRenderer.invoke('records-delete', collection, id),
@@ -60,6 +63,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   applyStoragePolicy: (policy) => ipcRenderer.invoke('storage-policy-apply', policy),
   pingTcpPort: (host, port, timeoutMs) => ipcRenderer.invoke('ping-tcp-port', { host, port, timeoutMs }),
   scanFocasNetwork: (options) => ipcRenderer.invoke('scan-focas-network', options),
+  checkFocasDriverStatus: () => ipcRenderer.invoke('focas-driver-status'),
   searchPDFText: (pdfPath, query) => ipcRenderer.invoke('search-pdf-text', pdfPath, query),
 
 

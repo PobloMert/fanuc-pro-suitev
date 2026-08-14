@@ -36,6 +36,12 @@ test('history is filtered, paginated, exportable and Drive synchronized', () => 
   assert.match(source, /role="status"/);
 });
 
+test('diagnostic history sorts machines alphabetically with Turkish locale in dropdown selector', () => {
+  const source = read('src/js/features/diagnostic_history.js');
+  assert.ok(source.includes('getSortedMachines') || source.includes('getSorted'));
+  assert.ok(source.includes('localeCompare'));
+});
+
 test('diagnostic history is loaded, backed up and allowed by both sync peers', () => {
   assert.match(read('src/js/data_loader.js'), /diagnostic_history\.json/);
   assert.match(read('src/js/services/data_persistence.js'), /saveDiagnosticHistory/);
@@ -43,3 +49,4 @@ test('diagnostic history is loaded, backed up and allowed by both sync peers', (
   assert.match(read('google-apps-script/Code.gs'), /'diagnostic_history'/);
   assert.match(read('main.js'), /'diagnostic_history\.json'/);
 });
+

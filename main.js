@@ -22,7 +22,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // ── Register app-file scheme as privileged (must be called before app is ready) ──
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'app-file', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true } }
+  { scheme: 'app-file', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } }
 ]);
 
 // ── Redirect userData to local drive (avoids OneDrive cache permission errors) ──
@@ -241,7 +241,22 @@ function validateTelemetrySample(sample) {
   const sampledAt = sample.sampledAt ? new Date(sample.sampledAt) : new Date();
   if (Number.isNaN(sampledAt.getTime()) || Math.abs(Date.now() - sampledAt.getTime()) > 7 * 86400000) throw new Error('Geçersiz telemetri zamanı.');
   const bounded = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
-  return { machine, sampledAt: sampledAt.toISOString(), execution: String(sample.execution || '').slice(0, 40), program: String(sample.program || '').slice(0, 80), partCount: bounded(sample.partCount, 0, Number.MAX_SAFE_INTEGER), spindleLoad: bounded(sample.spindleLoad, 0, 1000), dataAgeMs: bounded(sample.dataAgeMs, 0, 86400000), quality: ['good', 'stale', 'invalid'].includes(sample.quality) ? sample.quality : 'invalid', simulated: sample.simulated === true };
+  return {
+    machine,
+    sampledAt: sampledAt.toISOString(),
+    execution: String(sample.execution || '').slice(0, 40),
+    program: String(sample.program || '').slice(0, 80),
+    partCount: bounded(sample.partCount, 0, Number.MAX_SAFE_INTEGER),
+    spindleLoad: bounded(sample.spindleLoad, 0, 1000),
+    feedrateOverride: bounded(sample.feedrateOverride ?? 100, 0, 300),
+    spindleOverride: bounded(sample.spindleOverride ?? 100, 0, 300),
+    dcBusVoltage: bounded(sample.dcBusVoltage ?? 300, 0, 1000),
+    regenLoad: bounded(sample.regenLoad ?? 0, 0, 100),
+    psmTemp: bounded(sample.psmTemp ?? 40, 0, 150),
+    dataAgeMs: bounded(sample.dataAgeMs, 0, 86400000),
+    quality: ['good', 'stale', 'invalid'].includes(sample.quality) ? sample.quality : 'invalid',
+    simulated: sample.simulated === true
+  };
 }
 
 function isInternetEnabled() {
@@ -662,9 +677,20 @@ app.whenReady().then(() => {
   try { recoverInterruptedRestore(); } catch (err) { logger.write('data', 'error', 'Interrupted restore recovery failed', { error: err.message }); }
   dataStore = new DataStore(path.join(ALLOWED_DATA_DIR, 'fanuc-pro-suite.db'), WRITABLE_DATA_DIR);
   dataStore.migrateJsonDirectory();
-  const retentionDays = (() => { try { const p=path.join(ALLOWED_DATA_DIR,'settings.json'); return fs.existsSync(p) ? Number(JSON.parse(fs.readFileSync(p,'utf8')).retentionDays)||30 : 30; } catch { return 30; } })();
-  dataStore.purgeTelemetry(retentionDays);
-  setInterval(() => { try { const p=path.join(ALLOWED_DATA_DIR,'settings.json'); const days=fs.existsSync(p)?Number(JSON.parse(fs.readFileSync(p,'utf8')).retentionDays)||30:30; const deleted=dataStore.purgeTelemetry(days); if(deleted) logger.write('data','info','Telemetry retention completed',{deleted,rawDays:days}); } catch(err){ logger.write('data','error','Telemetry retention failed',{error:err.message}); } }, 24*60*60*1000).unref();
+  const runPeriodicTelemetryRetention = () => {
+    setImmediate(() => {
+      try {
+        const p = path.join(ALLOWED_DATA_DIR, 'settings.json');
+        const days = fs.existsSync(p) ? Number(JSON.parse(fs.readFileSync(p, 'utf8')).retentionDays) || 30 : 30;
+        const deleted = dataStore.purgeTelemetry(days);
+        if (deleted) logger.write('data', 'info', 'Telemetry retention completed', { deleted, rawDays: days });
+      } catch (err) {
+        logger.write('data', 'error', 'Telemetry retention failed', { error: err.message });
+      }
+    });
+  };
+  runPeriodicTelemetryRetention();
+  setInterval(runPeriodicTelemetryRetention, 24 * 60 * 60 * 1000).unref();
   logger.write('application', 'info', 'Application started', { version: app.getVersion(), dataStore: dataStore.status() });
   try { migrateLegacyAISecret(); } catch (err) { console.error('Secret migration failed:', err); }
   try { ensureAdapterRuntime(); } catch (err) { console.error('Adapter runtime preparation failed:', err); }
@@ -797,6 +823,29 @@ ipcMain.handle('records-upsert', (event, collection, id, record) => {
 ipcMain.handle('records-delete', (event, collection, id) => {
   try { const session=requirePermission(event,'records.delete'); const deleted=dataStore.deleteRecord(String(collection),id); writeAudit('record.delete',session.user,{collection,id}); return {ok:true,deleted}; }
   catch(err){ return {ok:false,error:err.message}; }
+});
+
+ipcMain.handle('sync-queue-list', event => {
+  try {
+    requirePermission(event, 'records.read');
+    return { ok: true, items: dataStore ? dataStore.getPendingSyncQueue() : [] };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('sync-queue-clear', (event, ids) => {
+  try {
+    const session = requirePermission(event, 'records.write');
+    const cleared = dataStore ? dataStore.dequeueSync(ids) : 0;
+    writeAudit('sync.queue_cleared', session.user, { cleared });
+    return { ok: true, cleared };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('sync-delta-query', (event, since) => {
+  try {
+    requirePermission(event, 'records.read');
+    return { ok: true, items: dataStore ? dataStore.getDeltaRecords(since) : [] };
+  } catch (err) { return { ok: false, error: err.message }; }
 });
 
 ipcMain.handle('telemetry-record', (event, samples) => {
@@ -1114,7 +1163,12 @@ ipcMain.handle('fs-write-file', async (event, filePath, data, encoding) => {
     if (resolved.toLowerCase() === USERS_FILE.toLowerCase()) {
       return { ok: false, error: 'Kullanıcı verileri yalnızca güvenli kimlik API\'siyle değiştirilebilir.' };
     }
-    const isUiLog = path.basename(resolved).toLowerCase() === 'ui_error_log.txt';
+    const ext = path.extname(resolved).toLowerCase();
+    const DANGEROUS_EXTENSIONS = new Set(['.exe', '.bat', '.cmd', '.vbs', '.vbe', '.js', '.jse', '.wsf', '.wsh', '.ps1', '.ps2', '.psc1', '.psc2', '.msh', '.msh1', '.msh2', '.mshxml', '.msh1xml', '.msh2xml', '.sh', '.bash', '.msi', '.dll', '.com', '.scr', '.pif', '.hta', '.cpl', '.jar']);
+    if (DANGEROUS_EXTENSIONS.has(ext)) {
+      return { ok: false, error: `Güvenlik kısıtlaması: '${ext}' uzantılı dosyalar yazılamaz.` };
+    }
+    const isUiLog = path.basename(resolved).toLowerCase() === 'ui_error_log.txt' && resolved.toLowerCase().startsWith((WRITABLE_DATA_DIR + path.sep).toLowerCase());
     if (!isUiLog) requireSession(event, ['admin', 'technician']);
     const byteLength = Array.isArray(data) ? data.length : Buffer.byteLength(String(data ?? ''), encoding || 'utf8');
     if (byteLength > 25 * 1024 * 1024) throw new Error('Dosya boyut sınırını aşıyor.');
@@ -1272,6 +1326,43 @@ ipcMain.handle('ping-tcp-port', async (event, { host, port, timeoutMs = 2500 }) 
     }
   });
 });
+
+function pingTcpHost(ip, port, timeoutMs = 350) {
+  return new Promise((resolve) => {
+    const net = require('net');
+    const start = Date.now();
+    const socket = new net.Socket();
+    let isSettled = false;
+
+    const cleanup = () => {
+      if (!isSettled) {
+        isSettled = true;
+        socket.destroy();
+      }
+    };
+
+    socket.setTimeout(timeoutMs);
+    socket.once('connect', () => {
+      const latency = Date.now() - start;
+      cleanup();
+      resolve({ open: true, latency });
+    });
+    socket.once('timeout', () => {
+      cleanup();
+      resolve({ open: false, latency: timeoutMs });
+    });
+    socket.once('error', () => {
+      cleanup();
+      resolve({ open: false, latency: timeoutMs });
+    });
+
+    try {
+      socket.connect(port, ip);
+    } catch {
+      resolve({ open: false, latency: timeoutMs });
+    }
+  });
+}
 
 // Network-wide FANUC FOCAS CNC Scanner (Auto-detects local subnets or accepts custom VLAN ranges)
 ipcMain.handle('scan-focas-network', async (event, options = {}) => {
@@ -1940,6 +2031,9 @@ ipcMain.handle('search-pdf-text', async (event, pdfPath, query) => {
     if (!isSafePath(resolved) || !fs.existsSync(resolved)) {
       return { ok: false, error: 'Dosya bulunamadı veya erişim engellendi.' };
     }
+    if (fs.statSync(resolved).size > 50 * 1024 * 1024) {
+      return { ok: false, error: 'PDF dosyası boyut sınırını aşıyor (Maks 50MB).' };
+    }
 
     const buf = fs.readFileSync(resolved);
     const textContent = buf.toString('latin1');
@@ -1963,4 +2057,43 @@ ipcMain.handle('search-pdf-text', async (event, pdfPath, query) => {
     return { ok: false, error: err.message };
   }
 });
+
+// IPC Handler for FOCAS Driver Readiness Status
+ipcMain.handle('focas-driver-status', async (event) => {
+  try {
+    requireSession(event);
+    const binDir = path.join(__dirname, 'bin');
+    const fwlib32 = fs.existsSync(path.join(binDir, 'Fwlib32.dll')) || fs.existsSync(path.join(binDir, 'fwlib32.dll'));
+    const fwlibe1 = fs.existsSync(path.join(binDir, 'fwlibe1.dll'));
+    const adapterExe = fs.existsSync(path.join(binDir, 'FanucSHDRAdapter.exe'));
+    const configPath = path.join(binDir, 'adapter.config.json');
+    let configValid = false;
+    let configuredMachines = [];
+    if (fs.existsSync(configPath)) {
+      try {
+        const raw = fs.readFileSync(configPath, 'utf8');
+        configuredMachines = JSON.parse(raw);
+        configValid = Array.isArray(configuredMachines);
+      } catch {}
+    }
+
+    const ready = (fwlib32 || fwlibe1) && adapterExe && configValid;
+
+    return {
+      ok: true,
+      ready,
+      files: {
+        fwlib32: { present: fwlib32, name: 'Fwlib32.dll', path: 'bin/Fwlib32.dll' },
+        fwlibe1: { present: fwlibe1, name: 'fwlibe1.dll', path: 'bin/fwlibe1.dll' },
+        adapterExe: { present: adapterExe, name: 'FanucSHDRAdapter.exe', path: 'bin/FanucSHDRAdapter.exe' },
+        config: { present: configValid, count: configuredMachines.length, path: 'bin/adapter.config.json' }
+      },
+      configuredMachines
+    };
+  } catch (err) {
+    return { ok: false, ready: false, error: err.message };
+  }
+});
+
+
 

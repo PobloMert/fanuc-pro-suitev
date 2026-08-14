@@ -167,9 +167,10 @@ function renderAI() {
         <div class="ai-toolbar" style="padding:10px 24px; border-top:1px solid var(--border); background:var(--bg-surface); display:flex; gap:8px; flex-wrap:wrap">
           <span style="font-size:10px; color:var(--text-muted); margin-right:4px; display:flex; align-items:center">HIZLI:</span>
           ${[
+            'SV0401 ve SP9012 alarmları',
             'SV0401 alarmı nedir?',
             'E-Stop devresi nasıl çalışır?',
-            'Parametre yedekleme nasıl yapılır?',
+            'Parametre 1851 boşluk ayarı',
             'Servo kazanımı nasıl ayarlanır?',
           ].map(q => `<button class="ai-quick-btn" onclick="quickAsk('${q}')" style="padding:4px 12px; border-radius:20px; font-size:11px; cursor:pointer">${q}</button>`).join('')}
         </div>
@@ -347,6 +348,43 @@ Türkçe yanıt ver. Teknik ve pratik bilgiler sun.`;
 function offlineAI(msg) {
   const q = msg.toLowerCase();
 
+  // DGN Diagnostic lookup
+  const dgnMatch = msg.match(/\b(?:dgn|diagnos(?:tik|tic)?|te[sş]his)\s*(\d{2,4})\b/i);
+  if (dgnMatch) {
+    const no = parseInt(dgnMatch[1]);
+    const dgnDB = {
+      358: { name: 'VREADY / SREADY Sürücü Hazır Sinyali', desc: 'DGN 358 #0 (HRDY) ve #1 (DRDY) bitleri sürücülerin 24V ve DC Bara hazır durumunu gösterir. 0 ise acil stop devresi veya güç kaynağı kesiktir.' },
+      200: { name: 'Pozisyon Hata Miktarı (Pos Error)', desc: 'Eksenin komut pozisyonu ile gerçek pozisyonu arasındaki mikro farkı gösterir. Değer 0 dan çok yüksekse mekanik sıkışma veya encoder kablosu arızalıdır.' },
+      204: { name: 'Aşırı Akım (OVC) Alarm Teşhis Biti', desc: 'Servo motor akımının termik eşiği aşıp aşmadığını gösterir. 1 ise motor aşırı zorlanıyor veya mekanik kilitlenme vardır.' },
+      300: { name: 'E-Stop ve Eksen Kilidi Durum Sinyali', desc: 'Acil stop butonunun elektriksel kontağının (ESP) ve donanımsal limit sviçlerinin durumunu gösterir.' },
+      1010: { name: 'CNC CPU Ana Kart Sıcaklığı', desc: 'Sistem anakartı sıcaklık değeridir (°C). 65°C üzerine çıktığında 700/704 Overheat alarmı tetiklenir.' },
+      1014: { name: 'Spindle SPM Modülü Soğutucu Sıcaklığı', desc: 'Fener mili sürücü radyatör blok sıcaklığıdır. Fan arızalarında 80°C üzerine çıkar.' }
+    };
+    if (dgnDB[no]) {
+      return `## FANUC Teşhis Ekranı: DGN No.${no} — ${dgnDB[no].name}\n\n**Açıklama & Teşhis Rolü:**\n${dgnDB[no].desc}\n\n💡 **Nasıl Bakılır:** CNC kumanda panelinde \`[SYSTEM]\` ➔ \`[DGNOS]\` tuşlarına basarak ${no} yazıp \`[NO. SRH]\` yapın.`;
+    }
+  }
+
+  // 7-Segment Drive LED lookup
+  const ledMatch = msg.match(/\b(?:led|kod|segment|alarm)\s*([0-9]{2}|[fFlLuU])\b/i);
+  if (ledMatch && (q.includes('sürücü') || q.includes('psm') || q.includes('spm') || q.includes('svm') || q.includes('segment') || q.includes('led'))) {
+    const code = ledMatch[1].toUpperCase();
+    const ledDB = {
+      '01': 'PSM Aşırı Akım (Overcurrent): DC Bara veya SPM/SVM modülünde kısa devre / IGBT hasarı.',
+      '02': 'PSM Düşük Kontrol Voltajı: 24V DC yardımcı besleme veya kontaktör çekmeme hatası.',
+      '03': 'PSM DC Bara Sigortası Attı: Rejeneratif devre aşırı yüklendi veya köprü diyot arızalı.',
+      '04': 'PSM Ana Devre Düşük Voltaj: 3 Faz R-S-T 200V şebeke girişi kesildi veya düşüktür.',
+      '05': 'PSM Deşarj Devresi Hatası: Frenleme direnci R1-R2 kopuk veya deşarj transistörü açık devre.',
+      '11': 'PSM Radyatör Aşırı Isındı: Soğutucu blok sarı fanı dönmüyor veya filtre tıkalı.',
+      '30': 'IPM Akım Kaçağı / Kısa Devre: Servo motor güç kablosu gövdeye şase yapıyor veya motor sargısı yandı.',
+      '51': 'PSM DC Bara Aşırı Voltaj (Overvoltage): Frenleme direnci devreyi boşaltamadı veya şebeke 230V üzerinde.',
+      'F': 'FSSB Fiber Optik Kopuk: COP10 optik kablo çıkmış veya sinyal seviyesi zayıf.'
+    };
+    if (ledDB[code]) {
+      return `## Sürücü 7-Segment Kırmızı LED Kodu: ${code}\n\n**Arıza Tanımı & Saha İncelemesi:**\n${ledDB[code]}\n\n*Ayrıntılı LED simülatörü için sol menüden **Sürücü Teşhisi** sayfasına göz atabilirsiniz.*`;
+    }
+  }
+
   // NC G/M Code lookup
   const ncMatch = msg.match(/\b([GM]\d{2,3})\b/i);
   if (ncMatch) {
@@ -369,13 +407,63 @@ function offlineAI(msg) {
     }
   }
 
-  // Alarm lookup
-  const alarmMatch = msg.match(/([A-Z]{2,4}\d{4})/i);
-  if (alarmMatch) {
-    const code = alarmMatch[1].toUpperCase();
+  // Multi-Alarm Cross Diagnostics & Single Alarm lookup
+  const allAlarmMatches = [...msg.matchAll(/\b([A-Z]{2,4}\d{3,4})\b/gi)].map(m => m[1].toUpperCase());
+  const uniqueAlarmCodes = [...new Set(allAlarmMatches)];
+
+  if (uniqueAlarmCodes.length >= 2) {
+    const matchedAlarms = uniqueAlarmCodes.map(code => State.alarms.find(a => a.code === code)).filter(Boolean);
+    if (matchedAlarms.length >= 2) {
+      const isTriggerTier = (a) => {
+        const code = a.code;
+        const text = (a.category + ' ' + a.description + ' ' + a.causes.join(' ')).toLowerCase();
+        if (code === 'SV0401' || code === 'SR0004') return 2;
+        if (text.includes('aşırı akım') || text.includes('overcurrent') || text.includes('kısa devre') || text.includes('voltaj') || text.includes('overvoltage') || text.includes('overheat') || text.includes('enkoder') || text.includes('sigorta')) return 1;
+        return 3;
+      };
+
+      const sorted = [...matchedAlarms].sort((a, b) => isTriggerTier(a) - isTriggerTier(b));
+      const primary = sorted[0];
+      const followers = sorted.slice(1);
+
+      let crossRes = `## ⚡ Çoklu Alarm Çapraz Kök Neden Analizi\n\n`;
+      crossRes += `Eşzamanlı **${matchedAlarms.length} adet** alarm kodu tespit edildi:\n`;
+      matchedAlarms.forEach(a => {
+        crossRes += `- **${a.code}** — ${a.title} *(${a.category} Serisi)*\n`;
+      });
+
+      crossRes += `\n### 🎯 1. Birincil Kök Neden (Tetikleyici Asıl Arıza):\n`;
+      crossRes += `**${primary.code} (${primary.title})**\n`;
+      crossRes += `Bu alarm elektriksel veya donanımsal tetikleyicidir. Zincirleme duruş reaksiyonunu başlatan kaynak burasıdır.\n`;
+      crossRes += `**Öncelikli Neden:** ${primary.causes[0] || primary.description}\n`;
+
+      crossRes += `\n### ⛓️ 2. Zincirleme Güvenlik Sonuçları (Türeyen Alarmlar):\n`;
+      followers.forEach(f => {
+        if (f.code === 'SV0401') {
+          crossRes += `- **${f.code} (V-Ready Off):** Kendi başına arıza değildir. ${primary.code} arızası sebebiyle sürücü DRDY emniyet devresi kesildiği için tetiklenmiştir.\n`;
+        } else if (f.code === 'SR0004') {
+          crossRes += `- **${f.code} (Emergency Stop):** Güvenlik zinciri açıldığı için CNC koruma amaçlı acil stop moduna geçmiştir.\n`;
+        } else {
+          crossRes += `- **${f.code} (${f.title}):** ${primary.code} kesintisi sonrası ikincil koruma uyarısı olarak üretilmiştir.\n`;
+        }
+      });
+
+      crossRes += `\n### 🛠️ 3. Pano Başında Müdahale Sırası:\n`;
+      crossRes += `1. **Öncelikle ${primary.code} alarmına müdahale edin.** ${primary.solutions[0] || 'Modül beslemesini ve kablo hatlarını kontrol edin.'}\n`;
+      if (primary.solutions[1]) {
+        crossRes += `2. ${primary.solutions[1]}\n`;
+      }
+      crossRes += `3. ${primary.code} kök nedeni giderilip resetlendiğinde, **${followers.map(f => f.code).join(', ')}** alarmları otomatik olarak temizlenecektir.`;
+
+      return crossRes;
+    }
+  }
+
+  if (uniqueAlarmCodes.length === 1) {
+    const code = uniqueAlarmCodes[0];
     const alarm = State.alarms.find(a => a.code === code);
     if (alarm) {
-      return `## ${alarm.code} — ${alarm.title}\n\n**Açıklama:** ${alarm.description}\n\n**Seri:** ${alarm.series.join(', ')}\n\n**Olası Nedenler:**\n${alarm.causes.map((c,i)=>`${i+1}. ${c}`).join('\n')}\n\n**Çözüm Adımları:**\n${alarm.solutions.map((s,i)=>`${i+1}. ${s}`).join('\n')}`;
+      return `## ${alarm.code} — ${alarm.title}\n\n**Açıklama:** ${alarm.description}\n\n**Seri:** ${alarm.series.join(', ')}\n\n**Olası Kök Nedenler:**\n${alarm.causes.map((c,i)=>`${i+1}. ${c}`).join('\n')}\n\n**Adım Adım Güvenli Çözüm Prosedürü:**\n${alarm.solutions.map((s,i)=>`${i+1}. ${s}`).join('\n')}`;
     }
     return `**${code}** kodu veritabanımda bulunamadı.\n\nLütfen alarm kodunu kontrol edin veya FANUC bakım kılavuzuna bakın.\n\nAPI anahtarı eklerseniz daha kapsamlı yanıtlar alabiliriz. (Ayarlar > AI Sağlayıcı)`;
   }
@@ -428,124 +516,90 @@ function offlineAI(msg) {
 
   // Topic responses
   if (q.includes('rs232') || q.includes('dnc') || q.includes('haberleşme') || q.includes('kablo') || q.includes('transfer') || q.includes('lehim') || q.includes('pin') || q.includes('db9') || q.includes('db25')) {
-    return `## FANUC RS232 & DNC Haberleşme ve Kablo Bağlantıları\n\nPC ile CNC ünitesi arasındaki seri haberleşme (DNC) ayarları ve kablo lehim şemaları:\n\n**1. Kritik Parametre Ayarları:**\n- **P0020:** I/O Channel = \`0\` (Channel 1 RS232)\n- **P0101:** \`10000001\` (1 Stop Bit, 7 Data Bits, Even Parity)\n- **P0102:** \`3\` (RS-232C Cihazı)\n- **P0103:** \`11\` (9600 Baud) veya \`12\` (19200 Baud)\n\n**2. Lehimleme & Pin Şemaları:**\n- **Yazılımsal Akış Kontrolü (XON/XOFF):** PC DB9 (Pin 2, 3, 5) -> CNC DB25 (Pin 2, 3, 7). CNC tarafında 4-5 ve 6-8-20 köprüleri yapılmalıdır.\n\n*İnteraktif lehim şemaları, multimetre süreklilik testleri ve blendaj şase kuralları için sol menüden **RS232 Pin & Lehim Rehberi** sayfasını açabilirsiniz.*`;
-  }
-
-  if (q.includes('spindle') || q.includes('sp9015') || q.includes('sp9012') || q.includes('sp9002') || q.includes('sensör') || q.includes('fren') || q.includes('deşarj') || q.includes('kasnak') || q.includes('4002') || q.includes('4003')) {
-    return `## Spindle Sürücü (SPM), Sensör & Fren Teşhisi\n\nİş mili alarmları, frenleme devresi ve pozisyon kodlayıcı oranları kontrolü:\n\n**1. Enkoder Hataları (SP9015 / SP9002):**\n- Sensör ile dişli çark arasındaki hava boşluğu (gap) sentil şeridi ile tam **0.15 mm - 0.20 mm** arasına ayarlanmalı ve osiloskop genliği **1.0 V p-p** olmalıdır.\n- **2. Fren Direnci & Rejeneratif Deşarj:** İş mili yavaşlarken aşırı voltaj alarmı veriyorsa, R1-R2 fren direnç uçlarını söküp direnci (nominal 10-30 Ω) ölçün. Ayrıca sürücü üzerindeki deşarj IGBT diyot geçişlerini test edin.\n- **3. Pozisyon Kodlayıcı Diş Oranı:** Kasnak/kayış oranı değiştiğinde Parameter **4002** (pay) ve **4003** (payda) değerlerini girin.\n\n*Spindle hata ansiklopedisi, fren direnci test yönergeleri ve dişli oranı hesaplayıcı için sol menüden **Spindle Teşhisi** sekmesini açabilirsiniz.*`;
-  }
-
-  if (q.includes('üretici') || q.includes('m-kodu') || q.includes('a-adresi') || q.includes('ex0001') || q.includes('özel m')) {
-    return `## Üretici M-Kodları & Özel Alarmlar (A-Adresleri)\n\nTezgah imalatçısı tarafından PMC ladder içerisine yazılmış özel fonksiyonlar:\n\n- **Özel M-Kodları:** Ayna sıkma (M10/M11), punta, yüksek basınç gibi mekanik adımları tetikleyen ve PMC üzerinden CNC'ye \`MF\` sinyaliyle onay gönderen kodlar.\n- **A-Adresleri (Üretici Alarmları):** CNC ekranında görüntülenen \`EX\` kodlu mesaj alarmlarıdır (Örn: A0.0 biti 1 olduğunda EX0001 Lubrication Fault verir).\n\n*Fabrika tezgahlarınıza ait özel M-kodlarını ve A-adresi alarm mesajlarını kaydetmek ve aramak için sol menüden **Üretici Alarm & M-Kodu** sayfasını kullanabilirsiniz.*`;
-  }
-
-  if (q.includes('sürücü') || q.includes('amp') || q.includes('segment') || q.includes('kart') || q.includes('kabin') || q.includes('overheat') || q.includes('700') || q.includes('704') || q.includes('sıcaklık') || q.includes('ısı') || q.includes('fan')) {
-    return `## Sürücü 7-Segment Teşhisi & Kabin Isı Kontrolü\n\nSürücü kırmızı LED kod arızaları ve aşırı ısınma (overheat) çözümleri:\n\n- **Arıza Kodu 30 / 51 / F:** Akım kaçağı, DC bara yüksek voltajı veya FSSB fiber optik hat hatası.\n- **Kabin Overheat (Alarm 700 / 704):** CNC CPU ana kart sıcaklığı veya sürücü soğutucu blok sıcaklığı limiti aştı demektir. Sarı kabin soğutucu fanlarının çalışmasını kontrol edin.\n- **Isı Takip Parametresi:** **Parameter 3111 #0 (TEMD)** 1 yapıldığında CPU sıcaklığı CNC ekranında doğrudan görüntülenebilir (DGN 1010 ve 1014).\n\n*Etkileşimli LED simülatörü ve kabin fanı / ısı takip parametre kılavuzu için sol menüden **Sürücü Teşhisi** sekmesine tıklayabilirsiniz.*`;
-  }
-
-  if (q.includes('akım') || q.includes('tuning') || q.includes('kazanç') || q.includes('2004') || q.includes('vınıltı') || q.includes('titreme') || q.includes('vibrasyon')) {
-    return `## Servo Eksen Akım Döngüsü Kazanç Ayarı (P2004)\n\nEksen motorlarının yaşlanması veya sürtünme kaynaklı titreme/vınıltı seslerini gidermek için:\n\n- **Parameter 2004 (VCMD):** Akım kazanç oranını 10'arlı adımlarla azaltarak sesi gözlemleyin.\n- **Parameter 2040 & 2041:** Eksen kalkışlarındaki tork vuruntularını gidermek için akım loop integral/proportional kazançlarını %5-10 azaltın.\n\n*Adım adım akım kazanç kalibrasyon rehberi için sol menüden **Ayar Sihirbazı** sayfasındaki ilgili adımı açabilirsiniz.*`;
-  }
-
-  if (q.includes('limit') || q.includes('soft limit') || q.includes('1320') || q.includes('1321') || q.includes('stoper') || q.includes('strok')) {
-    return `## Eksen Yumuşak Sınır Limitleri (Soft Limits)\n\nTezgah eksenlerinin mekanik stoperlere çarparak zarar görmesini engelleyen yazılımsal sınırlardır:\n\n- **Parameter 1320 (Limit+):** Artı yöndeki elektriksel durma sınırı (Örn: 510000 yazılırsa +510 mm limit).\n- **Parameter 1321 (Limit-):** Eksi yöndeki durma sınırı.\n- **Emniyet Kuralı:** Mekanik stoper ile yumuşak limit arasında daima en az **5-10 mm emniyet boşluk payı** bırakılmalıdır.\n\n*Kanal limit hesaplama aracı ve retro sistem parametre ekranı simülasyonu için sol menüden **Eksen Limit Sihirbazı** sekmesini açabilirsiniz.*`;
-  }
-
-  if (q.includes('dişli') || q.includes('oran') || q.includes('2084') || q.includes('2085') || q.includes('fgr')) {
-    return `## Esnek Dişli Oranı (Flexible Gear Ratio)\n\nFANUC motorlarının vidalı mille doğru ölçüde senkronize olması için **Parameter 2084 (Pay)** ve **Parameter 2085 (Payda)** kullanılır.\n\n**Nasıl Hesaplanır:**\n- Enkoder çözünürlüğü ve vidalı mil hatvesi (pitch) oranlanıp en küçük komut birimi (LCI) cinsinden sadeleştirilir.\n- Örnek: 10mm vidalı mil hatvesi ve 1.000.000 puls/tur enkoder için 1 mikron çözünürlükte FGR parametreleri: \`2084 = 100\` / \`2085 = 1\` olarak bulunur.\n\n*Hassas mekanik dişli oranlarınızı sadeleştirilmiş kesir limitlerine göre hesaplamak için sol menüden **Dişli Oranı Hesabı** sayfasını kullanabilirsiniz.*`;
-  }
-
-  if (q.includes('mtbf') || q.includes('mttr') || q.includes('oee') || q.includes('verimlilik') || q.includes('güvenilirlik')) {
-    let res = `## OEE Verimlilik & MTBF/MTTR Güvenilirlik Analizi\n\nAtölyedeki tezgahların arıza ve bakım kayıtlarına göre hesaplanan işletme verimliliği metrikleri:\n\n`;
-    if (State.machines.length > 0) {
-      res += `**Atölye Genel Durumu:**\n- Toplam kayıtlı tezgah: **${State.machines.length}** adet\n- Ortalama Kullanılabilirlik (Availability) oranı veritabanı üzerinden MTBF ve MTTR saatlerine göre dinamik olarak çıkarılmaktadır.\n\n`;
-    }
-    res += `*Hangi tezgahın kronik olarak sık arızalandığını görmek ve OEE verimlilik grafiklerini incelemek için sol menüden **MTBF / MTTR Güvenilirlik** panelini açabilirsiniz.*`;
-    return res;
-  }
-
-  if (q.includes('tarayıcı') || q.includes('hata önleyici') || q.includes('çarpışma') || q.includes('nokta hatası') || q.includes('g43')) {
-    return `## G-Code Çarpışma & Hata Tarayıcı\n\nG-Kod programlarındaki yaygın operatör hatalarını (özellikle kaza/çarpışmalara neden olanları) statik analizle tespit eder:\n\n**Taranan Kritik Hatalar:**\n- **Nokta Hatası (Decimal Point Error):** \`X100\` gibi nokta eksiklikleri (FANUC bunu 100 mikron olarak algılar ve eksen kaza yapabilir).\n- **G43 Boy Telafisi Eksikliği:** Alt program veya takım değişiminden sonra boy telafisi H kodu olmadan Z hareketi yapılması.\n- **Z- Hızlı Dalış (G00 Z-):** Hızlı konumlandırma modu ile parça sıfırının altına dalış tespiti.\n\n*Kodunuzu yükleyip analiz etmek için sol menüden **G-Code Hata Tarayıcı** sekmesini açabilirsiniz.*`;
-  }
-
-  if (q.includes('karşılaştır') || q.includes('diff') || q.includes('fark') || q.includes('yedek')) {
-    return `## CNC Parametre Karşılaştırma & Fark Analizörü\n\nİki farklı FANUC parametre yedek dosyası (text) arasındaki tüm değer değişikliklerini, eklenen/silinen parametreleri ve bit bazlı durum farklılıklarını analiz eder:\n\n**Uygulama Alanları:**\n- Arızalanan bir tezgahın çalışan eski yedeği ile arıza anındaki güncel yedek dosyasını karşılaştırarak değişen parametreleri (ör. \`1815\` APZ bitinin kapanması) teşhis edebilirsiniz.\n\n*Ayrıntılı tablolar ve renkli fark analizleri için sol menüden **Parametre Karşılaştırıcı** sekmesini kullanabilirsiniz.*`;
-  }
-
-  if (q.includes('ağaç') || q.includes('karar') || q.includes('belirti') || q.includes('spindle dönmüyor') || q.includes('eksen gitmiyor') || q.includes('hidrolik')) {
-    return `## Kronik Arıza Karar ve Çözüm Ağacı\n\nTezgahtaki belirtilere göre adım adım ilerleyen karar destek mekanizmasıyla arızanın kök nedenini bulun:\n\n- **Eksen Kilitlenmeleri:** Acil stop (*ESP sinyali - X0008.4) veya Machine Lock durumlarını inceler.\n- **İş Mili (Spindle) Sorunları:** Ayna ayak sıkma sinyali (X0004.2) ve Kapı güvenlik kilidi (K00.1 / X0008.3) durumlarını kontrol ettirir.\n- **Hidrolik Sorunları:** Motor termik rölesi resetleme ve R-S-T faz yönü kontrollerini barındırır.\n\n*Adım adım etkileşimli sihirbaz ile arıza tespiti yapmak için sol menüden **Arıza Teşhis Ağacı** sayfasını ziyaret edebilirsiniz.*`;
-  }
-
-  if (q.includes('ı/o') || q.includes('io link') || q.includes('er97') || q.includes('er96') || q.includes('sys_alm 160') || q.includes('jd1a') || q.includes('jd1b') || q.includes('fssb') || q.includes('optik')) {
-    return `## FANUC I/O Link & FSSB Optik Link Teşhisi\n\n**1. I/O Link Donanım Teşhisi (ER97 / ER96):**\n- **ER97 I/O LINK FAILURE:** Haberleşme veya modül besleme kesintisidir. Hata veren I/O grubunun 24V DC besleme sigortasını ölçün. Soketlerin önceki modülün **JD1A (OUT)** portundan sonraki modülün **JD1B (IN)** portuna girdiğini teyit edin.\n- **Kısa Devre Testi:** Yeşil terminal klemenslerini I/O ünitesinden söküp alarmı resetleyin. Alarm giderse saha elemanlarında/sensörlerde kısa devre vardır.\n\n**2. FSSB Optik Haberleşme Teşhisi (SYS_ALM 160):**\n- CNC CPU kartı ile servo sürücüler arasındaki fiber optik haberleşme koptuğunda oluşur.\n- **Sürücü LED Kontrolü:** Sürücülerin 7-segment ekranlarına bakın: Upstream kopukluk için \`L\`, Downstream için \`U\` kodu gösteren sürücüyü bulun. Kopukluk bu sürücü ile bitişiğindeki sürücü arasındadır.\n- **Fiber Optik Kuralları:** COP10A/B turuncu/siyah kabloların tozunu alkollü bezle temizleyin. Minimum büküm yarıçapının **30mm** olduğunu teyit edin, sert bükümler kablo içindeki cam fiberi kırar.`;
+    return `## FANUC RS232 & DNC Haberleşme ve Kablo Bağlantıları\n\nPC ile CNC ünitesi arasındaki seri haberleşme (DNC) ayarları ve kablo lehim şemaları:\n\n**1. Kritik Parametre Ayarları:**\n- **P0020:** I/O Channel = \`0\` (Channel 1 RS232)\n- **P0101:** \`10000001\` (1 Stop Bit, 7 Data Bits, Even Parity)\n- **P0102:** \`3\` (RS-232C Cihazı)\n- **P0103:** \`11\` (9600 Baud) veya \`12\` (19200 Baud)\n\n**2. Lehimleme & Pin Şemaları:**\n- **Yazılımsal Akış Kontrolü (XON/XOFF):** PC DB9 (Pin 2, 3, 5) -> CNC DB25 (Pin 2, 3, 7). CNC tarafında 4-5 ve 6-8-20 köprüleri yapılmalıdır.\n\n*İnteraktif lehim şemaları ve multimetre süreklilik testleri için sol menüden **RS232** sayfasını açabilirsiniz.*`;
   }
 
   if (q.includes('boşluk') || q.includes('backlash') || q.includes('1851')) {
-    return `## Eksen Backlash (Geri Dönme Boşluğu) Kompanzasyonu\n\nFANUC sistemlerinde geri dönme boşluğunu kompanze etmek için **Parameter 1851** kullanılır.\n\n**Nasıl Ayarlanır & Hesaplanır:**\n1. Eksene komparatör bağlayın ve saati sıfırlayın.\n2. MDI'da ekseni ters yönde hareket ettirin.\n3. Saatteki sapma miktarını okuyun.\n4. **Öneri:** Sol menüden **Eksen Boşluk Sihirbazı** sayfasını açarak komparatör ölçüm test kodunu otomatik üretebilir ve mikron sapmasına göre yeni Parametre 1851 değerini dijital ekran simülasyonu üzerinde hesaplayabilirsiniz.`;
+    return `## Eksen Backlash (Geri Dönme Boşluğu) Kompanzasyonu\n\nFANUC sistemlerinde eksen mekanik boşluğunu kompanze etmek için **Parameter 1851** kullanılır.\n\n**Nasıl Hesaplanır:**\n- Ölçülen Kaçıklık = 0.018 mm (18 Mikron) ise:\n- \`Parametre 1851 Değeri = 18\` (1 mikron çözünürlükte).\n\n**Dikkat:** Parametreye çift telafi yazılmamalıdır. Mevcut 1851 değerine ilave edilerek girilmelidir.`;
   }
 
   if (q.includes('sıfır') || q.includes('1815') || q.includes('apz') || q.includes('apc')) {
     return `## Eksen Absolute Referans İncelemesi (P1815)\n\nAPC/APZ bitlerini, pil geçmişini, etkilenen ekseni ve güncel parametre yedeğini salt okunur karşılaştırın. Bu uygulama PWE açma veya parametre yazma adımı vermez. Referans yeniden kurma işlemi kontrol serisi/yazılım revizyonuna özgüdür; makine üreticisinin onaylı prosedürüyle yetkili bakım personeline eskale edilmelidir.`;
   }
 
-  if (q.includes('makro') || q.includes('çevrim') || q.includes('g81') || q.includes('g83') || q.includes('bhc') || q.includes('üret')) {
-    return `## G-Code ve Makro Çevrimleri\n\nMTB Elektrik Bakım içindeki kod üretme aracı ile şu standart alt programları otomatik olarak oluşturabilirsiniz:\n- **G81 / G83:** Delik delme ve kademeli delik delme çevrimi.\n- **BHC (Bolt Hole Circle):** Cıvata dairesi cıvata delikleri koordinat trigonometrik hesabı.\n- **G02 / G03:** Dairesel cep boşaltma helisel interpolasyon kodları.\n\n*Hazır G-Code programı üretmek için sol menüden **G-Code Üretici** sayfasını kullanabilirsiniz.*`;
-  }
-
-  if (q.includes('sağlık') || q.includes('kestirim') || q.includes('risk') || q.includes('tahmin') || q.includes('kritik')) {
-    const machList = State.machines.map(m => {
-      const health = calculateMachineHealth(m);
-      return { ...m, health };
-    });
-    const priority = { Critical: 0, Warning: 1, Safe: 2 };
-    machList.sort((a, b) => priority[a.health.status] - priority[b.health.status]);
-    const criticals = machList.filter(m => m.health.status === 'Critical');
-    const warnings = machList.filter(m => m.health.status === 'Warning');
-
-    let res = `## Bakım Durum Raporu\n\nTezgâhlara puan verilmeden bakım, pil, fan, yedekleme ve envanter kayıtları incelenmiştir:\n\n**Mevcut Durumlar:**\n- 🔴 Kritik pil veya fan bildirimi: **${criticals.length}** adet tezgâh\n- 🟡 Kontrol edilmeli: **${warnings.length}** adet tezgâh\n- 🟢 Aktif kritik bildirimi yok: **${machList.length - criticals.length - warnings.length}** adet tezgâh\n`;
-
-    if (criticals.length > 0) {
-      res += `\n**⚠️ Kritik bildirimi bulunan tezgâhlar:**\n`;
-      criticals.slice(0, 3).forEach(c => {
-        res += `- **${c.numarasi}** — ${c.health.reasons.join(', ') || c.health.primaryReason} — Bölüm: ${c.bolum || '—'}\n`;
-      });
-    }
-    res += `\n*Detaylı öncelik sıralaması ve kestirimci analizler için sol menüden **Kestirimci Bakım** sayfasını ziyaret edebilirsiniz.*`;
-    return res;
-  }
-
-  if (q.includes('bakım') || q.includes('servis') || q.includes('onar')) {
-    return `## Tezgah Bakım Sistemi\n\nTezgah Takip modülü kapsamında **${State.maintenances.length}** adet bakım kaydı ve **${State.machines.length}** adet kayıtlı makine sistemde bulunmaktadır.\n\n**Genel İstatistikler:**\n- Kayıtlı Tezgah Sayısı: ${State.machines.length}\n- Toplam Bakım Kaydı: ${State.maintenances.length}\n\n**Yeni Bakım Kaydı Ekleme:**\nSol menüden **Bakım Defteri** sekmesine giderek "Yeni Bakım Kaydı" butonuyla yeni periyodik veya arıza bakım kaydı ekleyebilirsiniz.`;
-  }
-
   if (q.includes('pil') || q.includes('batarya') || q.includes('encoder') || q.includes('enkoder') || q.includes('fan') || q.includes('pervane')) {
     const criticals = State.batteries.filter(b => getBatteryStatus(b.tarih).class === 'tag-red');
     const warnings = State.batteries.filter(b => getBatteryStatus(b.tarih).class === 'tag-amber');
-
     const criticalFans = State.fans.filter(f => (20000 - f.calisma_saati) < 0);
     const warningFans = State.fans.filter(f => (20000 - f.calisma_saati) >= 0 && (20000 - f.calisma_saati) < 5000);
 
-    return `## Absolute Enkoder Pil & Sürücü Fan Durum Raporu\n\n**Pil kayıtları:** ${State.batteries.length}\n- Kritik: **${criticals.length}**\n- Uyarı: **${warnings.length}**\n\n**Fan kayıtları:** ${State.fans.length}\n- Limit aşımı: **${criticalFans.length}**\n- Bakım yakın: **${warningFans.length}**\n\nPil gerilimi düştüğünde absolute referans kaybı riski oluşabilir. Kayıtları salt okunur inceleyin; müdahaleyi kontrol serisi ve OEM prosedürüyle planlayın.`;
+    return `## Absolute Enkoder Pil & Sürücü Fan Durum Raporu\n\n**Pil kayıtları:** ${State.batteries.length}\n- 🔴 Kritik (2+ yıl veya düşük voltaj): **${criticals.length}**\n- 🟡 Takipte (1.5-2 yıl): **${warnings.length}**\n\n**Fan kayıtları:** ${State.fans.length}\n- 🔴 Limit aşımı (20.000+ saat): **${criticalFans.length}**\n- 🟡 Bakım yakın: **${warningFans.length}**\n\nPil gerilimi düştüğünde absolute referans kaybı riski oluşur. Pilleri CNC açıkken değiştirin.`;
   }
 
-  if (q.includes('e-stop') || q.includes('acil dur') || q.includes('emergency stop')) {
-    return `## E-Stop Devresi\n\nFANUC tezgahlarında E-Stop devresi şu şekilde çalışır:\n\n1. **E-Stop Butonu** — NC kontağı (normally closed). Basıldığında devreyi keser.\n2. **PMC'de G008.4 (ESP)** — E-stop sinyali PMC'ye iletilir\n3. **SR0004 Alarm** — CNC EMERGENCY STOP alarmını görüntüler\n4. **Servo güç kesimi** — DRDY (Drive Ready) sinyali kapatılır\n\n**Sorun giderme:**\n- G008.4 bitini PMC monitöründe kontrol edin (0=E-Stop aktif)\n- Butonun kontak bütünlüğünü ölçün\n- Kapı kilidi ve güvenlik rölelerini kontrol edin\n- PMC ladder'da ESP girişini izleyin`;
-  }
+  // Bakım Defteri & Geçmiş Arıza / Servis Müdahale Sorgusu
+  if (q.includes('bakım') || q.includes('arıza') || q.includes('servis') || q.includes('ne yapıldı') || q.includes('geçmiş') || q.includes('onar') || q.includes('tamir') || q.includes('defter')) {
+    const machMap = new Map((State.machines || []).map(m => [m.id, m.numarasi || m.name || `Tezgâh #${m.id}`]));
 
-  if (q.includes('yedekle') || q.includes('backup') || q.includes('parametre kaydet') || q.includes('restore') || q.includes('yükle') || q.includes('sram') || q.includes('boot') || q.includes('rom')) {
-    return `## FANUC Yedek İnceleme ve Güvenli Eskalasyon\n\nUygulama mevcut yedeklerin kapsamını, tarihini ve bütünlüğünü incelemek için kullanılabilir; CNC'ye yükleme yapmaz. SRAM/parametre geri yükleme ve PWE işlemleri yanlış seri veya revizyonda makine yapılandırmasını bozabilir. Kontrol modeli, yazılım revizyonu, OEM opsiyonları ve doğrulanmış yedek eşleşmeden işlem yapılmamalı; geri yükleme yalnız ilgili OEM/FANUC prosedürüyle yetkili bakım personeline eskale edilmelidir.`;
-  }
+    // 1. Check if a specific machine is mentioned (e.g. "CNF 37", "UNİ 20", "CNT 26", "CNC-01", etc.)
+    const matchedMachine = (State.machines || []).find(m => {
+      const num = (m.numarasi || m.name || '').toLowerCase();
+      return num && q.includes(num);
+    });
 
-  if (q.includes('servo') && (q.includes('kazan') || q.includes('gain') || q.includes('ayar') || q.includes('tuning'))) {
-    return `## Servo Kazanım Ayarı (Gain Tuning)\n\n**Temel Parametreler:**\n- **No.2043** — Pozisyon kazancı (KPZ, tipik: 3000)\n- **No.2021** — Hız kazancı (integral, tipik: 100–500)\n- **No.2022** — Hız döngüsü oransal kazanç\n\n**Ayar Adımları:**\n1. AI Servo Tuning fonksiyonunu açın (SYSTEM > Servo Tuning)\n2. Kesme testini çalıştırın\n3. Titreşim varsa KPZ değerini düşürün\n4. Pozisyon hatası fazlaysa KPZ artırın\n5. Step Response grafiğini inceleyin\n\n**İpucu:** Ağır tezgahlarda düşük KPZ (1000–2000), hafif/yüksek hızlı tezgahlarda yüksek KPZ (4000–8000)`;
-  }
+    if (matchedMachine) {
+      const logs = (State.maintenances || []).filter(m => Number(m.tezgah_id) === Number(matchedMachine.id));
+      if (logs.length > 0) {
+        const recent = logs.slice(-5).reverse();
+        let res = `## 📋 ${matchedMachine.numarasi} Tezgâhı Bakım & Arıza Geçmişi\n\n`;
+        res += `Atölye bakım defterinde bu tezgâha ait **${logs.length} adet** kayıt bulundu. Son müdahaleler:\n\n`;
+        recent.forEach((r, idx) => {
+          res += `**${idx + 1}. Tarih: ${r.tarih}** | *Teknisyen:* ${r.bakim_yapan || '—'}\n`;
+          res += `- **Yapılan İşlem / Arıza:** ${r.aciklama}\n`;
+          res += `- **Durum:** \`${r.durum || 'Tamamlandı'}\`\n\n`;
+        });
+        res += `*Tüm geçmişi filtrelemek için sol menüden **Bakım Defteri** sekmesini açabilirsiniz.*`;
+        return res;
+      } else {
+        return `## 📋 ${matchedMachine.numarasi} Tezgâhı Bakım Kaydı\n\nBu tezgâha ait bakım defterine henüz girilmiş bir arıza veya periyodik bakım kaydı bulunmuyor.`;
+      }
+    }
 
-  if (q.includes('ladder') || q.includes('pmc') || q.includes('r addr') || q.includes('r adresi')) {
-    return `## FANUC PMC Adres Haritası\n\n| Adres | Açıklama |\n|-------|----------|\n| **X** | Makine girişleri (I/O kartından) |\n| **Y** | Makine çıkışları (I/O kartına) |\n| **G** | NC → PMC sinyalleri |\n| **F** | PMC → NC sinyalleri |\n| **R** | Dahili relelar (program içi) |\n| **T** | Zamanlayıcılar |\n| **C** | Sayaçlar |\n| **K** | Keeplatch (kalıcı bit) |\n| **D** | Veri registerleri |\n\n**Önemli G Sinyalleri:**\n- G008.4 (ESP) — E-Stop\n- G007.1 (ST) — Döngü başlat\n- G044.7 (FIN) — M fonksiyon tamamlama`;
+    // 2. Keyword search across fault descriptions (e.g. "sigorta", "magazin", "sensör", "kısa devre", "rulman")
+    const words = q.split(/\s+/).filter(w => w.length >= 3 && !['bakım','arıza','nedir','nasıl','geçmişi','yapan','kayıt','kayıtları','hangi','olan','tezgâh','makine','defteri'].includes(w));
+    if (words.length > 0) {
+      const matchingLogs = (State.maintenances || []).filter(m => {
+        const desc = (m.aciklama || '').toLowerCase();
+        return words.some(w => desc.includes(w));
+      }).slice(-5).reverse();
+
+      if (matchingLogs.length > 0) {
+        let res = `## 🔍 Bakım Defterinde "${words.join(' ')}" Arama Sonuçları\n\n`;
+        res += `Atölye kayıtlarında ilgili **${matchingLogs.length} adet** gerçek müdahale kaydı bulundu:\n\n`;
+        matchingLogs.forEach((r, idx) => {
+          const machName = machMap.get(r.tezgah_id) || `Tezgâh #${r.tezgah_id}`;
+          res += `**${idx + 1}. ${machName}** | *Tarih:* ${r.tarih} | *Teknisyen:* ${r.bakim_yapan || '—'}\n`;
+          res += `- **Kayıt:** ${r.aciklama}\n\n`;
+        });
+        return res;
+      }
+    }
+
+    // 3. General maintenance log overview
+    const recentAll = (State.maintenances || []).slice(-4).reverse();
+    let res = `## 📋 Atölye Bakım Defteri Genel Durumu\n\n`;
+    res += `Sistemde kayıtlı **${State.maintenances.length} adet** bakım kaydı ve **${State.machines.length} adet** tezgâh bulunmaktadır.\n\n`;
+    if (recentAll.length > 0) {
+      res += `**Son Yapılan Atölye Müdahaleleri:**\n`;
+      recentAll.forEach(r => {
+        const machName = machMap.get(r.tezgah_id) || `Tezgâh #${r.tezgah_id}`;
+        res += `- **${machName}** (${r.tarih} - ${r.bakim_yapan || 'Teknisyen'}): ${r.aciklama.slice(0, 80)}...\n`;
+      });
+    }
+    return res;
   }
 
   // Default
-  return `MTB Elektrik Bakım Asistanı — Çevrimdışı Mod\n\n"${msg}" sorunuzu aldım.\n\nÇevrimdışı modda şu konularda yardımcı olabilirim:\n• Alarm kodları (ör: SV0401, PS0010)\n• Parametre numaraları (ör: Param 1320)\n• E-Stop, servo gain, yedekleme prosedürleri\n• PMC adres haritası\n\nDaha kapsamlı yanıtlar için **Ayarlar** menüsünden OpenAI veya Gemini API anahtarınızı ekleyebilirsiniz.`;
+  return `MTB Elektrik Bakım Asistanı — Çevrimdışı Mod\n\n"${msg}" sorunuzu aldım.\n\nÇevrimdışı modda şu konularda yardımcı olabilirim:\n• Alarm kodları (ör: SV0401, PS0010, SP9002)\n• Bakım defteri ve tezgâh arıza geçmişi (ör: "CNF 37 bakım geçmişi" veya "sigorta arızası")\n• Parametre numaraları (ör: Param 1851, Param 1320)\n• DGN Teşhis Numaraları (ör: DGN 358, DGN 200)\n• Sürücü 7-Segment LED kodları (ör: PSM LED 01, 30)\n• E-Stop, servo gain, yedekleme prosedürleri\n• PMC adres haritası`;
 }
 
 function appendMessage(role, text, metadata = {}) {
@@ -574,17 +628,63 @@ function appendMessage(role, text, metadata = {}) {
   const sourceHTML = isAI && metadata.sources?.length
     ? `<div class="ai-source-list">${metadata.sources.map(source => `<span class="ai-source-chip">${escapeHTML(source.type)} · ${escapeHTML(source.id)}</span>`).join('')}</div>` : '';
   const confidenceHTML = isAI ? `<span class="status-chip ai-confidence">${escapeHTML(metadata.confidence || 'Teknisyen doğrulaması gerekli')}</span>` : '';
+  const copyBtnHTML = isAI ? `<div style="display:flex; justify-content:flex-end;"><button class="ai-copy-btn" onclick="copyAIMessageText(this)">📋 Kopyala</button></div>` : '';
 
   div.innerHTML = `
     <div class="msg-avatar ${role}">${isAI ? 'AI' : '👤'}</div>
     <div>
-      <div class="msg-bubble ${isAI ? 'ai-technical-card' : ''}">${confidenceHTML}<div class="ai-tech-section"><strong>${isAI ? 'Teknik değerlendirme' : 'Mesaj'}</strong>${html}</div>${sourceHTML}</div>
+      <div class="msg-bubble ${isAI ? 'ai-technical-card' : ''}">${confidenceHTML}<div class="ai-tech-section"><strong>${isAI ? 'Teknik değerlendirme' : 'Mesaj'}</strong>${html}</div>${sourceHTML}${copyBtnHTML}</div>
       <div class="msg-time">${formatTime(new Date())}</div>
     </div>
   `;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
 }
+
+window.copyAIMessageText = function(btn) {
+  const card = btn.closest('.msg-bubble');
+  if (!card) return;
+  const section = card.querySelector('.ai-tech-section');
+  const textToCopy = (section ? section.innerText.replace(/^Teknik değerlendirme\s*/i, '') : card.innerText).trim();
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = '✓ Kopyalandı';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '📋 Kopyala';
+    }, 1800);
+  }).catch(() => {});
+};
+
+window.askAIAboutContext = function({ type, id, code, data, machine }) {
+  if (type === 'alarm') {
+    const alarm = data || (State.alarms || []).find(a => a.code === code);
+    if (alarm) {
+      State.activeDiagnostic = { type: 'alarm', code: alarm.code, data: alarm };
+      if (typeof window.navigate === 'function') window.navigate('ai');
+      setTimeout(() => {
+        const input = document.getElementById('ai-input');
+        if (input) {
+          input.value = `${alarm.code} alarmı için kök nedenler ve adım adım güvenli saha teşhis prosedürü nedir?`;
+          if (typeof window.sendAIMessage === 'function') window.sendAIMessage();
+        }
+      }, 150);
+    }
+  } else if (type === 'machine') {
+    const mach = machine || (State.machines || []).find(m => Number(m.id) === Number(id));
+    if (mach) {
+      State.activeDiagnostic = { type: 'machine', code: mach.numarasi, data: mach };
+      if (typeof window.navigate === 'function') window.navigate('ai');
+      setTimeout(() => {
+        const input = document.getElementById('ai-input');
+        if (input) {
+          input.value = `${mach.numarasi} (${mach.bolum || 'Bölüm'}) tezgâhının bakım, pil ve teknik geçmişini analiz et.`;
+          if (typeof window.sendAIMessage === 'function') window.sendAIMessage();
+        }
+      }, 150);
+    }
+  }
+};
 
 window.toggleAIChecklistItem = function(checkboxEl) {
   const label = checkboxEl.nextElementSibling;

@@ -2,20 +2,14 @@
   "alarms": [
     {
       "code": "SV0401",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B",
-        "32i-B"
-      ],
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
       "category": "Servo",
       "title": "SERVO ALARM: V-READY OFF",
       "description": "Servo amplifikatörünün hazır (Ready) olduğunu bildiren sinyal CNC kontrol ünitesi tarafından alınamadı. Servo amplifikatör enerjilenmedi veya haberleşme kesildi.",
       "causes": [
         "E-Stop acil stop emniyet zincirinde kopukluk (24VDC kesintisi).",
         "Güç Kaynağı Modülüne (PSM) 3-faz ana şebeke giriş gücünün gelmemesi.",
-        "Kontakör (MCC) bobininin enerjilenmemesi veya kontak geçiş arızası.",
+        "Kontaktör (MCC) bobininin enerjilenmemesi veya kontak geçiş arızası.",
         "Diagnosis 358 içerisindeki HRDY/DRDY/CRDY bitlerinden birinin 0 olması."
       ],
       "solutions": [
@@ -26,14 +20,76 @@
       ]
     },
     {
-      "code": "SV0417",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B",
-        "32i-B"
+      "code": "SV0410",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: EXCESS ERROR (STOPPED)",
+      "description": "Eksen durur vaziyetteyken pozisyon sapma miktarı Parameter 1829 limitini aştı.",
+      "causes": [
+        "Eksen mekanik olarak kilitlendi veya vidalı milde sıkışma var.",
+        "Servo motor freni (24V solenoid) açmıyor veya fren balatası yapışmış.",
+        "Pozisyon kazancı (Parameter 1825) aşırı yüksek ayarlanmış."
       ],
+      "solutions": [
+        "Motor frenine 24VDC gelip gelmediğini ve frenin mekanik olarak serbest kaldığını kontrol edin.",
+        "Tezgah gücü kapalıyken vidalı mili el ile çevirerek mekanik sıkışmayı teyit edin.",
+        "Parameter 1829 (Durma anı hata limiti) değerini katalog değerine göre doğrulayın."
+      ]
+    },
+    {
+      "code": "SV0411",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: EXCESS ERROR (MOVING)",
+      "description": "Eksen hareketi esnasında pozisyon sapma miktarı Parameter 1828 tolerans limitini aştı.",
+      "causes": [
+        "Aşırı ağır kesme yükü veya eksenin mekanik takozlara dayanması.",
+        "Motor güç kablosunda faz kaybı (U-V-W kopukluk).",
+        "Servo motor tork kapasitesinin yetersiz kalması veya kızak yağlamasının kesilmesi."
+      ],
+      "solutions": [
+        "Kesme parametrelerini, paso derinliğini ve ilerleme hızını düşürün.",
+        "Motor güç kablosu soketlerini ve U-V-W faz sürekliliğini kontrol edin.",
+        "Kızak yağlama basıncını ve eksen kılavuzlarının yağlanma durumunu teyit edin."
+      ]
+    },
+    {
+      "code": "SV0414",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: AXIS DETECT ERROR (DIGITAL SERVO ALARM)",
+      "description": "Dijital servo amplifikatör kartı donanımsal bir hata tespit etti (Aşırı Akım, Aşırı Voltaj veya IPM Arızası).",
+      "causes": [
+        "Sürücü dahili IGBT güç modülü kısa devreye düştü.",
+        "Servo motor sargılarında veya güç kablosunda gövdeye kaçak (izolasyon çökmesi).",
+        "Diagnosis 200 veya 204 içerisindeki OVC/HCA/HVA bitlerinden birinin 1 olması."
+      ],
+      "solutions": [
+        "Diagnosis 200 ve 204 ekranını açın: HCA (Aşırı Akım), HVA (Aşırı Voltaj), OVC (Aşırı Yük), DCA (DC Bara Hatası) bitlerini kontrol edin.",
+        "Motor güç kablolarını sürücüden ayırıp Meger cihazı ile 500V kademesinde gövdeye izolasyon testi yapın.",
+        "Sürücü üzerindeki 7-Segment LED ekranında yazan kodu (örn: 8, 9, A, b, L) kontrol edin."
+      ]
+    },
+    {
+      "code": "SV0416",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: DISCONNECTION ALARM (PULSE CODER)",
+      "description": "Servo motor enkoderi (Pulse Coder) ile sürücü arasındaki seri haberleşme geri bildirimi kesildi.",
+      "causes": [
+        "Enkoder geri besleme kablosunda kopukluk veya JF1/JF2 soketinde temassızlık.",
+        "Kablo kanalında bükülme veya talaş/soğutma sıvısı girmesi.",
+        "Motor içi Pulse Coder optik kartının arızalanması."
+      ],
+      "solutions": [
+        "JF1/JF2 soketini söküp pinlerde kırılma, gevşeme veya soğutma sıvısı olup olmadığını kontrol edin.",
+        "Enkoder kablosunun iletkenliğini ve blendaj (şase) topraklamasını ölçün.",
+        "Diagnosis 201#0 (EXP) ve 201#4 (CCAL) bitlerini inceleyerek haberleşme kopukluğunu doğrulayın."
+      ]
+    },
+    {
+      "code": "SV0417",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
       "category": "Servo",
       "title": "SERVO ALARM: ILLEGAL DGTL SERVO PARAMETER",
       "description": "Dijital servo parametrelerinde (2000-2100 numaralı parametre aralığı) geçersiz veya motor/sürücü ile uyumsuz bir değer girildi.",
@@ -49,217 +105,684 @@
       ]
     },
     {
-      "code": "SV0300",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B"
-      ],
+      "code": "SV0420",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
       "category": "Servo",
-      "title": "SERVO ALARM: APC ALARM (REF RETURN REQUIRED)",
-      "description": "Mutlak enkoder (Absolute Pulse Coder) sıfır nokta referans pozisyonu kayboldu. Eksende yeniden manuel referans noktası ayarı yapılmalıdır.",
+      "title": "SERVO ALARM: EXCESSIVE TORQUE ALARM",
+      "description": "Servo motor torku, Parameter 2062'de tanımlanan izin verilen maksimum sınır süresini ve eşiğini aştı.",
       "causes": [
-        "Enkoder yedekleme pilinin CNC kapalıyken sökülmesi veya pilin tamamen bitmesi.",
-        "Enkoder kablosunun çıkarılması veya enkoder/motor değişimi yapılması."
+        "Takım iş parçasına veya fikstüre çarptı / bindirme oldu.",
+        "Kızaklarda mekanik sıkışma veya talaş dolması."
       ],
       "solutions": [
-        "Pil geçmişini, etkilenen ekseni ve güncel parametre yedeğini salt okunur doğrulayın.",
-        "Parameter 1815 APC/APZ durumunu kayıt altına alıp onaylı eski yedekle karşılaştırın.",
-        "Referans hizası ve mekanik konumu makine üreticisinin servis dokümanına göre kontrol edin.",
-        "PWE/parametre yazma ve referans yeniden kurma işlemini ilgili seri-revizyon prosedürüyle yetkili bakıma eskale edin."
-      ]
-    },
-    {
-      "code": "SV0368",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B"
-      ],
-      "category": "Servo",
-      "title": "SERVO ALARM: BZAL (SERIAL ENCODER ERROR)",
-      "description": "Seri enkoder pil voltajı 0V seviyesine düştü veya enkoder ile haberleşme kesildi.",
-      "causes": [
-        "Pilin tamamen bitmesi veya pil kablosunun kopması.",
-        "Servo sürücü ile motor enkoderi arasındaki JF1/JF2 kablo bağlantısının gevşemesi veya parazit alması."
-      ],
-      "solutions": [
-        "Tezgah elektriği AÇIK durumdayken sürücü üzerindeki 3.6V lityum pili yenisiyle değiştirin.",
-        "Enkoder kablo soketlerini söküp temizleyin ve sağlamca takın.",
-        "Pozisyon verisi kaybolduysa Parameter 1815 (APZ) üzerinden eksen sıfırlama prosedürünü tekrarlayın."
-      ]
-    },
-    {
-      "code": "SV0380",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B"
-      ],
-      "category": "Servo",
-      "title": "SERVO ALARM: APC BATTERY LOW (WARNING)",
-      "description": "Mutlak enkoder yedekleme pili voltajı kritik seviyeye düştü.",
-      "causes": [
-        "Pil kullanım ömrünün sonuna gelinmesi."
-      ],
-      "solutions": [
-        "Tezgahın elektriği AÇIKKEN pili yeni 3.6V FANUC uyumlu lityum pil ile değiştirin."
-      ]
-    },
-    {
-      "code": "SV0381",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B"
-      ],
-      "category": "Servo",
-      "title": "SERVO ALARM: APC BATTERY ZERO",
-      "description": "Mutlak enkoder yedekleme pili voltajı 0V seviyesine düştü. Tüm eksen koordinat verileri silindi.",
-      "causes": [
-        "Tezgahın uzun süre kapalı kalması veya pil kablo bağlantısının kopması."
-      ],
-      "solutions": [
-        "Pili yeni 3.6V lityum pil ile değiştirin.",
-        "Parameter 1815 APC/APZ durumunu salt okunur kaydedin; referans yeniden kurma işlemini OEM/FANUC seri-revizyon prosedürüyle yetkili bakıma eskale edin."
-      ]
-    },
-    {
-      "code": "SV0410",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B"
-      ],
-      "category": "Servo",
-      "title": "SERVO ALARM: EXCESS ERROR (STOPPED)",
-      "description": "Eksen durur vaziyetteyken pozisyon sapma miktarı Parameter 1829 limitini aştı.",
-      "causes": [
-        "Eksen mekanik olarak kilitlendi veya vidalı milde sıkışma var.",
-        "Servo motor freni (24V solenoid) açmıyor."
-      ],
-      "solutions": [
-        "Motor frenine 24VDC gelip gelmediğini ve frenin serbest kaldığını kontrol edin.",
-        "Tezgah gücü kapalıyken vidalı mili el ile çevirerek mekanik sıkışmayı teyit edin."
-      ]
-    },
-    {
-      "code": "SV0411",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B"
-      ],
-      "category": "Servo",
-      "title": "SERVO ALARM: EXCESS ERROR (MOVING)",
-      "description": "Eksen hareketi esnasında pozisyon sapma miktarı Parameter 1828 tolerance limitini aştı.",
-      "causes": [
-        "Aşırı ağır kesme yükü veya eksenin stoper zorlaması.",
-        "Motor güç kablosunda faz kaybı."
-      ],
-      "solutions": [
-        "Kesme parametrelerini ve ilerleme hızını düşürün.",
-        "Motor güç kablosu soketlerini ve U-V-W faz sürekliliğini kontrol edin."
+        "Tezgâhı JOG moduna alıp çarpmış ekseni yavaşça geri çekin.",
+        "Vidalı mil, rulman ve lineer kızaklarda mekanik hasar kontrolü yapın."
       ]
     },
     {
       "code": "SV0430",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B",
-        "32i-B"
-      ],
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
       "category": "Servo",
       "title": "SERVO ALARM: SERVO MOTOR OVERHEAT",
       "description": "Servo motor dahili termiği veya enkoder içi sıcaklık sensörü aşırı ısınma algıladı.",
       "causes": [
         "Eksende uzun süreli yüksek yük altında çalışma.",
-        "Motor soğutma fanının arızalanması."
+        "Motor soğutma fanının arızalanması veya motor gövdesinin talaşla kaplanması."
       ],
       "solutions": [
-        "Motorun soğumasını bekleyin ve yükü hafifletin.",
-        "Diagnosis 308 ekranından servo termal birikim oranını izleyin."
+        "Motorun soğumasını bekleyin ve kesme paso derinliğini düşürün.",
+        "Diagnosis 308 ekranından servo termal birikim oranını (OVC) izleyin.",
+        "Motor üzerindeki harici soğutma fanının döndüğünü ve hava kanallarının açık olduğunu teyit edin."
+      ]
+    },
+    {
+      "code": "SV0436",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: SOFTTHERMAL (OVC)",
+      "description": "Yazılımsal termal koruma (OVC) tetiklendi. Servo amplifikatör motor akımının sürekli anma değerinin üzerinde kaldığını hesapladı.",
+      "causes": [
+        "Sürekli ivmelenme/yavaşlama frekansının çok yüksek olması.",
+        "Eksen ağırlığını dengeleyen karşı ağırlık veya gazlı pistonun basıncının düşmesi."
+      ],
+      "solutions": [
+        "İvmelenme zaman sabitini (Parameter 1620/1622) artırın.",
+        "Dikey Z ekseni gazlı pistonunun veya hidrolik dengeleme basıncının normal olduğunu teyit edin."
       ]
     },
     {
       "code": "SV0438",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B"
-      ],
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
       "category": "Servo",
-      "title": "SERVO ALARM: MOTOR OVERCURRENT",
-      "description": "Servo sürücü inverter çıkışında anlık aşırı akım tespit edildi.",
+      "title": "SERVO ALARM: INVERTER CURRENT ABNORMAL",
+      "description": "Servo sürücü inverter çıkış akım sensörü anlık aşırı akım veya dengesiz akım dalgalanması tespit etti.",
       "causes": [
-        "Motor güç kablosunda (U-V-W) kısa devre.",
-        "Servo motor sargılarının yanması veya gövdeye kaçak."
+        "Motor güç kablosunda (U-V-W) kısa devre veya gövdeye kaçak.",
+        "Servo sürücü içi IGBT modülünün kısa devreye düşmesi.",
+        "Servo motor sargılarının izolasyonunun bozulması."
       ],
       "solutions": [
-        "Meger cihazı ile motor sargılarının gövdeye izolasyonunu ölçün.",
-        "Faz arası dirençlerini miliohmetre ile ölçün."
+        "Motor güç soketini sürücüden söküp Meger cihazı ile 500V kademesinde gövde kaçak testi yapın.",
+        "Motor fazları arasındaki dirençleri hassas miliohmetre ile ölçün (tüm fazlar eşit olmalıdır).",
+        "Kablo ve motor sağlamsa servo amplifikatör modülünü değiştirin."
+      ]
+    },
+    {
+      "code": "SV0440",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: DECELERATION ERROR",
+      "description": "Acil duruş veya hızlı yavaşlama esnasında dinamik frenleme devresi ekseni istenen sürede durduramadı.",
+      "causes": [
+        "Rejeneratif frenleme devresinde deşarj direncinin arızalanması.",
+        "DC Bara voltajının aşırı yükselmesi."
+      ],
+      "solutions": [
+        "Pano üstündeki rejeneratif deşarj direncinin omajını ölçün.",
+        "Güç Kaynağı Modülünün (PSM) durum LED'ini kontrol edin."
+      ]
+    },
+    {
+      "code": "SV0444",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: IPM ALARM",
+      "description": "Servo amplifikatör akıllı güç modülü (IPM) aşırı sıcaklık, düşük kontrol voltajı veya anlık kısa devre algıladı.",
+      "causes": [
+        "Amplifikatör soğutma bloğunun aşırı ısınması veya soğutucu fanının durması.",
+        "IPM dahili koruma devresinin tetiklenmesi."
+      ],
+      "solutions": [
+        "Sürücü arkasındaki soğutma fanının çalıştığını kontrol edin.",
+        "Sürücü soğutucu bloğunun toz ve talaş birikintilerini basınçlı hava ile temizleyin."
+      ]
+    },
+    {
+      "code": "SV0449",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: INV. IPM ALARM",
+      "description": "İnverter ünitesinin Akıllı Güç Modülü (IPM) aşırı akım veya arıza sinyali üretti (Sürücü ekranında '8', '9' veya 'A' görünür).",
+      "causes": [
+        "Motor güç kablosunda kısa devre veya motor gövdeye kaçak yapıyor.",
+        "Sürücü çıkış transistör köprüsünde donanımsal hasar."
+      ],
+      "solutions": [
+        "Motor güç kablosunu sürücüden ayırın. Alarm güç verildiğinde hemen tekrar geliyorsa sürücü arızalıdır.",
+        "Motor kablosu ve motor sargı izolasyonunu test edin."
+      ]
+    },
+    {
+      "code": "SV0460",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: FSSB DISCONNECT ALARM",
+      "description": "CNC ana ünitesi ile servo amplifikatörler arasındaki optik haberleşme hattı (FSSB) koptu.",
+      "causes": [
+        "FSSB fiber optik kablosunun kopması, ezilmesi veya konnektörünün gevşemesi.",
+        "Serideki birinci veya ara servo sürücünün 24V kontrol enerjisinin kesilmesi."
+      ],
+      "solutions": [
+        "FSSB optik kablolarını kontrol edin; optik çıkıştan kırmızı ışık geldiğini teyit edin.",
+        "Tüm servo amplifikatörlerin kontrol kartı +24V besleme voltajlarını ölçün."
+      ]
+    },
+    {
+      "code": "SV0300",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: APC ALARM (REF RETURN REQUIRED)",
+      "description": "Mutlak enkoder (Absolute Pulse Coder) sıfır nokta referans pozisyonu kayboldu. Eksende manuel referans noktası ayarı yapılmalıdır.",
+      "causes": [
+        "Enkoder yedekleme pilinin CNC kapalıyken sökülmesi veya pilin tamamen bitmesi.",
+        "Enkoder kablosunun çıkarılması veya motor değişimi yapılması."
+      ],
+      "solutions": [
+        "Pili yeni 3.6V lityum pil ile değiştirin.",
+        "Parameter 1815 APC/APZ durumunu ve referans pozisyonunu yetkili servis prosedürüne göre doğrulayıp yeniden kurun."
+      ]
+    },
+    {
+      "code": "SV0306",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: APC BATTERY VOLTAGE 0",
+      "description": "Mutlak enkoder yedekleme pili voltajı 0V seviyesine düştü. Pozisyon verisi tamamen kayboldu.",
+      "causes": [
+        "Tezgâhın uzun süre elektriksiz kalması veya pil kablosunun kopması."
+      ],
+      "solutions": [
+        "Tezgâh açıkken pili yenisiyle değiştirin.",
+        "Parameter 1815 APC/APZ referans durumunu doğrulayın ve referans pozisyonunu yetkili prosedürle kurun."
+      ]
+    },
+    {
+      "code": "SV0307",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: APC BATTERY LOW 1 (WARNING)",
+      "description": "Mutlak enkoder yedekleme pili voltajı kritik sınıra düştü (Yaklaşık 3.1V).",
+      "causes": [
+        "Lityum pil kullanım ömrünün sonuna gelinmesi."
+      ],
+      "solutions": [
+        "Tezgâhın elektriği AÇIK durumdayken sürücü veya harici pil kutusundaki 3.6V pili 1-2 gün içinde değiştirin."
+      ]
+    },
+    {
+      "code": "SV0368",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: BZAL (SERIAL ENCODER 0V)",
+      "description": "Seri enkoder içindeki pozisyon saklama kapasitörü ve pil enerjisi tamamen tükendi.",
+      "causes": [
+        "Pil değişimi yapılmadan enkoder soketinin sökülmesi."
+      ],
+      "solutions": [
+        "Pili takın; pozisyon referansını Parameter 1815 kılavuzuna göre yetkili bakım prosedürüyle doğrulayın."
+      ]
+    },
+    {
+      "code": "SV0600",
+      "series": ["0i-F", "0i-D", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: AMP. COMMUNICATION ERROR",
+      "description": "Servo amplifikatörünün dahili mikroişlemcileri arasında seri haberleşme kesintisi oluştu.",
+      "causes": [
+        "Sürücü kontrol kartı flex kablo temassızlığı.",
+        "Elektriksel gürültü / zayıf topraklama."
+      ],
+      "solutions": [
+        "Pano şase topraklamasını kontrol edin.",
+        "Amplifikatör kart soketlerini temizleyip yerine oturtun."
+      ]
+    },
+    {
+      "code": "SV0601",
+      "series": ["0i-F", "0i-D", "30i-B", "31i-B"],
+      "category": "Servo",
+      "title": "SERVO ALARM: INV. RADIATOR FAN FAILURE",
+      "description": "Servo amplifikatör soğutucu bloğunun (radyatör) harici soğutma fanı durdu veya devri düştü.",
+      "causes": [
+        "Soğutma fanının mekanik olarak sıkışması veya yanması."
+      ],
+      "solutions": [
+        "Sürücü arkasındaki soğutma fanını çıkarıp pervaneyi temizleyin veya yeni fan takın."
+      ]
+    },
+    {
+      "code": "SP0740",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM: SPEED DEVIATION",
+      "description": "Fener mili gerçek devri ile CNC tarafından emredilen devir arasındaki sapma Parameter 4003 limitini aştı.",
+      "causes": [
+        "Aşırı ağır talaş kaldırma / fener milinin bayılması.",
+        "Spindle tahrik kayışının gevşemesi veya kopması."
+      ],
+      "solutions": [
+        "Kesme ilerleme hızını ve talaş derinliğini düşürün.",
+        "Spindle motor kayış gerginliğini kontrol edin."
+      ]
+    },
+    {
+      "code": "SP0741",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM: SPINDLE MOTOR OVERHEAT",
+      "description": "Fener mili motor sargılarındaki sıcaklık sensörü (termistör) aşırı sıcaklık algıladı.",
+      "causes": [
+        "Spindle motor soğutma fanının çalışmaması veya filtrelerin tıkanması.",
+        "Uzun süreli aşırı yükte talaş işleme."
+      ],
+      "solutions": [
+        "Motorun soğumasını bekleyin.",
+        "Motor üstündeki 3-fazlı fan motorunun yönünü ve hava üflemesini kontrol edin."
+      ]
+    },
+    {
+      "code": "SP0749",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM: S-SPINDLE LSI ERROR",
+      "description": "Seri fener mili kontrol kartındaki LSI haberleşme entegresi CNC ile veri paketini doğrulayamadı.",
+      "causes": [
+        "CNC ile spindle sürücüsü arasındaki optik kablo veya JA7B soketinde temassızlık."
+      ],
+      "solutions": [
+        "Optik kabloyu söküp alkollü çubukla temizleyin ve yerine tam kilitleyin."
+      ]
+    },
+    {
+      "code": "SP0754",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM: ABNORMAL TORQUE ALARM",
+      "description": "Fener mili torku izin verilen emniyet limitini aştı (Takım çarpması veya iş parçasına saplanma).",
+      "causes": [
+        "Takım kırılması sonucu takım gövdesinin parçaya sürtmesi.",
+        "Fener mili mekanik kilitlenmesi."
+      ],
+      "solutions": [
+        "Takım ve iş parçası hasarını kontrol edin.",
+        "Fener milini el ile boşa alarak rulmanlarda mekanik vuruntu olup olmadığını dinleyin."
+      ]
+    },
+    {
+      "code": "SP9001",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM AL-01: MOTOR OVERHEAT",
+      "description": "Spindle sürücüsü 7-segment ekranında '01' alarmı: Fener mili motoru aşırı ısındı.",
+      "causes": [
+        "Motor soğutma fanı çalışmıyor veya motor hava kanalları tıkalı.",
+        "Sürekli nominal torkun üzerinde çalışma."
+      ],
+      "solutions": [
+        "Motor soğutma fanının döndüğünü ve hava akışını kontrol edin.",
+        "Motor termistör direnç değerini soketten ölçün."
+      ]
+    },
+    {
+      "code": "SP9002",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM AL-02: SPEED DEVIATION TOO LARGE",
+      "description": "Spindle sürücüsü 7-segment ekranında '02' alarmı: Hız sapması çok yüksek.",
+      "causes": [
+        "Spindle motor yükü motor torkunu bastırdı.",
+        "Motor güç kablosunda faz kaybı."
+      ],
+      "solutions": [
+        "İlerleme hızını düşürün.",
+        "U-V-W güç kablosunun gevşekliğini kontrol edin."
+      ]
+    },
+    {
+      "code": "SP9003",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM AL-03: DC LINK FUSE BLOWN",
+      "description": "Spindle sürücüsü 7-segment ekranında '03' alarmı: DC bara sigortası attı.",
+      "causes": [
+        "İnverter IGBT güç transistöründe kısa devre.",
+        "Spindle motor güç sargısında kısa devre."
+      ],
+      "solutions": [
+        "Sürücü içi dahili DC sigortasını multimetre ile kontrol edin.",
+        "IGBT güç modüllerinin diyot kademesinde ölçümünü yapın."
       ]
     },
     {
       "code": "SP9011",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B"
-      ],
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
       "category": "Spindle",
-      "title": "SPINDLE ALARM: SSM / SPINDLE SENSOR ERROR",
-      "description": "Spindle hız sensörü veya pozisyon kodlayıcı sinyali kesildi veya hatalı okundu.",
+      "title": "SPINDLE ALARM AL-11: DC LINK OVERVOLTAGE",
+      "description": "Spindle sürücüsü 7-segment ekranında '11' alarmı: DC Link bara voltajı kritik seviyeyi aştı (>410VDC).",
       "causes": [
-        "Sensör kafası ile manyetik dişli arasındaki hava aralığının bozulması.",
-        "Sensör yüzeyine metal talaşı yapışması."
+        "Spindle yavaşlarken rejeneratif frenleme enerjisinin şebekeye geri basılamaması.",
+        "Güç Kaynağı Modülü (PSM) deşarj devresi arızası veya şebeke giriş voltajının 440V üzerine çıkması."
       ],
       "solutions": [
-        "Sensör kafasını ve dişli halkasını temizleyin.",
-        "Sentil çakısı ile hava aralığını 0.15mm seviyesine ayarlayın."
+        "Ana şebeke 3-faz AC voltajını ölçün (380V - 415V arası olmalıdır).",
+        "PSM güç kaynağı üzerindeki durum LED kodunu kontrol edin."
+      ]
+    },
+    {
+      "code": "SP9012",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM AL-12: DC LINK OVERCURRENT",
+      "description": "Spindle sürücüsü 7-segment ekranında '12' alarmı: DC Link devresinde aşırı akım tespit edildi.",
+      "causes": [
+        "Spindle motor sargısında izolasyon delinmesi veya güç kablosunun toprağa kısa devre olması.",
+        "Spindle amplifikatör IPM / IGBT güç katı kısa devresi."
+      ],
+      "solutions": [
+        "Spindle motor güç kablosunu sürücüden söküp Meger cihazı ile 500V kademesinde gövde kaçak testi yapın.",
+        "Kablo ve motor sağlamsa spindle sürücüsünü onarıma gönderin."
+      ]
+    },
+    {
+      "code": "SP9024",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM AL-24: SERIAL TRANSFER ERROR",
+      "description": "Spindle sürücüsü 7-segment ekranında '24' alarmı: Optik kablo üzerinden seri veri transferinde hata oluştu.",
+      "causes": [
+        "CNC ile spindle sürücüsü arasındaki optik kabloda kırılma, bükülme veya tozlanma.",
+        "Optik verici/alıcı modülünde donanımsal arıza."
+      ],
+      "solutions": [
+        "Optik kabloyu söküp uçlarını optik temizleme beziyle temizleyin.",
+        "Optik kabloyu yedek sağlam kablo ile değiştirip test edin."
+      ]
+    },
+    {
+      "code": "SP9051",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM AL-51: DC LINK UNDERVOLTAGE",
+      "description": "Spindle sürücüsü 7-segment ekranında '51' alarmı: DC bara voltajı 200V altına düştü veya ana kontaktör açtı.",
+      "causes": [
+        "Ana pano MCC kontaktörü çekmedi veya kontakları aşırı ark yapmış.",
+        "Güç Kaynağı Modülüne (PSM) gelen 3-faz şebeke beslemesinde faz kaybı."
+      ],
+      "solutions": [
+        "Pano ana giriş sigortalarını ve MCC kontaktör kontaklarını kontrol edin.",
+        "DC Bara vidalarını gevşekliğe karşı torklayın."
+      ]
+    },
+    {
+      "code": "SP9056",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Spindle",
+      "title": "SPINDLE ALARM AL-56: COOLING FAN STOP",
+      "description": "Spindle sürücüsü 7-segment ekranında '56' alarmı: Sürücü dahili soğutma fanı durdu.",
+      "causes": [
+        "Sürücü soğutucu fanının mekanik olarak sıkışması veya elektriksel arızası."
+      ],
+      "solutions": [
+        "Sürücü üstündeki soğutma fanını değiştirin."
+      ]
+    },
+    {
+      "code": "PS0001",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: TH ERROR (TAPE HORIZONTAL PARITY)",
+      "description": "Program belleğe yüklenirken yatay parite hatası tespit edildi.",
+      "causes": [
+        "RS232 kablosu üzerinden veri aktarılırken parazit veya baudrate uyumsuzluğu.",
+        "Metin dosyasında bozuk ASCII karakterler bulunması."
+      ],
+      "solutions": [
+        "Program dosyasını UTF-8 / ASCII formatında kaydedin.",
+        "RS232 Baud Rate hızını bir kademe düşürün (örn: 9600 ➔ 4800)."
+      ]
+    },
+    {
+      "code": "PS0003",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: TOO MANY DIGITS",
+      "description": "Program satırındaki bir adrese izin verilen maksimum basamak sayısından daha fazla hane girildi.",
+      "causes": [
+        "Koordinat veya F ilerleme değerinde gereksiz basamak yazılması (örn: X123456789.0000)."
+      ],
+      "solutions": [
+        "Alarm veren satırdaki koordinat ve besleme değerlerinin basamak sayısını düzeltin."
+      ]
+    },
+    {
+      "code": "PS0006",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: ILLEGAL USE OF MINUS SIGN",
+      "description": "Eksi (-) işareti kullanılmasına izin verilmeyen bir adrese eksi işareti yazıldı.",
+      "causes": [
+        "Takım numarası (T-01), devir (S-1200) veya program numarasına (O-1000) eksi işareti konması."
+      ],
+      "solutions": [
+        "Eksi işaretini T, S, O, N veya G kodlarından kaldırın."
+      ]
+    },
+    {
+      "code": "PS0007",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: ILLEGAL USE OF DECIMAL POINT",
+      "description": "Ondalık nokta (.) kullanılmasına izin verilmeyen bir adrese nokta yazıldı.",
+      "causes": [
+        "O program numarası, N satır numarası veya G-koduna ondalık nokta konması (örn: G01.0, O.100)."
+      ],
+      "solutions": [
+        "Noktayı kaldırıp tamsayı olarak yazın."
+      ]
+    },
+    {
+      "code": "PS0009",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: ILLEGAL ADDRESS INPUT",
+      "description": "Satır başında veya adres konumunda geçersiz bir karakter girildi.",
+      "causes": [
+        "Türkçe karakter (ç, ş, ğ, ı, ö, ü) veya klavye yazım hatası."
+      ],
+      "solutions": [
+        "Programdaki özel karakterleri kaldırın ve yalnızca standart ASCII harfleri kullanın."
+      ]
+    },
+    {
+      "code": "PS0010",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: IMPROPER G-CODE",
+      "description": "CNC kontrol ünitesi tarafından desteklenmeyen veya tanımlanmamış bir G-kodu çağrıldı.",
+      "causes": [
+        "Aktif olmayan bir opsiyonel döngünün veya yazım hatası olan bir G kodunun girilmesi (örn: G123)."
+      ],
+      "solutions": [
+        "FANUC G-kodu listesine uygun geçerli bir G kodu kullanın."
+      ]
+    },
+    {
+      "code": "PS0011",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: NO FEEDRATE COMMANDED",
+      "description": "Kesme hareketi (G01, G02, G03) komut edildiği halde F (ilerleme hızı) tanımlanmadı veya F0 olarak kaldı.",
+      "causes": [
+        "Program başında F kodunun unutulması."
+      ],
+      "solutions": [
+        "Kesme satırına veya öncesine uygun bir ilerleme hızı tanımlayın (örn: F250 veya F0.15)."
+      ]
+    },
+    {
+      "code": "PS0020",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: OVER TOLERANCE OF RADIUS",
+      "description": "Dairesel enterpolasyonda (G02/G03) başlangıç noktası ile bitiş noktasındaki yay yarıçapı farkı Parameter 3410 tolerans limitini aştı.",
+      "causes": [
+        "I, J, K merkez ofsetlerinin veya R yarıçap değerinin hatalı hesaplanması."
+      ],
+      "solutions": [
+        "CAM post-processor ayarlarından yay toleransını kontrol edin veya I, J değerlerini matematiksel olarak doğrulayın."
+      ]
+    },
+    {
+      "code": "PS0021",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: ILLEGAL PLANE AXIS COMMANDED",
+      "description": "Dairesel enterpolasyon (G02/G03) veya takım telafisi esnasında aktif düzlemde (G17/G18/G19) bulunmayan bir eksen komut edildi.",
+      "causes": [
+        "G17 (XY düzlemi) aktifken G02 satırında Z ekseni dairesel yay komutunun girilmesi."
+      ],
+      "solutions": [
+        "İşleme düzlemini doğru seçin (G17: XY, G18: ZX, G19: YZ)."
+      ]
+    },
+    {
+      "code": "PS0030",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: ILLEGAL OFFSET NUMBER",
+      "description": "H (takım boyu) veya D (takım çapı) ofset numarası CNC'nin izin verdiği ofset hafıza sınırının üzerinde girildi.",
+      "causes": [
+        "32 ofsetli makinada H35 komutunun çağrılması."
+      ],
+      "solutions": [
+        "Makinenin ofset tablosundaki mevcut aralıkta bir ofset numarası kullanın."
+      ]
+    },
+    {
+      "code": "PS0034",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: CIRCULAR STARTUP IN G41/G42",
+      "description": "Takım yarıçap telafisi (G41/G42) açılış veya iptal satırında dairesel hareket (G02/G03) komut edildi.",
+      "causes": [
+        "G41/G42 telafisinin G01 veya G00 doğrusal hareketi yerine yay üzerinde başlatılması."
+      ],
+      "solutions": [
+        "G41 veya G42 komutunu parçaya yaklaşırken bir G01 doğrusal hareket satırında açın."
+      ]
+    },
+    {
+      "code": "PS0038",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: INTERFERENCE IN CUTTER COMP",
+      "description": "Takım yarıçap telafisi (G41/G42) hesaplamasında takım çapı parçanın iç bükey radyusundan büyük olduğu için kesici takımın parçaya dalacağı (bindireceği) hesaplandı.",
+      "causes": [
+        "Takım çapının iç köşe yarıçapından büyük olması."
+      ],
+      "solutions": [
+        "Daha küçük çaplı kesici takım kullanın veya köşe pah/radyus değerini büyütün."
+      ]
+    },
+    {
+      "code": "PS0051",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: MISSING P/Q BLOCK IN CANNED CYCLE",
+      "description": "G71, G72, G73 profil tornalama veya G76 diş çekme döngüsünde başlangıç (P) veya bitiş (Q) satır numarası belirtilmedi.",
+      "causes": [
+        "G71 satırında P veya Q adresinin unutulması."
+      ],
+      "solutions": [
+        "G71 P100 Q200 formatında başlangıç ve bitiş satır numaralarını tanımlayın."
+      ]
+    },
+    {
+      "code": "PS0052",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: NON-MONOTONOUS CONTOUR IN G71/G72",
+      "description": "G71 Type-1 döngüsünde profil X ekseninde yön değiştirerek geri dönen (cepli) bir geometri içeriyor.",
+      "causes": [
+        "Tek eksenli G71 döngüsünde çanak/kanal geometrisi yazılması."
+      ],
+      "solutions": [
+        "Başlangıç satırına Z eksenini de ekleyerek Type-2 iki eksenli döngüyü aktif edin (örn: N100 G01 X50. Z-20.)."
+      ]
+    },
+    {
+      "code": "PS0053",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: SEQUENCE NUMBER NOT FOUND",
+      "description": "G70, G71 veya M98 satırında çağrılan P veya Q satır numarası program içerisinde bulunamadı.",
+      "causes": [
+        "P100 yazıldığı halde programda N100 satırının bulunmaması."
+      ],
+      "solutions": [
+        "Satır numaralarını (N blokları) kontrol edip eşleştirin."
+      ]
+    },
+    {
+      "code": "PS0075",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: PROTECT PROGRAM (O8000-O9999 LOCKED)",
+      "description": "Kilitli (korumalı) olan O8000-O8999 veya O9000-O9999 makro programı düzenlenmeye veya silinmeye çalışıldı.",
+      "causes": [
+        "Parameter 3202 NE8 veya NE9 bitinin 1 olması."
+      ],
+      "solutions": [
+        "Makro programı düzenlemek için Parameter 3202 NE8/NE9 bitini geçici olarak 0 yapın; işlem bitince tekrar 1 yapın."
+      ]
+    },
+    {
+      "code": "PS0085",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: RS232 COMMUNICATION ERROR",
+      "description": "RS232 seri portu üzerinden veri aktarılırken overrun, parity veya framing hatası oluştu.",
+      "causes": [
+        "Baudrate, Parite veya Stop biti ayarlarının bilgisayar ile uyuşmaması.",
+        "Kablo uzunluğu veya parazit."
+      ],
+      "solutions": [
+        "Parameter 0101, 0102, 0103 ayarlarını PC aktarım yazılımı (Cimco / DNC) ile tam eşleştirin."
+      ]
+    },
+    {
+      "code": "PS0086",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: DR SIGNAL OFF",
+      "description": "RS232 haberleşmesinde Data Ready (DR) sinyali kesildi.",
+      "causes": [
+        "RS232 kablosunun çıkması, kopması veya köprü dirençlerinin eksik olması (DB25 pin 6-8-20 köprüsü)."
+      ],
+      "solutions": [
+        "RS232 kablo soketini ve pin bağlantılarını kontrol edin."
+      ]
+    },
+    {
+      "code": "PS0114",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: MACRO CALL FORMAT ERROR",
+      "description": "Özel Makro (Custom Macro B) G65 veya G66 çağrısında biçim hatası yapıldı.",
+      "causes": [
+        "G65 satırında P program numarasının unutulması."
+      ],
+      "solutions": [
+        "G65 P9010 A1.0 B2.0 formatında P program numarasını tanımlayın."
+      ]
+    },
+    {
+      "code": "PS0115",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: VARIABLE OUT OF RANGE",
+      "description": "Makro değişken numarası (#1 - #999) izin verilen geçerli değişken aralığının dışında.",
+      "causes": [
+        "Desteklenmeyen bir sistem değişkeninin çağrılması."
+      ],
+      "solutions": [
+        "Kullanılan CNC kontrol ünitesinin desteklediği makro değişken numaralarını kontrol edin."
+      ]
+    },
+    {
+      "code": "PS0205",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "Program",
+      "title": "P/S ALARM: RIGID TAPPING ERROR",
+      "description": "Rijit kılavuz çekme (G84 / M29) döngüsünde fener mili rijit mod sinyali CNC'ye ulaşmadı.",
+      "causes": [
+        "M29 S1000 satırında M29 kodunun G84'ten önce verilmemesi."
+      ],
+      "solutions": [
+        "Rijit kılavuz başlatma komutunu döngü formatına uygun yazın (örn: M29 S500 ardından G84 Z-20. R2. F1.25)."
       ]
     },
     {
       "code": "OT0500",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B",
-        "32i-B"
-      ],
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
       "category": "Overtravel",
-      "title": "OVERTRAVEL: +n AXIS (SOFT LIMIT 1)",
-      "description": "Belirtilen eksen, Parameter 1320 pozitif yazılımsal sınır limitini aştı.",
+      "title": "OVERTRAVEL: +X AXIS (SOFT LIMIT 1)",
+      "description": "X ekseni, Parameter 1320 pozitif yazılımsal strok sınırını aştı.",
       "causes": [
-        "Parça sıfırı veya takım boyu ofsetinin yanlış girilmesi."
+        "Parça sıfırı veya takım boyu ofsetinin yanlış girilmesi.",
+        "G54 koordinatının makine sınırının dışına taşması."
       ],
       "solutions": [
-        "Tezgahı JOG veya El Çarkı modunda eksi (-) yönde hareket ettirip limit dışına çıkarın."
+        "Tezgâhı JOG veya El Çarkı modunda eksi (-) yönde hareket ettirip limit dışına çıkarın.",
+        "Parça sıfırını ve program koordinatlarını kontrol edin."
       ]
     },
     {
       "code": "OT0501",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B",
-        "32i-B"
-      ],
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
       "category": "Overtravel",
-      "title": "OVERTRAVEL: -n AXIS (SOFT LIMIT 1)",
-      "description": "Belirtilen eksen, Parameter 1321 negatif yazılımsal sınır limitini aştı.",
+      "title": "OVERTRAVEL: -X AXIS (SOFT LIMIT 1)",
+      "description": "X ekseni, Parameter 1321 negatif yazılımsal strok sınırını aştı.",
       "causes": [
         "Programda negatif eksen koordinatının aşırı büyük girilmesi."
       ],
@@ -268,40 +791,272 @@
       ]
     },
     {
-      "code": "SR0004",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B",
-        "32i-B"
-      ],
-      "category": "System",
-      "title": "SYSTEM ALARM: EMERGENCY STOP",
-      "description": "Acil stop sinyali (*ESP / G008.4) kesildi. CNC acil duruş moduna geçti.",
+      "code": "OT0502",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL: +Y AXIS (SOFT LIMIT 1)",
+      "description": "Y ekseni, Parameter 1320 pozitif yazılımsal sınır limitini aştı.",
       "causes": [
-        "Operator paneli veya harici acil stop butonuna basılması."
+        "Y ekseni pozitif yönde tablanın maksimum hareket sınırını aştı."
       ],
       "solutions": [
-        "Basılı acil stop butonunu çevirerek serbest bırakın."
+        "Ekseni El Çarkı modunda eksi (-) yönde çekin."
       ]
     },
     {
-      "code": "SYS100",
-      "series": [
-        "0i-F",
-        "16i/18i/21i",
-        "30i-B",
-        "31i-B"
-      ],
-      "category": "System",
-      "title": "SYSTEM ALARM 100: MAIN BOARD / RAM FAULT",
-      "description": "CNC ana işlemci kartında sistem alarmı veya RAM parite hatası oluştu.",
+      "code": "OT0503",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL: -Y AXIS (SOFT LIMIT 1)",
+      "description": "Y ekseni, Parameter 1321 negatif yazılımsal sınır limitini aştı.",
       "causes": [
-        "Ana kart üzerindeki RAM modülünün bozulması."
+        "Y ekseni negatif sınır limitine dayandı."
       ],
       "solutions": [
-        "Acil olarak SRAM yedeği alın ve +5V voltajını ölçün."
+        "Ekseni El Çarkı modunda artı (+) yönde çekin."
+      ]
+    },
+    {
+      "code": "OT0504",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL: +Z AXIS (SOFT LIMIT 1)",
+      "description": "Z ekseni, Parameter 1320 pozitif yazılımsal strok sınırını aştı (Takım yukarı strok sonu).",
+      "causes": [
+        "Takım değiştirme pozisyonuna giderken veya G28 Z0 komutunda limit aşımı."
+      ],
+      "solutions": [
+        "Z eksenini El Çarkı modunda aşağı (-Z) yönde hareket ettirin."
+      ]
+    },
+    {
+      "code": "OT0505",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL: -Z AXIS (SOFT LIMIT 1)",
+      "description": "Z ekseni, Parameter 1321 negatif yazılımsal strok sınırını aştı (Takım aşağı strok sonu).",
+      "causes": [
+        "Takım boy ofsetinin aşırı uzun tanımlanması veya derin delik delme."
+      ],
+      "solutions": [
+        "Z eksenini El Çarkı modunda yukarı (+Z) yönde hareket ettirin."
+      ]
+    },
+    {
+      "code": "OT0506",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL: +X AXIS (HARD LIMIT SWITCH)",
+      "description": "X ekseni fiziksel acil sınır emniyet sivicine (Limit Switch) bastı.",
+      "causes": [
+        "Eksen yazılımsal limiti atlayıp mekanik son dayama sivicine çarptı."
+      ],
+      "solutions": [
+        "Operatör panelindeki 'OT Release / Sınır Aşımı İptal' butonuna basılı tutarak El Çarkı ile ekseni ters yönde çevirip sivicten kurtarın."
+      ]
+    },
+    {
+      "code": "OT0507",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Overtravel",
+      "title": "OVERTRAVEL: -X AXIS (HARD LIMIT SWITCH)",
+      "description": "X ekseni negatif fiziksel acil sınır emniyet sivicine bastı.",
+      "causes": [
+        "Mekanik sınır sivici tetiklendi."
+      ],
+      "solutions": [
+        "OT Release butonuna basılı tutarak ekseni +X yönünde hareket ettirin."
+      ]
+    },
+    {
+      "code": "OH0700",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Overheat",
+      "title": "OVERHEAT: CONTROL UNIT (MASTER PCB)",
+      "description": "CNC kontrol ünitesi ana kartı (Master Board) sıcaklık sensörü aşırı sıcaklık algıladı.",
+      "causes": [
+        "CNC ekran arkasındaki soğutma fanının arızalanması veya pano klimasının durması."
+      ],
+      "solutions": [
+        "Pano kapağını açıp havalandırın.",
+        "CNC ana kartı üzerindeki sarı Fanuc fanının döndüğünü kontrol edin."
+      ]
+    },
+    {
+      "code": "OH0701",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "Overheat",
+      "title": "OVERHEAT: FAN MOTOR FAILURE",
+      "description": "CNC kontrol ünitesi soğutma fanı motoru arızalandı veya devri kritik seviyeye düştü.",
+      "causes": [
+        "Ana kart fanının tozdan kilitlenmesi veya fan besleme kablosunun çıkması."
+      ],
+      "solutions": [
+        "Fan soketini kontrol edin, pervaneyi temizleyin veya yeni fan takın."
+      ]
+    },
+    {
+      "code": "SR0001",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "System",
+      "title": "SYSTEM ALARM: E-STOP OPERATED",
+      "description": "Acil stop sinyali (*ESP) kesildi. CNC sistemi acil duruşa geçti.",
+      "causes": [
+        "Acil stop butonuna basılması veya emniyet rölesinin devreyi kesmesi."
+      ],
+      "solutions": [
+        "Basılı olan acil stop butonunu çevirerek açın ve alarmı RESET ile sıfırlayın."
+      ]
+    },
+    {
+      "code": "SYS0900",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "System",
+      "title": "SYSTEM ALARM: ROM PARITY ERROR",
+      "description": "Sistem yazılımının bulunduğu ROM entegresinde veri doğrulama (checksum) hatası oluştu.",
+      "causes": [
+        "Sistem yazılım kartı veya Flash-ROM modülünün bozulması."
+      ],
+      "solutions": [
+        "CNC ana kartı üzerindeki Flash ROM kartını söküp temizleyip tekrar takın; düzelmezse yetkili servise başvurun."
+      ]
+    },
+    {
+      "code": "SYS0910",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "System",
+      "title": "SYSTEM ALARM: SRAM PARITY ERROR",
+      "description": "SRAM hafıza modülünde parite hatası oluştu. Parametreler veya program hafızası bozuldu.",
+      "causes": [
+        "CNC anakart 3V lityum pilinin bitmesi sonucu hafızanın silinmesi."
+      ],
+      "solutions": [
+        "Anakart pilini değiştirin. Onaylı sistem yedeğini FANUC yetkili servis prosedürüyle geri yükleyin."
+      ]
+    },
+    {
+      "code": "SYS0920",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B"],
+      "category": "System",
+      "title": "SYSTEM ALARM: WATCHDOG TIMER ALARM",
+      "description": "CNC ana işlemcisi dondu veya zamanlayıcı döngüsünü tamamlayamadı.",
+      "causes": [
+        "Ana kart CPU arızası veya +5V besleme voltajının 4.75V altına düşmesi."
+      ],
+      "solutions": [
+        "Pano güç kaynağının +5V çıkış voltajını multimetre ile ölçün ve 5.05V seviyesine ayarlayın."
+      ]
+    },
+    {
+      "code": "EX1000",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "PMC",
+      "title": "PMC ALARM: LUBE OIL PRESSURE LOW",
+      "description": "Kızak otomatik yağlama ünitesi basınç sivici yağlama periyodunda gerekli basıncı (yaklaşık 12-15 bar) algılayamadı.",
+      "causes": [
+        "Yağlama tankında kızak yağı (ISO VG 68) seviyesinin bitmesi.",
+        "Kızak yağlama borularında patlak veya yağ pompasının hava yapması."
+      ],
+      "solutions": [
+        "Yağ tankına kızak yağı doldurun.",
+        "Yağ pompasının manuel basma mandalını çekerek borulardaki havayı tahliye edin ve basınç manometresini izleyin."
+      ]
+    },
+    {
+      "code": "EX1001",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "PMC",
+      "title": "PMC ALARM: AIR PRESSURE LOW",
+      "description": "Pnömatik ana giriş hava basıncı 5.0 bar emniyet sınırının altına düştü.",
+      "causes": [
+        "Fabrika kompresör basıncının düşmesi veya hava şartlandırıcısının filtrelerinin tıkanması."
+      ],
+      "solutions": [
+        "Giriş şartlandırıcısındaki regülatörü kontrol edip basıncı 6.0 bar seviyesine ayarlayın."
+      ]
+    },
+    {
+      "code": "EX1002",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "PMC",
+      "title": "PMC ALARM: DOOR OPEN IN AUTO MODE",
+      "description": "Otomatik çalışma (MEM / DNC) modunda operatör kabin emniyet kapısı açıldı veya kapı kilidi algılanmadı.",
+      "causes": [
+        "Kabin kapısının açık kalması veya kapı emniyet sivicinin (interlock) arızalanması."
+      ],
+      "solutions": [
+        "Kapıyı tam kapatın. Kapı kilit sensörünün yeşil LED'inin yandığını doğrulayın."
+      ]
+    },
+    {
+      "code": "EX1003",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "PMC",
+      "title": "PMC ALARM: HYDRAULIC PUMP OVERLOAD",
+      "description": "Hidrolik güç ünitesi motoru aşırı akım çekti ve termik röle (motor koruma şalteri) attı.",
+      "causes": [
+        "Hidrolik yağ seviyesinin düşmesi veya pompanın sıkışması.",
+        "Termik röle akım ayarının düşük kalması."
+      ],
+      "solutions": [
+        "Elektrik panosundaki hidrolik motor termiğini (Q1/Q2) resetleyin.",
+        "Hidrolik yağ seviyesini ve yağ filtresini kontrol edin."
+      ]
+    },
+    {
+      "code": "EX1004",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "PMC",
+      "title": "PMC ALARM: COOLANT LEVEL LOW",
+      "description": "Soğutma sıvısı (Bor yağı) tankındaki şamandıra sıvı seviyesinin kritik sınıra düştüğünü bildirdi.",
+      "causes": [
+        "Talaş işleme sırasında bor yağının buharlaşması veya eksilmesi."
+      ],
+      "solutions": [
+        "Tanka su ve bor yağı emülsiyonu ilave edin."
+      ]
+    },
+    {
+      "code": "EX1006",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "PMC",
+      "title": "PMC ALARM: TOOL CLAMP SENSOR FAILURE",
+      "description": "Fener milinde takım sıkma (Clamp) veya gevşetme (Unclamp) sensörü konum sinyali vermedi.",
+      "causes": [
+        "Piston strok sonu manyetik sensörünün yerinden kayması veya talaşla kaplanması.",
+        "Pense çektirme yaylarının (belleville washers) kırılması."
+      ],
+      "solutions": [
+        "Fener mili tepesindeki takım sıkma sensörlerinin LED ışıklarını el ile takım çözüp bağlayarak kontrol edin.",
+        "Pnömatik/hidrolik çektirme silindirinin hava basıncını kontrol edin."
+      ]
+    },
+    {
+      "code": "EX1007",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "PMC",
+      "title": "PMC ALARM: ATC ARM NOT AT HOME",
+      "description": "Otomatik Takım Değiştirme (ATC) kolu 0 derece bekleme (Home) pozisyonunda değilken tezgâh çevrim başlatmaya çalıştı.",
+      "causes": [
+        "Takım değiştirme sırasında acil stopa basılması veya elektrik kesilmesi sonucu kolun ortada kalması."
+      ],
+      "solutions": [
+        "ATC Manuel Kurtarma moduna geçin.",
+        "Kolu el ile veya jog butonuyla 0 derece referans sensörü görene kadar çevirin."
+      ]
+    },
+    {
+      "code": "EX1008",
+      "series": ["0i-F", "0i-D", "16i/18i/21i", "30i-B", "31i-B", "32i-B"],
+      "category": "PMC",
+      "title": "PMC ALARM: SPINDLE ORIENTATION TIMEOUT",
+      "description": "Fener mili takım değiştirmek için M19 oryantasyon konumuna geçerken izin verilen sürede kilitlenemedi.",
+      "causes": [
+        "Spindle pozisyon sensörünün manyetik dişliyi görmemesi veya mekanik fren pimi pabuçlarının aşınması."
+      ],
+      "solutions": [
+        "Fener milini el ile çevirerek oryantasyon sensör sinyalini Diagnosis ekranından teyit edin.",
+        "M19 parametre kazancını (Parameter 4031/4032) kontrol edin."
       ]
     }
   ]
