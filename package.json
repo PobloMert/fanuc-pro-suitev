@@ -1,6 +1,6 @@
 {
   "name": "fanuc-pro-suite",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Kalıcı salt-okunur FANUC CNC izleme ve teşhis uygulaması",
   "main": "main.js",
   "scripts": {

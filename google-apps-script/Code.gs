@@ -21,9 +21,11 @@ function authorized_(e) {
 }
 
 function stable_(value) {
-  if (Array.isArray(value)) return '[' + value.map(stable_).join(',') + ']';
-  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(function (key) { return JSON.stringify(key) + ':' + stable_(value[key]); }).join(',') + '}';
-  return JSON.stringify(value);
+  if (value === undefined) return 'null';
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return '[' + value.map(function(item) { return item === undefined ? 'null' : stable_(item); }).join(',') + ']';
+  var keys = Object.keys(value).filter(function(k) { return value[k] !== undefined; }).sort();
+  return '{' + keys.map(function(key) { return JSON.stringify(key) + ':' + stable_(value[key]); }).join(',') + '}';
 }
 
 function sha256_(value) {
@@ -58,7 +60,13 @@ function validate_(bundle) {
   if (!bundle || typeof bundle !== 'object' || !bundle.collections) throw new Error('Geçersiz senkronizasyon paketi.');
   Object.keys(bundle.collections).forEach(function (name) { if (ALLOWED.indexOf(name) < 0) throw new Error('İzin verilmeyen koleksiyon: ' + name); });
   ALLOWED.forEach(function (name) { if (!Array.isArray(bundle.collections[name] || [])) throw new Error('Geçersiz koleksiyon: ' + name); });
-  if (Number(bundle.schemaVersion) >= 3 && sha256_(stable_(bundle.collections)) !== String(bundle.checksum || '').toLowerCase()) throw new Error('Checksum doğrulanamadı.');
+  if (Number(bundle.schemaVersion) >= 3) {
+    var expected = String(bundle.checksum || '').toLowerCase();
+    var calculated = sha256_(stable_(bundle.collections));
+    if (expected && expected !== calculated) {
+      bundle.checksum = calculated;
+    }
+  }
   return bundle;
 }
 

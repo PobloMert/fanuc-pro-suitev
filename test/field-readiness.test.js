@@ -17,6 +17,15 @@ test('Field readiness: FOCAS driver status check and offline fallback exist', ()
   // Check cnc_live_remote.js UI modal
   const liveRemoteJs = fs.readFileSync(path.join(__dirname, '../src/js/features/cnc_live_remote.js'), 'utf8');
   assert.ok(liveRemoteJs.includes('showFocasDriverHealthModal'));
+  assert.match(liveRemoteJs, /showModal\('focas-driver-health'/);
+  assert.match(liveRemoteJs, /closeModal\('focas-driver-health'\)/);
+  assert.match(liveRemoteJs, /showModal\('power-diagnostics'/);
+  assert.match(liveRemoteJs, /closeModal\('power-diagnostics'\)/);
+  assert.match(liveRemoteJs, /showModal\('chronic-failure'/);
+  assert.match(liveRemoteJs, /closeModal\('chronic-failure'\)/);
+  assert.match(liveRemoteJs, /showModal\('pmc-sniffer'/);
+  assert.match(liveRemoteJs, /closeModal\('pmc-sniffer'\)/);
+  assert.doesNotMatch(liveRemoteJs, /document\.getElementById\([^)]+\)\.remove\(\)/);
 
   // Check mtconnect_client.js offline fallback
   const mtconnectJs = fs.readFileSync(path.join(__dirname, '../src/js/modules/mtconnect_client.js'), 'utf8');

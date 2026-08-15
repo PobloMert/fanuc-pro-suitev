@@ -988,6 +988,37 @@ ipcMain.handle('drive-secret-set', (event, value) => {
   } catch (err) { return { ok: false, error: err.message }; }
 });
 
+ipcMain.handle('drive-endpoint-get', event => {
+  try {
+    requireSession(event, ['admin', 'technician']);
+    const custom = readDriveProvisioningState()?.driveEndpoint;
+    return { ok: true, endpoint: getDriveEndpoint(), isCustom: Boolean(custom) };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
+ipcMain.handle('drive-endpoint-set', (event, url) => {
+  try {
+    const session = requireSession(event, ['admin']);
+    const endpoint = String(url || '').trim();
+    if (endpoint && !/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(endpoint)) {
+      throw new Error('Drive servis adresi biçimi geçersiz. (https://script.google.com/macros/s/.../exec olmalıdır)');
+    }
+    const current = readDriveProvisioningState() || {
+      schemaVersion: 1,
+      company: 'İnan Makina',
+      driveFolderId: '1h7re6FFXCEXDgnGCLnoixuxVDBjEYtYK',
+      deviceName: os.hostname().slice(0, 80)
+    };
+    if (endpoint) current.driveEndpoint = endpoint;
+    else delete current.driveEndpoint;
+    current.updatedAt = new Date().toISOString();
+    fs.mkdirSync(ALLOWED_DATA_DIR, { recursive: true });
+    fs.writeFileSync(DRIVE_PROVISIONING_STATE_FILE, JSON.stringify(current, null, 2), 'utf8');
+    writeAudit('drive.endpoint_changed', session.user, { endpoint: endpoint || 'default' });
+    return { ok: true, endpoint: getDriveEndpoint() };
+  } catch (err) { return { ok: false, error: err.message }; }
+});
+
 ipcMain.handle('knowledge-preferences-get', event => {
   try {
     requireSession(event);

@@ -15,6 +15,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDriveSecretStatus: () => ipcRenderer.invoke('drive-secret-status'),
   getDriveProvisioningStatus: () => ipcRenderer.invoke('drive-provisioning-status'),
   setDriveSecret: (value) => ipcRenderer.invoke('drive-secret-set', value),
+  getDriveEndpoint: () => ipcRenderer.invoke('drive-endpoint-get'),
+  setDriveEndpoint: (url) => ipcRenderer.invoke('drive-endpoint-set', url),
   driveSyncRequest: (action, options) => ipcRenderer.invoke('drive-sync-request', action, options),
   getKnowledgePreferences: () => ipcRenderer.invoke('knowledge-preferences-get'),
   setKnowledgePreferences: (input) => ipcRenderer.invoke('knowledge-preferences-set', input),

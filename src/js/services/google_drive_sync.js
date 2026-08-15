@@ -33,9 +33,11 @@
   let activeCycle;
 
   function stable(value) {
-    if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;
-    if (value && typeof value === 'object') return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}`;
-    return JSON.stringify(value);
+    if (value === undefined) return 'null';
+    if (value === null || typeof value !== 'object') return JSON.stringify(value);
+    if (Array.isArray(value)) return `[${value.map(item => item === undefined ? 'null' : stable(item)).join(',')}]`;
+    const keys = Object.keys(value).filter(k => value[k] !== undefined).sort();
+    return `{${keys.map(key => `${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}`;
   }
 
   function utf8Bytes(value) {
@@ -179,6 +181,18 @@
       return loadJSON(SCOPE_KEY, {});
     }
 
+    const UNSUPPORTED_COLLECTIONS_KEY = 'mtb-unsupported-remote-collections';
+
+    function getUnsupportedCollections() {
+      return new Set(loadJSON(UNSUPPORTED_COLLECTIONS_KEY, []));
+    }
+
+    function addUnsupportedCollection(name) {
+      const set = getUnsupportedCollections();
+      set.add(name);
+      saveJSON(UNSUPPORTED_COLLECTIONS_KEY, [...set]);
+    }
+
     function collectionEnabled(name) {
       const scope = selectedScope();
       if (name === 'batteries' || name === 'fans') return scope.batteries_fans !== false;
@@ -187,7 +201,11 @@
 
     function currentCollections() {
       const collections = {};
-      for (const key of COLLECTION_NAMES) collections[key] = collectionEnabled(key) && Array.isArray(State?.[key]) ? State[key] : [];
+      const unsupported = getUnsupportedCollections();
+      for (const key of COLLECTION_NAMES) {
+        if (unsupported.has(key)) continue;
+        collections[key] = collectionEnabled(key) && Array.isArray(State?.[key]) ? State[key] : [];
+      }
       return collections;
     }
 
@@ -265,23 +283,32 @@
     }
 
     async function pull() {
-      const raw = await request('get', { method: 'GET' });
-      if (!raw || !String(raw).trim()) return { changed: false, integrity: null };
-      const validated = await validateBundle(raw);
-      const changed = await persistMergedCollections(validated.collections);
-      status.devices = Array.isArray(validated.bundle.devices) ? validated.bundle.devices.filter(item => item && typeof item === 'object').slice(0, 100) : status.devices;
-      const serverConflicts = Array.isArray(validated.bundle.conflicts)
-        ? validated.bundle.conflicts.filter(item => item && typeof item === 'object' && COLLECTION_NAMES.includes(item.collection)).slice(-500)
-        : [];
-      if (serverConflicts.length) {
-        const combined = new Map(status.conflictItems.map(item => [String(item.id), item]));
-        for (const item of serverConflicts) combined.set(String(item.id), item);
-        status.conflictItems = [...combined.values()].slice(-500);
-        status.counts.conflicts = status.conflictItems.length;
+      try {
+        const raw = await request('get', { method: 'GET' });
+        if (!raw || !String(raw).trim()) return { changed: false, integrity: null };
+        const validated = await validateBundle(raw);
+        const changed = await persistMergedCollections(validated.collections);
+        status.devices = Array.isArray(validated.bundle.devices) ? validated.bundle.devices.filter(item => item && typeof item === 'object').slice(0, 100) : status.devices;
+        const serverConflicts = Array.isArray(validated.bundle.conflicts)
+          ? validated.bundle.conflicts.filter(item => item && typeof item === 'object' && COLLECTION_NAMES.includes(item.collection)).slice(-500)
+          : [];
+        if (serverConflicts.length) {
+          const combined = new Map(status.conflictItems.map(item => [String(item.id), item]));
+          for (const item of serverConflicts) combined.set(String(item.id), item);
+          status.conflictItems = [...combined.values()].slice(-500);
+          status.counts.conflicts = status.conflictItems.length;
+        }
+        status.integrity = validated.integrity;
+        status.lastPullTime = new Date().toISOString();
+        return { changed, integrity: validated.integrity };
+      } catch (error) {
+        const match = String(error?.message || '').match(/İzin verilmeyen koleksiyon:\s*(\w+)/i);
+        if (match && COLLECTION_NAMES.includes(match[1])) {
+          addUnsupportedCollection(match[1]);
+          return { changed: false, integrity: 'legacy-unverified' };
+        }
+        throw error;
       }
-      status.integrity = validated.integrity;
-      status.lastPullTime = new Date().toISOString();
-      return { changed, integrity: validated.integrity };
     }
 
     function enqueue(bundle, reason) {
@@ -300,36 +327,83 @@
     }
 
     async function transmit(bundle) {
-      if (status.capabilities.delta) {
-        const previous = loadJSON(SNAPSHOT_KEY, {});
-        const collections = makeDelta(bundle.collections, previous);
-        const deltaPayload = { ...bundle, mode: 'delta', collections, checksum: await sha256(stable(collections)) };
-        await request('merge', { method: 'POST', body: JSON.stringify(deltaPayload) });
-      } else {
-        await request('put', { method: 'POST', body: JSON.stringify(bundle) });
+      const send = async (b) => {
+        if (status.capabilities.delta) {
+          const previous = loadJSON(SNAPSHOT_KEY, {});
+          const collections = makeDelta(b.collections, previous);
+          const deltaPayload = { ...b, mode: 'delta', collections, checksum: await sha256(stable(collections)) };
+          await request('merge', { method: 'POST', body: JSON.stringify(deltaPayload) });
+        } else {
+          await request('put', { method: 'POST', body: JSON.stringify(b) });
+        }
+      };
+
+      try {
+        await send(bundle);
+      } catch (error) {
+        const match = String(error?.message || '').match(/İzin verilmeyen koleksiyon:\s*(\w+)/i);
+        if (match && COLLECTION_NAMES.includes(match[1])) {
+          const unsupportedName = match[1];
+          addUnsupportedCollection(unsupportedName);
+          delete bundle.collections[unsupportedName];
+          bundle.checksum = await sha256(stable(bundle.collections));
+          await send(bundle);
+          notify(`⚠️ Drive sunucusu '${unsupportedName}' koleksiyonunu henüz desteklemiyor. Diğer tüm veriler başarıyla eşitlendi.`, 'warning');
+        } else {
+          throw error;
+        }
       }
+
       saveJSON(SNAPSHOT_KEY, bundle.collections);
       status.counts.sent = Object.values(bundle.collections).reduce((sum, items) => sum + items.length, 0);
       status.lastPushTime = new Date().toISOString();
     }
 
-    async function flushQueue() {
+    async function flushQueue(force = false) {
       const queue = loadJSON(QUEUE_KEY, []);
       if (!queue.length) return 0;
       let sent = 0;
+      const unsupported = getUnsupportedCollections();
       while (queue.length) {
         const item = queue[0];
         const nextAttempt = Date.parse(item.nextAttemptAt || '') || 0;
-        if (nextAttempt > Date.now()) {
+        if (!force && nextAttempt > Date.now()) {
           status.retryAt = item.nextAttemptAt;
           break;
         }
         try {
+          if (item.bundle?.collections) {
+            let stripped = false;
+            for (const un of unsupported) {
+              if (item.bundle.collections[un]) {
+                delete item.bundle.collections[un];
+                stripped = true;
+              }
+            }
+            if (stripped) {
+              item.bundle.checksum = await sha256(stable(item.bundle.collections));
+            }
+          }
           await transmit(item.bundle);
           queue.shift();
           sent += 1;
           saveJSON(QUEUE_KEY, queue);
         } catch (error) {
+          const match = String(error?.message || '').match(/İzin verilmeyen koleksiyon:\s*(\w+)/i);
+          if (match && COLLECTION_NAMES.includes(match[1])) {
+            addUnsupportedCollection(match[1]);
+            if (item.bundle?.collections && item.bundle.collections[match[1]]) {
+              delete item.bundle.collections[match[1]];
+              item.bundle.checksum = await sha256(stable(item.bundle.collections));
+              try {
+                await transmit(item.bundle);
+                queue.shift();
+                sent += 1;
+                saveJSON(QUEUE_KEY, queue);
+                continue;
+              } catch (_) {}
+            }
+          }
           item.attempts = Number(item.attempts || 0) + 1;
           item.reason = error.message;
           const delay = Math.min(30 * 60 * 1000, 5000 * (2 ** Math.min(item.attempts - 1, 8)));
@@ -343,11 +417,11 @@
       return sent;
     }
 
-    async function push({ queueOnFailure = true } = {}) {
+    async function push({ queueOnFailure = true, force = false } = {}) {
       const bundle = await buildBundle();
       try {
-        await flushQueue();
-        if (loadJSON(QUEUE_KEY, []).length) throw new Error(`Drive yeniden denemesi ${status.retryAt || 'daha sonra'} zamanına ertelendi.`);
+        await flushQueue(force);
+        if (loadJSON(QUEUE_KEY, []).length && !force) throw new Error(`Drive yeniden denemesi ${status.retryAt || 'daha sonra'} zamanına ertelendi.`);
         await transmit(bundle);
         return true;
       } catch (error) {
@@ -360,11 +434,13 @@
       if (activeCycle) return activeCycle;
       activeCycle = (async () => {
         status.state = 'syncing';
+        status.lastError = null;
+        status.retryAt = null;
         notify('Google Drive kayıtları birleştiriliyor…', 'info', silent);
         try {
           await detectCapabilities();
           const pulled = await pull();
-          await push();
+          await push({ force: true });
           status.state = 'success';
           status.lastError = null;
           status.lastSyncTime = new Date().toISOString();
@@ -404,7 +480,7 @@
     }
 
     function setSyncScope(scope) {
-      const allowed = new Set(['machines','maintenances','batteries_fans','backup_logs','custom_alarms','wiki']);
+      const allowed = new Set(['machines','maintenances','batteries_fans','backup_logs','custom_alarms','custom_mcodes','keep_relays','wiki','diagnostic_history']);
       const clean = {};
       for (const [key, value] of Object.entries(scope || {})) if (allowed.has(key)) clean[key] = value !== false;
       saveJSON(SCOPE_KEY, clean);

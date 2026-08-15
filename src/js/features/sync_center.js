@@ -6,7 +6,9 @@
   const scopes = Object.freeze([
     ['machines', 'Tezgâhlar'], ['maintenances', 'Bakım kayıtları'],
     ['batteries_fans', 'Pil ve fan kayıtları'], ['backup_logs', 'Yedek takip kayıtları'],
-    ['custom_alarms', 'Özel alarmlar'], ['wiki', 'Wiki ve teknik notlar']
+    ['custom_alarms', 'Özel alarmlar'], ['custom_mcodes', 'Özel M-kodları'],
+    ['keep_relays', 'Keep Relay ve Zamanlayıcılar'], ['wiki', 'Wiki ve teknik notlar'],
+    ['diagnostic_history', 'Teşhis geçmişi']
   ]);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
   const date = value => value ? new Date(value).toLocaleString('tr-TR') : 'Henüz yok';
@@ -78,7 +80,22 @@
           <section class="card sync-section"><h2>Bu cihaz</h2><label class="field-label" for="sync-device-name">Görünen cihaz adı</label><div class="sync-inline"><input id="sync-device-name" maxlength="80" value="${esc(deviceName)}"><button class="btn btn-secondary" data-device-save>Kaydet</button></div><p class="text-muted">Son görülme: ${esc(date(status.lastPull || status.lastPush))}</p>${deviceSupported ? '' : protocolNotice('Ad yerel olarak kaydedilir. Diğer cihazlarda görünmesi için servis cihaz kimliği desteği sağlamalı.')}</section>
           <section class="card sync-section"><h2>Senkronizasyon kapsamı</h2><div class="sync-scope-list">${scopes.map(([key, label]) => `<label><input type="checkbox" data-sync-scope="${key}" ${selectedScopes[key] !== false ? 'checked' : ''}><span>${esc(label)}</span></label>`).join('')}</div><button class="btn btn-secondary" data-scope-save>Kapsamı kaydet</button>${scopeSupported ? '' : protocolNotice('Seçimler yerel tercih olarak saklanır; servis kapsam filtrelemeyi destekleyene kadar tüm iş kayıtları senkronize edilir.')}</section>
         </div>
-        <section class="card sync-section" id="sync-offline-queue-section"><div class="sync-section-heading"><div><h2>Çevrimdışı Kuyruk & Delta Durumu</h2><p>İnternet kesintilerinde yerel SQLite'a kaydedilen ve Drive'a aktarılmayı bekleyen işlemler.</p></div><span class="tag tag-blue" id="sync-queue-count-badge">Kontrol ediliyor…</span></div><div style="display:flex;align-items:center;gap:10px;margin-top:8px"><button class="btn btn-secondary btn-sm" id="btn-flush-offline-queue">Kuyruğu Şimdi Gönder (Delta)</button><span class="text-muted" style="font-size:11.5px" id="sync-queue-desc">Bağlantı kurulduğunda otomatik aktarılır.</span></div></section>
+        <section class="card sync-section" id="sync-offline-queue-section"><div class="sync-section-heading"><div><h2>Çevrimdışı Kuyruk & Delta Durumu</h2><p>İnternet kesintilerinde yerel SQLite'a kaydedilen ve Drive'a aktarılmayı bekleyen işlemler.</p></div><span class="tag tag-blue" id="sync-queue-count-badge">Kontrol ediliyor…</span></div><div style="display:flex;align-items:center;gap:10px;margin-top:8px"><button class="btn btn-secondary btn-sm" id="btn-flush-offline-queue">Kuyruğu Şimdi Gönder (Delta)</button><button class="btn btn-ghost btn-sm" id="btn-clear-offline-queue">Kuyruğu Temizle</button><span class="text-muted" style="font-size:11.5px" id="sync-queue-desc">Bağlantı kurulduğunda otomatik aktarılır.</span></div></section>
+        <section class="card sync-section sync-endpoint-card">
+          <div class="sync-section-heading">
+            <div>
+              <h2>Drive Web App Adresi (Endpoint URL)</h2>
+              <p>Google Apps Script dağıtımınızdan aldığınız web uygulaması bağlantısı.</p>
+            </div>
+            <span class="sync-endpoint-status text-muted" id="sync-endpoint-status">Yükleniyor…</span>
+          </div>
+          <label class="field-label" for="sync-drive-endpoint">Google Apps Script Web Uygulaması URL</label>
+          <div class="sync-inline">
+            <input id="sync-drive-endpoint" type="url" spellcheck="false" placeholder="https://script.google.com/macros/s/.../exec">
+            <button class="btn btn-primary" data-endpoint-save>Kaydet</button>
+            <button class="btn btn-ghost" data-endpoint-reset>Varsayılana Dön</button>
+          </div>
+        </section>
         <section class="card sync-section sync-secret-card"><div class="sync-section-heading"><div><h2>Drive cihaz erişim anahtarı</h2><p>Anahtar Windows güvenli depolamasında saklanır ve kaydedildikten sonra hiçbir zaman geri okunmaz.</p></div><span class="sync-secret-status" data-secret-status role="status">Durum denetleniyor…</span></div>
           <label class="field-label" for="sync-drive-secret">Yeni erişim anahtarı</label><div class="sync-inline"><input id="sync-drive-secret" type="password" minlength="16" maxlength="512" autocomplete="new-password" spellcheck="false" placeholder="En az 16 karakter"><button class="btn btn-primary" data-secret-save>Güvenli kaydet</button><button class="btn btn-ghost" data-secret-clear>Temizle</button></div>
           <small class="text-muted">Mevcut anahtar gösterilmez veya bu alana doldurulmaz. Yeni bir değer kaydetmek mevcut anahtarı değiştirir.</small>
@@ -104,6 +121,35 @@
       if (deviceSupported) await engine.setDeviceName(name);
       notify(deviceSupported ? 'Cihaz adı kaydedildi.' : 'Cihaz adı yerel olarak kaydedildi; sunucu desteği bekleniyor.', deviceSupported ? 'success' : 'info');
     });
+
+    const endpointInput = page.querySelector('#sync-drive-endpoint');
+    const endpointStatus = page.querySelector('#sync-endpoint-status');
+    const refreshEndpointStatus = async () => {
+      if (!global.electronAPI?.getDriveEndpoint) return;
+      const res = await global.electronAPI.getDriveEndpoint();
+      if (res?.ok && endpointInput && endpointStatus) {
+        endpointInput.value = res.isCustom ? res.endpoint : '';
+        endpointStatus.textContent = res.isCustom ? 'Özel Endpoint Aktif' : 'Varsayılan Endpoint';
+        endpointStatus.className = `sync-endpoint-status ${res.isCustom ? 'tag tag-blue' : 'text-muted'}`;
+      }
+    };
+    page.querySelector('[data-endpoint-save]')?.addEventListener('click', async event => {
+      const val = endpointInput?.value.trim() || '';
+      if (!val) return notify('Lütfen geçerli bir Google Apps Script URL girin.', 'warning');
+      if (!global.electronAPI?.setDriveEndpoint) return notify('Endpoint güncelleme API kullanılamıyor.', 'error');
+      event.currentTarget.disabled = true;
+      const res = await global.electronAPI.setDriveEndpoint(val);
+      event.currentTarget.disabled = false;
+      notify(res?.ok ? 'Drive Web App URL adresi güncellendi.' : res?.error || 'Adres kaydedilemedi.', res?.ok ? 'success' : 'error');
+      await refreshEndpointStatus();
+    });
+    page.querySelector('[data-endpoint-reset]')?.addEventListener('click', async () => {
+      if (!global.electronAPI?.setDriveEndpoint) return;
+      await global.electronAPI.setDriveEndpoint('');
+      notify('Drive Web App adresi varsayılana döndürüldü.', 'info');
+      await refreshEndpointStatus();
+    });
+
     const secretInput = page.querySelector('#sync-drive-secret');
     const secretStatus = page.querySelector('[data-secret-status]');
     const refreshSecretStatus = async () => {
@@ -184,8 +230,19 @@
       }
     });
 
+    page.querySelector('#btn-clear-offline-queue')?.addEventListener('click', async () => {
+      localStorage.removeItem('mtb-drive-sync-queue-v1');
+      localStorage.removeItem('mtb-drive-sync-snapshot-v1');
+      localStorage.removeItem('mtb-unsupported-remote-collections');
+      if (global.electronAPI?.clearSyncQueue) await global.electronAPI.clearSyncQueue([]);
+      notify('Senkronizasyon kuyruğu ve önbelleği sıfırlandı.', 'info');
+      await updateOfflineQueueDisplay();
+      global.navigate?.('sync_center');
+    });
+
     updateOfflineQueueDisplay();
     refreshSecretStatus();
+    refreshEndpointStatus();
     page.querySelector('[data-scope-save]')?.addEventListener('click', async () => {
       const value = Object.fromEntries([...page.querySelectorAll('[data-sync-scope]')].map(input => [input.dataset.syncScope, input.checked]));
       localStorage.setItem(SCOPE_KEY, JSON.stringify(value));

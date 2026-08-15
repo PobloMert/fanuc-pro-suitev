@@ -824,106 +824,93 @@ window.showSignalSnifferModal = function() {
 
   const signals = activeMachine.pmcSignals || presets.standard_mill;
 
-  const modalHtml = `
-    <div id="modal-pmc-sniffer" class="modal-backdrop" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(6px);">
-      <div class="modal-card" style="width:780px; max-width:95vw; max-height:90vh; background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
-        <!-- Modal Header -->
-        <div style="padding:16px 20px; background:var(--bg-card2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+  const content = `
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">🕵️</span>
+        <span>Akıllı Sinyal Avcısı & Canlı Sensör Panosu</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('pmc-sniffer')">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+      <!-- Active Machine & Template Bar -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card2); padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--border); flex-wrap:wrap; gap:10px;">
+        <div style="font-size:12px; font-weight:700; color:var(--text-accent);">
+          Tezgâh: <span style="color:var(--text-primary); font-weight:800;">${escapeHTML(activeMachine.numarasi || 'CNC')}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <label style="font-size:11.5px; color:var(--text-secondary); font-weight:600;">Hazır Şablon:</label>
+          <select id="sel-preset-template" class="form-control" style="width:160px; font-size:11px; padding:3px 6px;">
+            <option value="standard_mill">Standart Dik İşleme</option>
+            <option value="standard_lathe">Standart CNC Torna</option>
+            <option value="doosan_dnm">Doosan DNM Serisi</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="applyPresetSignals()" style="padding:3px 8px; font-size:11px;">Şablonu Yükle</button>
+        </div>
+      </div>
+
+      <!-- Sniffer Learning Box -->
+      <div style="background:rgba(56, 189, 248, 0.05); border:1px dashed var(--border-accent); border-radius:var(--radius-md); padding:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
-            <h3 style="margin:0; font-size:16px; font-weight:750; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
-              <span>🕵️</span> Akıllı Sinyal Avcısı & Canlı Sensör Panosu
-            </h3>
-            <p style="margin:2px 0 0 0; font-size:11.5px; color:var(--text-secondary);">
-              Şema olmadan fiziksel switch/sensör adreslerini otomatik yakalayın ve izleyin.
+            <strong style="font-size:13px; color:var(--text-accent); display:flex; align-items:center; gap:6px;">
+              <span>🎯</span> Canlı Sinyal Avcısı (Öğrenme Modu)
+            </strong>
+            <p style="margin:4px 0 0 0; font-size:11px; color:var(--text-secondary);">
+              "Dinlemeyi Başlat"a basın, ardından tezgâhta kapıyı açın veya switch'e dokunun. Değişen bit anında yakalanacaktır.
             </p>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-pmc-sniffer').remove()" style="font-size:18px; line-height:1; padding:4px 8px;">✕</button>
+          <button id="btn-toggle-sniffer" class="btn btn-primary btn-sm" onclick="toggleSnifferCapture()" style="padding:6px 14px; font-size:11.5px; font-weight:700;">
+            🟢 Dinlemeyi Başlat
+          </button>
         </div>
-
-        <!-- Modal Body -->
-        <div style="padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
-          <!-- Active Machine & Template Bar -->
-          <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card2); padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--border); flex-wrap:wrap; gap:10px;">
-            <div style="font-size:12px; font-weight:700; color:var(--text-accent);">
-              Tezgâh: <span style="color:var(--text-primary); font-weight:800;">${escapeHTML(activeMachine.numarasi || 'CNC')}</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <label style="font-size:11.5px; color:var(--text-secondary); font-weight:600;">Hazır Şablon:</label>
-              <select id="sel-preset-template" class="form-control" style="width:160px; font-size:11px; padding:3px 6px;">
-                <option value="standard_mill">Standart Dik İşleme</option>
-                <option value="standard_lathe">Standart CNC Torna</option>
-                <option value="doosan_dnm">Doosan DNM Serisi</option>
-              </select>
-              <button class="btn btn-secondary btn-sm" onclick="applyPresetSignals()" style="padding:3px 8px; font-size:11px;">Şablonu Yükle</button>
-            </div>
-          </div>
-
-          <!-- Sniffer Learning Box -->
-          <div style="background:rgba(56, 189, 248, 0.05); border:1px dashed var(--border-accent); border-radius:var(--radius-md); padding:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-              <div>
-                <strong style="font-size:13px; color:var(--text-accent); display:flex; align-items:center; gap:6px;">
-                  <span>🎯</span> Canlı Sinyal Avcısı (Öğrenme Modu)
-                </strong>
-                <p style="margin:4px 0 0 0; font-size:11px; color:var(--text-secondary);">
-                  "Dinlemeyi Başlat"a basın, ardından tezgâhta kapıyı açın veya switch'e dokunun. Değişen bit anında yakalanacaktır.
-                </p>
-              </div>
-              <button id="btn-toggle-sniffer" class="btn btn-primary btn-sm" onclick="toggleSnifferCapture()" style="padding:6px 14px; font-size:11.5px; font-weight:700;">
-                🟢 Dinlemeyi Başlat
-              </button>
-            </div>
-            <div id="sniffer-detect-alert" style="display:none; margin-top:12px; padding:10px 14px; background:rgba(34, 197, 94, 0.15); border:1px solid #22c55e; border-radius:var(--radius-md); align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-              <div>
-                <strong style="color:#22c55e; font-size:12.5px;">⚡ YENİ SİNYAL YAKALANDI: <span id="sniffer-detected-addr" style="font-family:monospace; font-size:14px; font-weight:800; color:#fff;">X0004.2</span></strong>
-                <span id="sniffer-detected-dir" style="font-size:11px; color:var(--text-secondary); margin-left:6px;">(0 ➔ 1 Değişti)</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <input id="sniffer-sensor-name" type="text" placeholder="Sensör Adı (örn: Kapı Switchi)" class="form-control" style="font-size:11.5px; padding:4px 8px; width:180px;" />
-                <button class="btn btn-primary btn-sm" onclick="saveDetectedSnifferSignal()" style="padding:4px 10px; font-size:11px;">💾 Kaydet</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Live Sensor Board Grid -->
+        <div id="sniffer-detect-alert" style="display:none; margin-top:12px; padding:10px 14px; background:rgba(34, 197, 94, 0.15); border:1px solid #22c55e; border-radius:var(--radius-md); align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
           <div>
-            <div style="font-weight:750; font-size:13px; color:var(--text-primary); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-              <span>💡 Tanımlı Sensör Durumları (Canlı Lamba Panosu)</span>
-              <span class="text-muted" style="font-size:11px;">Toplam ${signals.length} Sensör</span>
-            </div>
-            <div id="sensor-board-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:10px;">
-              ${signals.map(s => {
-                const evalRes = sniffer.evaluateSignal(s, { [s.address]: s.activeState });
-                const isGreen = evalRes.color === 'green';
-                const ledColor = isGreen ? '#22c55e' : (evalRes.color === 'red' ? '#ef4444' : '#f59e0b');
-                return `
-                  <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px; display:flex; align-items:center; gap:10px;">
-                    <div style="width:14px; height:14px; border-radius:50%; background:${ledColor}; box-shadow:0 0 10px ${ledColor}; flex-shrink:0;"></div>
-                    <div style="flex:1; min-width:0;">
-                      <div style="font-size:12px; font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        ${escapeHTML(s.name)}
-                      </div>
-                      <div style="font-size:10.5px; color:var(--text-secondary); display:flex; justify-content:space-between; margin-top:2px;">
-                        <span style="font-family:monospace; color:var(--text-accent);">${s.address}</span>
-                        <span style="font-weight:600; color:${ledColor};">${evalRes.label}</span>
-                      </div>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
+            <strong style="color:#22c55e; font-size:12.5px;">⚡ YENİ SİNYAL YAKALANDI: <span id="sniffer-detected-addr" style="font-family:monospace; font-size:14px; font-weight:800; color:#fff;">X0004.2</span></strong>
+            <span id="sniffer-detected-dir" style="font-size:11px; color:var(--text-secondary); margin-left:6px;">(0 ➔ 1 Değişti)</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <input id="sniffer-sensor-name" type="text" placeholder="Sensör Adı (örn: Kapı Switchi)" class="form-control" style="font-size:11.5px; padding:4px 8px; width:180px;" />
+            <button class="btn btn-primary btn-sm" onclick="saveDetectedSnifferSignal()" style="padding:4px 10px; font-size:11px;">💾 Kaydet</button>
           </div>
         </div>
+      </div>
 
-        <!-- Modal Footer -->
-        <div style="padding:12px 20px; background:var(--bg-card2); border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
-          <button class="btn btn-secondary" onclick="document.getElementById('modal-pmc-sniffer').remove()">Kapat</button>
+      <!-- Live Sensor Board Grid -->
+      <div>
+        <div style="font-weight:750; font-size:13px; color:var(--text-primary); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+          <span>💡 Tanımlı Sensör Durumları (Canlı Lamba Panosu)</span>
+          <span class="text-muted" style="font-size:11px;">Toplam ${signals.length} Sensör</span>
+        </div>
+        <div id="sensor-board-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:10px;">
+          ${signals.map(s => {
+            const evalRes = sniffer.evaluateSignal(s, { [s.address]: s.activeState });
+            const isGreen = evalRes.color === 'green';
+            const ledColor = isGreen ? '#22c55e' : (evalRes.color === 'red' ? '#ef4444' : '#f59e0b');
+            return `
+              <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px; display:flex; align-items:center; gap:10px;">
+                <div style="width:14px; height:14px; border-radius:50%; background:${ledColor}; box-shadow:0 0 10px ${ledColor}; flex-shrink:0;"></div>
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:12px; font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${escapeHTML(s.name)}
+                  </div>
+                  <div style="font-size:10.5px; color:var(--text-secondary); display:flex; justify-content:space-between; margin-top:2px;">
+                    <span style="font-family:monospace; color:var(--text-accent);">${s.address}</span>
+                    <span style="font-weight:600; color:${ledColor};">${evalRes.label}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModal('pmc-sniffer')">Kapat</button>
+    </div>
   `;
 
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  showModal('pmc-sniffer', content, 'lg');
 };
 
 let snifferInterval = null;
@@ -994,8 +981,6 @@ window.saveDetectedSnifferSignal = async function() {
       await window.electronAPI.upsertRecord('machines', activeMachine.id, activeMachine);
     }
     showToast(`✓ Sensör "${name}" (${lastDetectedAddr}) başarıyla kaydedildi!`, 'success');
-    const modal = document.getElementById('modal-pmc-sniffer');
-    if (modal) modal.remove();
     showSignalSnifferModal();
   } catch (e) {
     showToast('Kaydetme hatası: ' + e.message, 'error');
@@ -1016,8 +1001,6 @@ window.applyPresetSignals = async function() {
       await window.electronAPI.upsertRecord('machines', activeMachine.id, activeMachine);
     }
     showToast('✓ Hazır şablon tezgâh profiline başarıyla yüklendi.', 'success');
-    const modal = document.getElementById('modal-pmc-sniffer');
-    if (modal) modal.remove();
     showSignalSnifferModal();
   } catch (e) {
     showToast('Şablon yükleme hatası: ' + e.message, 'error');
@@ -1053,99 +1036,86 @@ window.showPowerDiagnosticsModal = async function() {
   const regenColor = regenEval.color === 'green' ? '#22c55e' : (regenEval.color === 'orange' ? '#f59e0b' : '#ef4444');
   const tempColor = tempEval.color === 'green' ? '#22c55e' : (tempEval.color === 'orange' ? '#f59e0b' : '#ef4444');
 
-  const modalHtml = `
-    <div id="modal-power-diag" class="modal-backdrop" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(6px);">
-      <div class="modal-card" style="width:780px; max-width:95vw; max-height:90vh; background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
-        <!-- Modal Header -->
-        <div style="padding:16px 20px; background:var(--bg-card2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h3 style="margin:0; font-size:16px; font-weight:750; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
-              <span>⚡</span> FANUC DC Bara & Güç Elektroniği Sağlığı (PSM Diag)
-            </h3>
-            <p style="margin:2px 0 0 0; font-size:11.5px; color:var(--text-secondary);">
-              FANUC Güç Modülü (PSM) DC Link Gerilimi, Frenleme Rejenerasyonu ve IGBT Sıcaklık Teşhisi
-            </p>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-power-diag').remove()" style="font-size:18px; line-height:1; padding:4px 8px;">✕</button>
+  const content = `
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">⚡</span>
+        <span>FANUC DC Bara & Güç Elektroniği Sağlığı (PSM Diag)</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('power-diagnostics')">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+      <!-- Machine Badge -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card2); padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--border);">
+        <div style="font-size:12px; font-weight:700; color:var(--text-accent);">
+          Tezgâh: <span style="color:var(--text-primary); font-weight:800;">${escapeHTML(activeMachine.numarasi || 'CNC')}</span>
         </div>
-
-        <!-- Modal Body -->
-        <div style="padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
-          <!-- Machine Badge -->
-          <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card2); padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--border);">
-            <div style="font-size:12px; font-weight:700; color:var(--text-accent);">
-              Tezgâh: <span style="color:var(--text-primary); font-weight:800;">${escapeHTML(activeMachine.numarasi || 'CNC')}</span>
-            </div>
-            <div style="font-size:11.5px; color:var(--text-secondary);">
-              <span>Kaynak: </span><strong style="color:var(--text-primary);">FANUC DGN 0860-0864 & PSM CAN</strong>
-            </div>
-          </div>
-
-          <!-- Main Metric Cards -->
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:12px;">
-            <!-- DC Bus Voltage Card -->
-            <div style="background:var(--bg-card2); border:1px solid ${dcColor}; border-radius:var(--radius-md); padding:14px; display:flex; flex-direction:column; justify-content:space-between;">
-              <div>
-                <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;">⚡ DC Bara Voltajı (V_DC)</div>
-                <div style="font-size:28px; font-weight:850; font-family:monospace; color:${dcColor}; margin-top:6px;">
-                  ${dcVolt.toFixed(1)} <span style="font-size:16px;">V DC</span>
-                </div>
-              </div>
-              <div style="margin-top:10px; font-size:11px; font-weight:600; color:${dcColor};">
-                ● ${dcEval.label}
-              </div>
-              <div style="font-size:10px; color:var(--text-secondary); margin-top:4px;">Nominal: 300V (Aralık: 270-340V)</div>
-            </div>
-
-            <!-- Regenerative Braking Load Card -->
-            <div style="background:var(--bg-card2); border:1px solid ${regenColor}; border-radius:var(--radius-md); padding:14px; display:flex; flex-direction:column; justify-content:space-between;">
-              <div>
-                <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;">🔥 Frenleme Direnci Yükü</div>
-                <div style="font-size:28px; font-weight:850; font-family:monospace; color:${regenColor}; margin-top:6px;">
-                  ${regen.toFixed(1)} <span style="font-size:16px;">%</span>
-                </div>
-              </div>
-              <div style="margin-top:10px; font-size:11px; font-weight:600; color:${regenColor};">
-                ● ${regenEval.label}
-              </div>
-              <div style="font-size:10px; color:var(--text-secondary); margin-top:4px;">Alarm Eşiği: >80% (PSM 03)</div>
-            </div>
-
-            <!-- PSM IGBT Temp Card -->
-            <div style="background:var(--bg-card2); border:1px solid ${tempColor}; border-radius:var(--radius-md); padding:14px; display:flex; flex-direction:column; justify-content:space-between;">
-              <div>
-                <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;">🌡️ Sürücü Radyatör Isısı</div>
-                <div style="font-size:28px; font-weight:850; font-family:monospace; color:${tempColor}; margin-top:6px;">
-                  ${psmTemp.toFixed(1)} <span style="font-size:16px;">°C</span>
-                </div>
-              </div>
-              <div style="margin-top:10px; font-size:11px; font-weight:600; color:${tempColor};">
-                ● ${tempEval.label}
-              </div>
-              <div style="font-size:10px; color:var(--text-secondary); margin-top:4px;">Kritik Eşik: >80°C (PSM 04)</div>
-            </div>
-          </div>
-
-          <!-- Technical Advice Box -->
-          <div style="background:rgba(56, 189, 248, 0.05); border:1px solid var(--border-accent); border-radius:var(--radius-md); padding:14px;">
-            <strong style="font-size:12.5px; color:var(--text-accent); display:flex; align-items:center; gap:6px; margin-bottom:8px;">
-              <span>💡</span> Elektrik Bakım & Teşhis Kılavuzu:
-            </strong>
-            <ul style="margin:0; padding-left:18px; font-size:11.5px; color:var(--text-secondary); line-height:1.6;">
-              ${adviceList.map(item => `<li>${item}</li>`).join('')}
-            </ul>
-          </div>
-        </div>
-
-        <!-- Modal Footer -->
-        <div style="padding:12px 20px; background:var(--bg-card2); border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
-          <button class="btn btn-secondary" onclick="document.getElementById('modal-power-diag').remove()">Kapat</button>
+        <div style="font-size:11.5px; color:var(--text-secondary);">
+          <span>Kaynak: </span><strong style="color:var(--text-primary);">FANUC DGN 0860-0864 & PSM CAN</strong>
         </div>
       </div>
+
+      <!-- Main Metric Cards -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:12px;">
+        <!-- DC Bus Voltage Card -->
+        <div style="background:var(--bg-card2); border:1px solid ${dcColor}; border-radius:var(--radius-md); padding:14px; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;">⚡ DC Bara Voltajı (V_DC)</div>
+            <div style="font-size:28px; font-weight:850; font-family:monospace; color:${dcColor}; margin-top:6px;">
+              ${dcVolt.toFixed(1)} <span style="font-size:16px;">V DC</span>
+            </div>
+          </div>
+          <div style="margin-top:10px; font-size:11px; font-weight:600; color:${dcColor};">
+            ● ${dcEval.label}
+          </div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px;">Nominal: 300V (Aralık: 270-340V)</div>
+        </div>
+
+        <!-- Regenerative Braking Load Card -->
+        <div style="background:var(--bg-card2); border:1px solid ${regenColor}; border-radius:var(--radius-md); padding:14px; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;">🔥 Frenleme Direnci Yükü</div>
+            <div style="font-size:28px; font-weight:850; font-family:monospace; color:${regenColor}; margin-top:6px;">
+              ${regen.toFixed(1)} <span style="font-size:16px;">%</span>
+            </div>
+          </div>
+          <div style="margin-top:10px; font-size:11px; font-weight:600; color:${regenColor};">
+            ● ${regenEval.label}
+          </div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px;">Alarm Eşiği: >80% (PSM 03)</div>
+        </div>
+
+        <!-- PSM IGBT Temp Card -->
+        <div style="background:var(--bg-card2); border:1px solid ${tempColor}; border-radius:var(--radius-md); padding:14px; display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;">🌡️ Sürücü Radyatör Isısı</div>
+            <div style="font-size:28px; font-weight:850; font-family:monospace; color:${tempColor}; margin-top:6px;">
+              ${psmTemp.toFixed(1)} <span style="font-size:16px;">°C</span>
+            </div>
+          </div>
+          <div style="margin-top:10px; font-size:11px; font-weight:600; color:${tempColor};">
+            ● ${tempEval.label}
+          </div>
+          <div style="font-size:10px; color:var(--text-secondary); margin-top:4px;">Kritik Eşik: >80°C (PSM 04)</div>
+        </div>
+      </div>
+
+      <!-- Technical Advice Box -->
+      <div style="background:rgba(56, 189, 248, 0.05); border:1px solid var(--border-accent); border-radius:var(--radius-md); padding:14px;">
+        <strong style="font-size:12.5px; color:var(--text-accent); display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+          <span>💡</span> Elektrik Bakım & Teşhis Kılavuzu:
+        </strong>
+        <ul style="margin:0; padding-left:18px; font-size:11.5px; color:var(--text-secondary); line-height:1.6;">
+          ${adviceList.map(item => `<li>${item}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModal('power-diagnostics')">Kapat</button>
     </div>
   `;
 
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  showModal('power-diagnostics', content, 'lg');
 };
 
 window.showChronicFailureModal = async function(days = 30) {
@@ -1161,123 +1131,107 @@ window.showChronicFailureModal = async function(days = 30) {
 
   const analysis = finder.analyzeMachineAlarms(alarms, days);
 
-  const existingModal = document.getElementById('modal-chronic-failure');
-  if (existingModal) existingModal.remove();
-
-  const modalHtml = `
-    <div id="modal-chronic-failure" class="modal-backdrop" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(6px);">
-      <div class="modal-card" style="width:840px; max-width:95vw; max-height:90vh; background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
-        <!-- Modal Header -->
-        <div style="padding:16px 20px; background:var(--bg-card2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h3 style="margin:0; font-size:16px; font-weight:750; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
-              <span>🔍</span> Kronik Arıza & Tekrarlayan Alarm Trend Analizörü
-            </h3>
-            <p style="margin:2px 0 0 0; font-size:11.5px; color:var(--text-secondary);">
-              Geçmiş alarm korelasyonu, alarm zinciri lojiği ve kestirimci bakım eylem planı
-            </p>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-chronic-failure').remove()" style="font-size:18px; line-height:1; padding:4px 8px;">✕</button>
+  const content = `
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">🔍</span>
+        <span>Kronik Arıza & Tekrarlayan Alarm Trend Analizörü</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('chronic-failure')">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+      <!-- Machine & Days Filter Bar -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card2); padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--border); flex-wrap:wrap; gap:10px;">
+        <div style="font-size:12px; font-weight:700; color:var(--text-accent);">
+          Tezgâh: <span style="color:var(--text-primary); font-weight:800;">${escapeHTML(activeMachine.numarasi || 'CNC')}</span>
+          <span class="tag tag-gray" style="margin-left:8px;">${analysis.totalAlarms} Toplam Alarm İncelendi</span>
         </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:11.5px; color:var(--text-secondary); font-weight:600;">Zaman Aralığı:</span>
+          <button class="btn btn-sm ${days === 30 ? 'btn-primary' : 'btn-secondary'}" onclick="changeChronicDaysFilter(30)" style="font-size:11px; padding:3px 8px;">Son 30 Gün</button>
+          <button class="btn btn-sm ${days === 60 ? 'btn-primary' : 'btn-secondary'}" onclick="changeChronicDaysFilter(60)" style="font-size:11px; padding:3px 8px;">Son 60 Gün</button>
+          <button class="btn btn-sm ${days === 90 ? 'btn-primary' : 'btn-secondary'}" onclick="changeChronicDaysFilter(90)" style="font-size:11px; padding:3px 8px;">Son 90 Gün</button>
+        </div>
+      </div>
 
-        <!-- Modal Body -->
-        <div style="padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
-          <!-- Machine & Days Filter Bar -->
-          <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card2); padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--border); flex-wrap:wrap; gap:10px;">
-            <div style="font-size:12px; font-weight:700; color:var(--text-accent);">
-              Tezgâh: <span style="color:var(--text-primary); font-weight:800;">${escapeHTML(activeMachine.numarasi || 'CNC')}</span>
-              <span class="tag tag-gray" style="margin-left:8px;">${analysis.totalAlarms} Toplam Alarm İncelendi</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span style="font-size:11.5px; color:var(--text-secondary); font-weight:600;">Zaman Aralığı:</span>
-              <button class="btn btn-sm ${days === 30 ? 'btn-primary' : 'btn-secondary'}" onclick="changeChronicDaysFilter(30)" style="font-size:11px; padding:3px 8px;">Son 30 Gün</button>
-              <button class="btn btn-sm ${days === 60 ? 'btn-primary' : 'btn-secondary'}" onclick="changeChronicDaysFilter(60)" style="font-size:11px; padding:3px 8px;">Son 60 Gün</button>
-              <button class="btn btn-sm ${days === 90 ? 'btn-primary' : 'btn-secondary'}" onclick="changeChronicDaysFilter(90)" style="font-size:11px; padding:3px 8px;">Son 90 Gün</button>
-            </div>
-          </div>
+      <!-- Primary Risk Card -->
+      <div style="background:rgba(239, 68, 68, 0.08); border:1px solid #ef4444; border-radius:var(--radius-md); padding:16px;">
+        <div style="font-size:15px; font-weight:850; color:#ef4444; display:flex; align-items:center; gap:8px;">
+          ${escapeHTML(analysis.primaryRisk)}
+        </div>
+        <p style="margin:8px 0 0 0; font-size:12px; color:var(--text-primary); line-height:1.5;">
+          ${escapeHTML(analysis.rootCauseExplanation)}
+        </p>
+        <div style="margin-top:10px; display:flex; gap:16px; font-size:11.5px; color:var(--text-secondary);">
+          <span>Toplam Üretim / Duruş Kaybı: <strong style="color:#fff;">${Math.round(analysis.totalDowntimeMin / 60)} saat ${analysis.totalDowntimeMin % 60} dk</strong></span>
+        </div>
+      </div>
 
-          <!-- Primary Risk Card -->
-          <div style="background:rgba(239, 68, 68, 0.08); border:1px solid #ef4444; border-radius:var(--radius-md); padding:16px;">
-            <div style="font-size:15px; font-weight:850; color:#ef4444; display:flex; align-items:center; gap:8px;">
-              ${escapeHTML(analysis.primaryRisk)}
-            </div>
-            <p style="margin:8px 0 0 0; font-size:12px; color:var(--text-primary); line-height:1.5;">
-              ${escapeHTML(analysis.rootCauseExplanation)}
-            </p>
-            <div style="margin-top:10px; display:flex; gap:16px; font-size:11.5px; color:var(--text-secondary);">
-              <span>Toplam Üretim / Duruş Kaybı: <strong style="color:#fff;">${Math.round(analysis.totalDowntimeMin / 60)} saat ${analysis.totalDowntimeMin % 60} dk</strong></span>
-            </div>
-          </div>
-
-          <!-- Alarm Chain Box (if any) -->
-          ${analysis.chains && analysis.chains.length > 0 ? `
-            <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px;">
-              <strong style="font-size:12.5px; color:var(--text-accent); display:flex; align-items:center; gap:6px; margin-bottom:10px;">
-                <span>🔗</span> Tespit Edilen Alarm Tetikleme Zinciri (Korelasyon):
-              </strong>
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                ${analysis.chains.map(c => `
-                  <div style="display:flex; align-items:center; gap:10px; background:var(--bg-card); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); font-size:11.5px;">
-                    <span class="tag tag-orange font-mono">${escapeHTML(c.from)} (${escapeHTML(c.fromMsg)})</span>
-                    <span style="color:var(--text-secondary); font-weight:700;">──(${c.avgDeltaMin} dk sonra)──➔</span>
-                    <span class="tag tag-red font-mono">${escapeHTML(c.to)} (${escapeHTML(c.toMsg)})</span>
-                    <span class="text-muted" style="margin-left:auto; font-size:10.5px;">${c.occurrences} kez tekrarlandı</span>
-                  </div>
-                `).join('')}
+      <!-- Alarm Chain Box (if any) -->
+      ${analysis.chains && analysis.chains.length > 0 ? `
+        <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px;">
+          <strong style="font-size:12.5px; color:var(--text-accent); display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+            <span>🔗</span> Tespit Edilen Alarm Tetikleme Zinciri (Korelasyon):
+          </strong>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${analysis.chains.map(c => `
+              <div style="display:flex; align-items:center; gap:10px; background:var(--bg-card); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); font-size:11.5px;">
+                <span class="tag tag-orange font-mono">${escapeHTML(c.from)} (${escapeHTML(c.fromMsg)})</span>
+                <span style="color:var(--text-secondary); font-weight:700;">──(${c.avgDeltaMin} dk sonra)──➔</span>
+                <span class="tag tag-red font-mono">${escapeHTML(c.to)} (${escapeHTML(c.toMsg)})</span>
+                <span class="text-muted" style="margin-left:auto; font-size:10.5px;">${c.occurrences} kez tekrarlandı</span>
               </div>
-            </div>
-          ` : ''}
-
-          <!-- Action Plan Checklist -->
-          <div style="background:rgba(34, 197, 94, 0.05); border:1px solid #22c55e; border-radius:var(--radius-md); padding:14px;">
-            <strong style="font-size:12.5px; color:#22c55e; display:flex; align-items:center; gap:6px; margin-bottom:8px;">
-              <span>🔧</span> Bakımcı ve Teknisyen İçin Nokta Atışı Eylem Planı:
-            </strong>
-            <ul style="margin:0; padding-left:18px; font-size:11.5px; color:var(--text-primary); line-height:1.7;">
-              ${analysis.actionPlan.map(item => `<li>${escapeHTML(item)}</li>`).join('')}
-            </ul>
-          </div>
-
-          <!-- Frequency Table -->
-          <div>
-            <strong style="font-size:12.5px; color:var(--text-primary); margin-bottom:8px; display:block;">
-              📊 Tekrarlayan Alarm Frekans Sıralaması
-            </strong>
-            <div style="border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
-              <table style="width:100%; border-collapse:collapse; font-size:11.5px; text-align:left;">
-                <thead>
-                  <tr style="background:var(--bg-card2); border-bottom:1px solid var(--border); color:var(--text-secondary);">
-                    <th style="padding:8px 12px;">Alarm Kodu</th>
-                    <th style="padding:8px 12px;">Açıklama / Mesaj</th>
-                    <th style="padding:8px 12px; text-align:center;">Tekrar Sayısı</th>
-                    <th style="padding:8px 12px; text-align:center;">Tahmini Duruş</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${analysis.topAlarms.map((a, i) => `
-                    <tr style="border-bottom:1px solid var(--border); background:${i % 2 === 0 ? 'transparent' : 'var(--bg-card2)'};">
-                      <td style="padding:8px 12px; font-family:monospace; font-weight:700; color:var(--text-accent);">${escapeHTML(a.code)}</td>
-                      <td style="padding:8px 12px; color:var(--text-primary);">${escapeHTML(a.message)}</td>
-                      <td style="padding:8px 12px; text-align:center;"><span class="tag ${a.count > 5 ? 'tag-red' : 'tag-orange'}">${a.count} Kez</span></td>
-                      <td style="padding:8px 12px; text-align:center; color:var(--text-secondary);">${a.downtimeMin} dk</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
+            `).join('')}
           </div>
         </div>
+      ` : ''}
 
-        <!-- Modal Footer -->
-        <div style="padding:12px 20px; background:var(--bg-card2); border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; color:var(--text-secondary);">%100 Salt-Okunur Geçmiş Teşhis Analizi</span>
-          <button class="btn btn-secondary" onclick="document.getElementById('modal-chronic-failure').remove()">Kapat</button>
+      <!-- Action Plan Checklist -->
+      <div style="background:rgba(34, 197, 94, 0.05); border:1px solid #22c55e; border-radius:var(--radius-md); padding:14px;">
+        <strong style="font-size:12.5px; color:#22c55e; display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+          <span>🔧</span> Bakımcı ve Teknisyen İçin Nokta Atışı Eylem Planı:
+        </strong>
+        <ul style="margin:0; padding-left:18px; font-size:11.5px; color:var(--text-primary); line-height:1.7;">
+          ${analysis.actionPlan.map(item => `<li>${escapeHTML(item)}</li>`).join('')}
+        </ul>
+      </div>
+
+      <!-- Frequency Table -->
+      <div>
+        <strong style="font-size:12.5px; color:var(--text-primary); margin-bottom:8px; display:block;">
+          📊 Tekrarlayan Alarm Frekans Sıralaması
+        </strong>
+        <div style="border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden;">
+          <table style="width:100%; border-collapse:collapse; font-size:11.5px; text-align:left;">
+            <thead>
+              <tr style="background:var(--bg-card2); border-bottom:1px solid var(--border); color:var(--text-secondary);">
+                <th style="padding:8px 12px;">Alarm Kodu</th>
+                <th style="padding:8px 12px;">Açıklama / Mesaj</th>
+                <th style="padding:8px 12px; text-align:center;">Tekrar Sayısı</th>
+                <th style="padding:8px 12px; text-align:center;">Tahmini Duruş</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${analysis.topAlarms.map((a, i) => `
+                <tr style="border-bottom:1px solid var(--border); background:${i % 2 === 0 ? 'transparent' : 'var(--bg-card2)'};">
+                  <td style="padding:8px 12px; font-family:monospace; font-weight:700; color:var(--text-accent);">${escapeHTML(a.code)}</td>
+                  <td style="padding:8px 12px; color:var(--text-primary);">${escapeHTML(a.message)}</td>
+                  <td style="padding:8px 12px; text-align:center;"><span class="tag ${a.count > 5 ? 'tag-red' : 'tag-orange'}">${a.count} Kez</span></td>
+                  <td style="padding:8px 12px; text-align:center; color:var(--text-secondary);">${a.downtimeMin} dk</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
+    <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:11px; color:var(--text-secondary);">%100 Salt-Okunur Geçmiş Teşhis Analizi</span>
+      <button class="btn btn-secondary" onclick="closeModal('chronic-failure')">Kapat</button>
+    </div>
   `;
 
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  showModal('chronic-failure', content, 'lg');
 };
 
 window.changeChronicDaysFilter = function(days) {
@@ -1294,103 +1248,87 @@ window.showFocasDriverHealthModal = async function() {
     status = { ok: false, ready: false, error: e.message };
   }
 
-  const existingModal = document.getElementById('modal-focas-driver-health');
-  if (existingModal) existingModal.remove();
-
   const fw32 = status.files?.fwlib32?.present;
   const fwe1 = status.files?.fwlibe1?.present;
   const adapter = status.files?.adapterExe?.present;
   const cfg = status.files?.config?.present;
   const isReady = status.ready;
 
-  const modalHtml = `
-    <div id="modal-focas-driver-health" class="modal-backdrop" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(6px);">
-      <div class="modal-card" style="width:720px; max-width:95vw; background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.6);">
-        <!-- Modal Header -->
-        <div style="padding:16px 20px; background:var(--bg-card2); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h3 style="margin:0; font-size:16px; font-weight:750; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
-              <span>🔌</span> FANUC FOCAS Sürücü & Adaptör Hazırlık Kontrolü
-            </h3>
-            <p style="margin:2px 0 0 0; font-size:11.5px; color:var(--text-secondary);">
-              Atölye CNC FOCAS haberleşme kütüphanesi ve servis durumu
-            </p>
+  const content = `
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">🔌</span>
+        <span>FANUC FOCAS Sürücü & Adaptör Hazırlık Kontrolü</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('focas-driver-health')">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+      <!-- Overall Status Banner -->
+      <div style="background:${isReady ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border:1px solid ${isReady ? '#22c55e' : '#ef4444'}; border-radius:var(--radius-md); padding:14px; display:flex; align-items:center; gap:12px;">
+        <span style="font-size:28px;">${isReady ? '🟢' : '🔴'}</span>
+        <div>
+          <div style="font-size:14px; font-weight:800; color:${isReady ? '#22c55e' : '#ef4444'};">
+            ${isReady ? 'FOCAS Sürücüleri ve Adaptör Hazır' : 'FOCAS Kütüphanesi veya Adaptör Eksik'}
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-focas-driver-health').remove()" style="font-size:18px; line-height:1; padding:4px 8px;">✕</button>
-        </div>
-
-        <!-- Modal Body -->
-        <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
-          <!-- Overall Status Banner -->
-          <div style="background:${isReady ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border:1px solid ${isReady ? '#22c55e' : '#ef4444'}; border-radius:var(--radius-md); padding:14px; display:flex; align-items:center; gap:12px;">
-            <span style="font-size:28px;">${isReady ? '🟢' : '🔴'}</span>
-            <div>
-              <div style="font-size:14px; font-weight:800; color:${isReady ? '#22c55e' : '#ef4444'};">
-                ${isReady ? 'FOCAS Sürücüleri ve Adaptör Hazır' : 'FOCAS Kütüphanesi veya Adaptör Eksik'}
-              </div>
-              <div style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
-                ${isReady ? 'Sistem ağdaki FANUC CNC kontrol üniteleriyle FOCAS TCP (Port 8193) üzerinden güvenle haberleşebilir.' : 'Lütfen FANUC FOCAS DLL dosyalarını bin/ klasörüne kopyalayın.'}
-              </div>
-            </div>
+          <div style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
+            ${isReady ? 'Sistem ağdaki FANUC CNC kontrol üniteleriyle FOCAS TCP (Port 8193) üzerinden güvenle haberleşebilir.' : 'Lütfen FANUC FOCAS DLL dosyalarını bin/ klasörüne kopyalayın.'}
           </div>
-
-          <!-- File Readiness Grid -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm);">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong style="font-size:12px; color:var(--text-primary);">Fwlib32.dll (FOCAS 1/2)</strong>
-                <span class="tag ${fw32 ? 'tag-green' : 'tag-red'}">${fw32 ? 'MEVCUT (544 KB)' : 'YOK'}</span>
-              </div>
-              <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">Temel FANUC CNC API Kütüphanesi</div>
-            </div>
-
-            <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm);">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong style="font-size:12px; color:var(--text-primary);">fwlibe1.dll (Ethernet)</strong>
-                <span class="tag ${fwe1 ? 'tag-green' : 'tag-orange'}">${fwe1 ? 'MEVCUT (851 KB)' : 'OPSİYONEL'}</span>
-              </div>
-              <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">Genişletilmiş Ethernet Sürücüsü</div>
-            </div>
-
-            <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm);">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong style="font-size:12px; color:var(--text-primary);">FanucSHDRAdapter.exe</strong>
-                <span class="tag ${adapter ? 'tag-green' : 'tag-red'}">${adapter ? 'MEVCUT (124 KB)' : 'YOK'}</span>
-              </div>
-              <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">FOCAS -> SHDR / MTConnect Köprüsü</div>
-            </div>
-
-            <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm);">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong style="font-size:12px; color:var(--text-primary);">adapter.config.json</strong>
-                <span class="tag ${cfg ? 'tag-green' : 'tag-red'}">${cfg ? 'GEÇERLİ' : 'EKSİK'}</span>
-              </div>
-              <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">Tezgâh IP ve Port Konfigürasyonu</div>
-            </div>
-          </div>
-
-          <!-- Practical Advice Box -->
-          <div style="background:rgba(56, 189, 248, 0.05); border:1px solid var(--border-accent); border-radius:var(--radius-md); padding:12px;">
-            <strong style="font-size:12px; color:var(--text-accent); display:flex; align-items:center; gap:6px; margin-bottom:6px;">
-              <span>💡</span> Saha Kurulum & Bağlantı Rehberi:
-            </strong>
-            <ul style="margin:0; padding-left:18px; font-size:11px; color:var(--text-secondary); line-height:1.6;">
-              <li>Tezgâh tarafında FANUC panelinde <strong>[SYSTEM] -> [ETHPRM]</strong> menüsünden FOCAS Portunun <strong>8193</strong> olduğunu teyit edin.</li>
-              <li>Bilgisayarınızın IP bloğu (örn: <code>192.168.1.100</code>) ile tezgâhın IP bloğu (örn: <code>192.168.1.50</code>) aynı alt ağda (Subnet) olmalıdır.</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Modal Footer -->
-        <div style="padding:12px 20px; background:var(--bg-card2); border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-          <button class="btn btn-secondary btn-sm" onclick="showFocasDriverHealthModal()">🔄 Tekrar Test Et</button>
-          <button class="btn btn-primary btn-sm" onclick="document.getElementById('modal-focas-driver-health').remove()">Kapat</button>
         </div>
       </div>
+
+      <!-- File Readiness Grid -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:12px; color:var(--text-primary);">Fwlib32.dll (FOCAS 1/2)</strong>
+            <span class="tag ${fw32 ? 'tag-green' : 'tag-red'}">${fw32 ? 'MEVCUT (544 KB)' : 'YOK'}</span>
+          </div>
+          <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">Temel FANUC CNC API Kütüphanesi</div>
+        </div>
+
+        <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:12px; color:var(--text-primary);">fwlibe1.dll (Ethernet)</strong>
+            <span class="tag ${fwe1 ? 'tag-green' : 'tag-orange'}">${fwe1 ? 'MEVCUT (851 KB)' : 'OPSİYONEL'}</span>
+          </div>
+          <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">Genişletilmiş Ethernet Sürücüsü</div>
+        </div>
+
+        <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:12px; color:var(--text-primary);">FanucSHDRAdapter.exe</strong>
+            <span class="tag ${adapter ? 'tag-green' : 'tag-red'}">${adapter ? 'MEVCUT (124 KB)' : 'YOK'}</span>
+          </div>
+          <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">FOCAS -&gt; SHDR / MTConnect Köprüsü</div>
+        </div>
+
+        <div style="background:var(--bg-card2); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:12px; color:var(--text-primary);">adapter.config.json</strong>
+            <span class="tag ${cfg ? 'tag-green' : 'tag-red'}">${cfg ? 'GEÇERLİ' : 'EKSİK'}</span>
+          </div>
+          <div style="font-size:10.5px; color:var(--text-secondary); margin-top:4px;">Tezgâh IP ve Port Konfigürasyonu</div>
+        </div>
+      </div>
+
+      <!-- Practical Advice Box -->
+      <div style="background:rgba(56, 189, 248, 0.05); border:1px solid var(--border-accent); border-radius:var(--radius-md); padding:12px;">
+        <strong style="font-size:12px; color:var(--text-accent); display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+          <span>💡</span> Saha Kurulum &amp; Bağlantı Rehberi:
+        </strong>
+        <ul style="margin:0; padding-left:18px; font-size:11px; color:var(--text-secondary); line-height:1.6;">
+          <li>Tezgâh tarafında FANUC panelinde <strong>[SYSTEM] -&gt; [ETHPRM]</strong> menüsünden FOCAS Portunun <strong>8193</strong> olduğunu teyit edin.</li>
+          <li>Bilgisayarınızın IP bloğu (örn: <code>192.168.1.100</code>) ile tezgâhın IP bloğu (örn: <code>192.168.1.50</code>) aynı alt ağda (Subnet) olmalıdır.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+      <button class="btn btn-secondary btn-sm" onclick="showFocasDriverHealthModal()">🔄 Tekrar Test Et</button>
+      <button class="btn btn-primary btn-sm" onclick="closeModal('focas-driver-health')">Kapat</button>
     </div>
   `;
 
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  showModal('focas-driver-health', content, 'lg');
 };
 
 window.exportScannerResultsCSV = function() {
