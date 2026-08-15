@@ -1,8 +1,10 @@
 # ⚙️ FANUC Pro Suite — CNC Telemetri, Elektrik Bakım & IIoT Endüstriyel Yönetim Sistemi
 
+[![Version](https://img.shields.io/badge/Version-v1.4.5-blueviolet.svg?style=for-the-badge)](https://github.com/PobloMert/fanuc-pro-suitev/releases/tag/v1.4.5)
 [![Electron Version](https://img.shields.io/badge/Electron-v43.0.0-blue.svg?style=for-the-badge&logo=electron)](https://www.electronjs.org/)
 [![Node Version](https://img.shields.io/badge/Node.js-v24%2B-brightgreen.svg?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![FANUC Protocol](https://img.shields.io/badge/FANUC-FOCAS2%20%2F%20MTConnect-yellow.svg?style=for-the-badge&logo=csharp)](https://github.com/PobloMert/fanuc-pro-suitev)
+[![Tests](https://img.shields.io/badge/Tests-181%2F181%20Passed-success.svg?style=for-the-badge)]()
 [![License](https://img.shields.io/badge/License-MIT-orange.svg?style=for-the-badge)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Aktif%20Saha%20Kullan%C4%B1m%C4%B1-success.svg?style=for-the-badge)]()
 
@@ -47,7 +49,9 @@
 
 ```text
 Fanuc/
-├── main.js                   # Electron Ana Süreç & IPC Geçitleri
+├── main.js                        # Electron Ana Süreç & IPC Geçitleri
+├── google-apps-script/
+│   └── Code.gs                    # Google Drive sync sunucu kodu
 ├── preload.js                # Güvenli IPC Köprüsü
 ├── adapter.config.json       # Telemetri IP / Port Eşleşme Yapılandırması
 ├── bin/
@@ -101,6 +105,16 @@ npm start
 | **C** | Counter | Parça ve tur sayaçları |
 | **K** | Keep Relay | Kalıcı makine fonksiyon ayar bitleri |
 | **D** | Data Register | Sayısal veri ve sayaç saklama alanları |
+
+---
+
+## 🔒 Güvenlik
+
+- **Sıfır CNC Yazma:** Tüm CNC mutasyon endpointleri devre dışı.
+- **Electron Sandbox:** Renderer süreci tam sandbox modunda çalışır.
+- **Şifreli Kimlik Bilgileri:** Drive erişim anahtarları Windows safeStorage (DPAPI) ile şifrelenir.
+- **CSP Koruması:** Satır içi JavaScript tamamen engellenir.
+- **181 Güvenlik & Birim Testi** her sürümde otomatik doğrulama sağlar.
 
 ---
 
